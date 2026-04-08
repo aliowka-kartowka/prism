@@ -1,0 +1,20 @@
+services:
+  marzban:
+    image: gozargah/marzban:latest
+    container_name: marzban
+    restart: always
+    env_file: .env
+    network_mode: host
+    volumes:
+      - ./marzban_data:/var/lib/marzban
+
+  nginx:
+    image: nginx:alpine
+    container_name: prism_nginx
+    network_mode: host
+    volumes:
+      - ./nginx_vpn.conf:/etc/nginx/conf.d/default.conf:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+    depends_on:
+      - marzban
+    restart: unless-stopped
