@@ -1,630 +1,537 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>🇷🇺 Russia Internet Monitor</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🇷🇺 Russia Internet Monitor</title>
+    <style>
+        :root {
+            --bg: #0f172a;
+            --card-bg: #1e293b;
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --accent: #3b82f6;
+            --accent-premium: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+            --green: #22c55e;
+            --red: #ef4444;
+            --yellow: #f59e0b;
+        }
 
-    :root {
-      --bg: #0a0e1a;
-      --surface: #111827;
-      --surface2: #1a2236;
-      --border: #1f2f4a;
-      --text: #e2e8f0;
-      --muted: #64748b;
-      --green: #22c55e;
-      --red: #ef4444;
-      --yellow: #f59e0b;
-      --blue: #3b82f6;
-      --accent: #6366f1;
-    }
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.5;
+        }
 
-    body {
-      font-family: 'Inter', sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-    }
+        .header {
+            max-width: 1000px;
+            margin: 0 auto 2rem;
+            text-align: center;
+        }
 
-    /* === HEADER === */
-    header {
-      padding: 2.5rem 2rem 1.5rem;
-      text-align: center;
-      border-bottom: 1px solid var(--border);
-      background: linear-gradient(180deg, #0d1526, var(--bg));
-      position: relative;
-      overflow: hidden;
-    }
-    header::before {
-      content: '';
-      position: absolute;
-      top: -60px; left: 50%;
-      transform: translateX(-50%);
-      width: 500px; height: 200px;
-      background: radial-gradient(ellipse, rgba(99,102,241,0.15) 0%, transparent 70%);
-      pointer-events: none;
-    }
-    .flag { font-size: 2.5rem; margin-bottom: 0.5rem; }
-    header h1 {
-      font-size: 2rem;
-      font-weight: 700;
-      background: linear-gradient(135deg, #6366f1, #a78bfa, #60a5fa);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-    header p {
-      color: var(--muted);
-      margin-top: 0.4rem;
-      font-size: 0.95rem;
-    }
-    .location-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.4rem;
-      margin-top: 0.8rem;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 999px;
-      padding: 0.3rem 1rem;
-      font-size: 0.8rem;
-      color: var(--muted);
-    }
-    .location-badge .dot {
-      width: 8px; height: 8px;
-      background: var(--green);
-      border-radius: 50%;
-      animation: blink 2s ease-in-out infinite;
-    }
-    @keyframes blink { 0%,100% { opacity:1; } 50% { opacity:0.3; } }
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(to right, #fff, #94a3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
 
-    /* === STATS BAR === */
-    .stats-bar {
-      display: flex;
-      justify-content: center;
-      gap: 2rem;
-      padding: 1.2rem 2rem;
-      background: var(--surface);
-      border-bottom: 1px solid var(--border);
-      flex-wrap: wrap;
-    }
-    .stat { text-align: center; }
-    .stat-num {
-      font-size: 1.6rem;
-      font-weight: 700;
-    }
-    .stat-num.green { color: var(--green); }
-    .stat-num.red { color: var(--red); }
-    .stat-num.yellow { color: var(--yellow); }
-    .stat-label { font-size: 0.75rem; color: var(--muted); margin-top: 0.1rem; }
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            max-width: 1000px;
+            margin: 0 auto 2rem;
+        }
 
-    /* === PROGRESS BAR === */
-    .progress-wrap {
-      height: 3px;
-      background: var(--border);
-      overflow: hidden;
-    }
-    .progress-bar {
-      height: 100%;
-      width: 0%;
-      background: linear-gradient(90deg, #6366f1, #60a5fa);
-      transition: width 0.3s ease;
-    }
+        .stat {
+            background: var(--card-bg);
+            padding: 1rem;
+            border-radius: 12px;
+            border: 1px solid #334155;
+            text-align: center;
+        }
 
-    /* === GRID === */
-    .container { max-width: 1200px; margin: 0 auto; padding: 2rem 1.5rem; }
-    
-    .section-title {
-      display: flex;
-      align-items: center;
-      gap: 0.6rem;
-      font-size: 0.8rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      color: var(--muted);
-      margin-bottom: 1rem;
-      margin-top: 2rem;
-    }
-    .section-title:first-child { margin-top: 0; }
-    .section-title::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background: var(--border);
-    }
+        .stat-num { font-size: 1.5rem; font-weight: bold; margin-bottom: 0.2rem; }
+        .stat-label { font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; }
 
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 1rem;
-    }
+        .green { color: var(--green); }
+        .red { color: var(--red); }
+        .yellow { color: var(--yellow); }
+        .purple { color: #a855f7; }
 
-    .card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 1.1rem 1.2rem;
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      transition: all 0.2s ease;
-      position: relative;
-      overflow: hidden;
-    }
-    .card::before {
-      content: '';
-      position: absolute;
-      left: 0; top: 0; bottom: 0;
-      width: 3px;
-      border-radius: 3px 0 0 3px;
-    }
-    .card.accessible::before { background: var(--green); }
-    .card.blocked::before { background: var(--red); }
-    .card.checking::before { background: var(--yellow); }
-    .card.timeout::before { background: var(--red); }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
 
-    .card:hover {
-      border-color: #2a3f60;
-      transform: translateY(-1px);
-      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-    }
+        .section-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin: 2rem 0 1rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
 
-    .site-icon {
-      width: 40px; height: 40px;
-      border-radius: 10px;
-      background: var(--surface2);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      overflow: hidden;
-    }
-    .site-icon img {
-      width: 28px; height: 28px;
-      object-fit: contain;
-      border-radius: 4px;
-    }
-    .site-icon .fallback-letter {
-      font-size: 1.1rem;
-      font-weight: 700;
-      color: var(--muted);
-    }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1rem;
+            min-height: 50px;
+        }
 
-    .site-info { flex: 1; min-width: 0; }
-    .site-name {
-      font-weight: 600;
-      font-size: 0.95rem;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .site-url {
-      font-size: 0.75rem;
-      color: var(--muted);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
+        .card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            border: 1px solid #334155;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
 
-    .status-badge {
-      flex-shrink: 0;
-      text-align: right;
-    }
-    .status-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.3rem;
-      padding: 0.25rem 0.65rem;
-      border-radius: 999px;
-      font-size: 0.72rem;
-      font-weight: 600;
-      letter-spacing: 0.03em;
-    }
-    .pill-green { background: rgba(34,197,94,0.12); color: var(--green); }
-    .pill-red   { background: rgba(239,68,68,0.12);  color: var(--red); }
-    .pill-yellow{ background: rgba(245,158,11,0.12); color: var(--yellow); }
-    .status-time {
-      font-size: 0.7rem;
-      color: var(--muted);
-      margin-top: 0.2rem;
-      text-align: right;
-    }
+        .card:hover { transform: translateY(-2px); border-color: var(--accent); }
+        .card.blocked { border-left: 4px solid var(--red); }
+        .card.accessible { border-left: 4px solid var(--green); }
+        .card.checking { opacity: 0.7; }
 
-    .vpn-badge {
-      font-size: 0.65rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      margin-top: 0.4rem;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.2rem;
-      transition: all 0.3s;
-    }
-    .vpn-badge.active { color: var(--accent); }
-    .vpn-badge.accessible { color: var(--green); }
-    .vpn-badge.blocked { color: var(--red); }
+        .site-icon {
+            width: 48px;
+            height: 48px;
+            background: #334155;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
 
-    /* === SPIN === */
-    .spin {
-      display: inline-block;
-      width: 8px; height: 8px;
-      border: 2px solid currentColor;
-      border-top-color: transparent;
-      border-radius: 50%;
-      animation: spin 0.7s linear infinite;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
+        .site-icon img { width: 32px; height: 32px; border-radius: 4px; }
+        .fallback-letter { font-size: 1.5rem; font-weight: bold; color: var(--text-muted); }
 
-    /* === FOOTER === */
-    footer {
-      text-align: center;
-      padding: 2rem;
-      color: var(--muted);
-      font-size: 0.8rem;
-      border-top: 1px solid var(--border);
-      margin-top: 2rem;
-    }
-    footer a { color: var(--accent); text-decoration: none; }
+        .site-info { flex-grow: 1; min-width: 0; }
+        .site-name { font-weight: 600; font-size: 1.1rem; margin-bottom: 0.2rem; }
+        .site-url { font-size: 0.8rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-    .refresh-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      margin-top: 1.5rem;
-      padding: 0.6rem 1.4rem;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      color: var(--text);
-      font-size: 0.85rem;
-      font-family: inherit;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .refresh-btn:hover {
-      background: var(--accent);
-      border-color: var(--accent);
-    }
-    .refresh-btn.premium {
-      background: linear-gradient(135deg, #6366f1, #a78bfa);
-      border: none;
-      font-weight: 600;
-      color: white;
-      box-shadow: 0 4px 15px rgba(99,102,241,0.3);
-    }
-    .refresh-btn.premium:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(99,102,241,0.4);
-    }
-    .refresh-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .status-badge { text-align: right; }
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-bottom: 0.4rem;
+        }
 
-    .last-updated {
-      font-size: 0.78rem;
-      color: var(--muted);
-      margin-top: 0.4rem;
-    }
+        .pill-green  { background: rgba(34, 197, 94, 0.1); color: var(--green); }
+        .pill-red    { background: rgba(239, 68, 68, 0.1); color: var(--red); }
+        .pill-yellow { background: rgba(245, 158, 11, 0.1); color: var(--yellow); }
 
-    @media (max-width: 600px) {
-      header h1 { font-size: 1.5rem; }
-      .stats-bar { gap: 1rem; }
-    }
-  </style>
+        .vpn-badge {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            padding: 2px 6px;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.05);
+            display: inline-block;
+            transition: all 0.3s;
+        }
+        .vpn-badge.accessible { color: #fff; background: var(--accent-premium); font-weight: bold; }
+        .vpn-badge.blocked { color: #fecaca; background: rgba(239, 68, 68, 0.2); }
+
+        .progress-container {
+            width: 100%;
+            height: 4px;
+            background: #1e293b;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 100;
+        }
+        .progress-bar {
+            height: 100%;
+            background: var(--accent);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .refresh-btn {
+            background: var(--card-bg);
+            color: #fff;
+            border: 1px solid #334155;
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .refresh-btn:hover:not(:disabled) { background: #334155; }
+        .refresh-btn.premium {
+            background: var(--accent-premium);
+            border: none;
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+        }
+        .refresh-btn.premium:hover:not(:disabled) {
+            opacity: 0.9;
+            transform: scale(1.02);
+        }
+        .refresh-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .spin {
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border: 2px solid currentColor;
+            border-right-color: transparent;
+            border-radius: 50%;
+        }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+        footer {
+            margin-top: 4rem;
+            padding: 2rem;
+            text-align: center;
+            color: var(--text-muted);
+            border-top: 1px solid #1e293b;
+            font-size: 0.9rem;
+        }
+        footer a { color: var(--accent); text-decoration: none; }
+    </style>
 </head>
 <body>
 
-<header>
-  <div class="flag">🇷🇺</div>
-  <h1>Russia Internet Monitor</h1>
-  <p>Live accessibility check from a server inside Russia (Moscow)</p>
-  <div class="location-badge">
-    <span class="dot"></span>
-    Moscow, Russia &nbsp;·&nbsp; AS checked in real-time
-  </div>
-</header>
+<div class="progress-container">
+    <div class="progress-bar" id="progressBar"></div>
+</div>
 
-<div class="progress-wrap">
-  <div class="progress-bar" id="progressBar"></div>
+<div class="header">
+    <h1>Russia Internet Monitor</h1>
+    <p style="color: var(--text-muted)">Real-time censorship status from Moscow, Russia</p>
 </div>
 
 <div class="stats-bar">
-  <div class="stat">
-    <div class="stat-num" id="totalCount">—</div>
-    <div class="stat-label">Total Sites</div>
-  </div>
-  <div class="stat">
-    <div class="stat-num green" id="accessibleCount">—</div>
-    <div class="stat-label">Directly Accessible ✓</div>
-  </div>
-  <div class="stat">
-    <div class="stat-num blue" id="freenetCount">—</div>
-    <div class="stat-label">FreeNet Accessible 🚀</div>
-  </div>
-  <div class="stat">
-    <div class="stat-num red" id="blockedCount">—</div>
-    <div class="stat-label">Blocked ✗</div>
-  </div>
-  <div class="stat">
-    <div class="stat-num yellow" id="checkingCount">—</div>
-    <div class="stat-label">Checking…</div>
-  </div>
+    <div class="stat">
+        <div class="stat-num" id="totalCount">—</div>
+        <div class="stat-label">Total Services</div>
+    </div>
+    <div class="stat">
+        <div class="stat-num green" id="accessibleCount">—</div>
+        <div class="stat-label">Accessible Direct</div>
+    </div>
+    <div class="stat">
+        <div class="stat-num purple" id="freenetCount">—</div>
+        <div class="stat-label">FreeNet Accessible</div>
+    </div>
+    <div class="stat">
+        <div class="stat-num red" id="blockedCount">—</div>
+        <div class="stat-label">Blocked Direct</div>
+    </div>
+    <div class="stat">
+        <div class="stat-num yellow" id="checkingCount">—</div>
+        <div class="stat-label">Checking…</div>
+    </div>
 </div>
 
 <div class="container">
+    <div class="section-title">📱 Social Media</div>
+    <div class="grid" id="social"></div>
 
-  <div class="section-title">📱 Social Media</div>
-  <div class="grid" id="social"></div>
+    <div class="section-title">🎬 Streaming & Video</div>
+    <div class="grid" id="streaming"></div>
 
-  <div class="section-title">🎬 Streaming & Video</div>
-  <div class="grid" id="streaming"></div>
+    <div class="section-title">🇷🇺 White-listed (Russian)</div>
+    <div class="grid" id="russian"></div>
 
-  <div class="section-title">🔍 Search & News</div>
-  <div class="grid" id="search"></div>
-
-  <div class="section-title">💬 Messaging</div>
-  <div class="grid" id="messaging"></div>
-
-  <div class="section-title">🇷🇺 White-listed (Russian)</div>
-  <div class="grid" id="russian"></div>
-
-  <div class="section-title">🛠️ Tech & Tools</div>
-  <div class="grid" id="tech"></div>
-
-  <div style="text-align:center; margin-top: 2rem; display: flex; flex-direction: column; align-items: center; gap: 0.8rem;">
-    <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
-      <button class="refresh-btn" id="refreshBtn" onclick="startChecks('direct')">
-        ↻ Refresh Direct
-      </button>
-      <button class="refresh-btn premium" id="vpnBtn" onclick="startChecks('freenet')">
-        🛡️ Test with FreeNet Monster
-      </button>
+    <div style="text-align:center; margin-top: 2rem; display: flex; flex-direction: column; align-items: center; gap: 0.8rem;">
+        <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+            <button class="refresh-btn" id="refreshBtn" onclick="startChecks('direct')">
+                ↻ Refresh Direct
+            </button>
+            <button class="refresh-btn premium" id="vpnBtn" onclick="startChecks('freenet')">
+                🛡️ Test with FreeNet Monster
+            </button>
+        </div>
+        <div class="last-updated" id="lastUpdated"></div>
     </div>
-    <div class="last-updated" id="lastUpdated"></div>
-  </div>
-
 </div>
 
 <footer>
-  <p>Checks run from Moscow, Russia &nbsp;·&nbsp; Data refreshes every 5 minutes</p>
-  <p style="margin-top:0.5rem;">Built with ❤️ &nbsp;·&nbsp; Bypass censorship with <a href="https://vpn.freenet.monster">FreeNet Monster</a></p>
+    <p>Checks run from Moscow, Russia &nbsp;·&nbsp; Data refreshes every 5 minutes</p>
+    <p style="margin-top:0.5rem;">Built with ❤️ &nbsp;·&nbsp; Bypass censorship with <a href="https://vpn.freenet.monster">FreeNet Monster</a></p>
 </footer>
 
 <script>
-// Returns the best favicon URL for a given site URL
+// Browser compatibility wrapper for fetch timeout
+async function fetchWithTimeout(resource, options = {}) {
+    const { timeout = 20000 } = options;
+    
+    // Fallback for older browsers without AbortController
+    if (!window.AbortController) {
+        return fetch(resource, options);
+    }
+
+    const controller = new AbortController();
+    const id = setTimeout(() => controller.abort(), timeout);
+    
+    try {
+        const response = await fetch(resource, {
+            ...options,
+            signal: controller.signal
+        });
+        clearTimeout(id);
+        return response;
+    } catch (error) {
+        clearTimeout(id);
+        throw error;
+    }
+}
+
 function faviconUrl(siteName, siteUrl) {
-  // Manual override for common ones that fail
-  if (siteName === 'WhatsApp') return 'https://static.whatsapp.net/rsrc.php/v3/yP/r/r_oBsbi9V90.png';
-  if (siteName === 'Roskomnadzor') return 'https://rkn.gov.ru/favicon.ico';
-  
-  const domain = new URL(siteUrl).hostname.replace('web.', '').replace('www.', '');
-  return `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
+    if (siteName === 'WhatsApp') return 'https://static.whatsapp.net/rsrc.php/v3/yP/r/r_oBsbi9V90.png';
+    if (siteName === 'Roskomnadzor') return 'https://rkn.gov.ru/favicon.ico';
+    try {
+        const domain = new URL(siteUrl).hostname.replace('web.', '').replace('www.', '');
+        return 'https://www.google.com/s2/favicons?domain=' + domain + '&sz=64';
+    } catch (e) {
+        return '';
+    }
 }
 
 const SITES = {
-  social: [
-    { name: 'Instagram',    url: 'https://www.instagram.com' },
-    { name: 'Twitter / X',  url: 'https://x.com'             },
-    { name: 'Facebook',     url: 'https://www.facebook.com'  },
-    { name: 'TikTok',       url: 'https://www.tiktok.com'    },
-    { name: 'LinkedIn',     url: 'https://www.linkedin.com'  },
-  ],
-  streaming: [
-    { name: 'YouTube',      url: 'https://www.youtube.com'   },
-    { name: 'Netflix',      url: 'https://www.netflix.com'   },
-    { name: 'Twitch',       url: 'https://www.twitch.tv'     },
-    { name: 'Spotify',      url: 'https://open.spotify.com'  },
-  ],
-  search: [
-    { name: 'Google',       url: 'https://www.google.com'    },
-    { name: 'Wikipedia',    url: 'https://www.wikipedia.org' },
-    { name: 'BBC News',     url: 'https://www.bbc.com'       },
-    { name: 'Reddit',       url: 'https://www.reddit.com'    },
-    { name: 'Medium',       url: 'https://medium.com'        },
-  ],
-  messaging: [
-    { name: 'Telegram',     url: 'https://web.telegram.org'  },
-    { name: 'WhatsApp',     url: 'https://www.whatsapp.com'  },
-    { name: 'Discord',      url: 'https://discord.com'       },
-    { name: 'Signal',       url: 'https://signal.org'        },
-  ],
-  russian: [
-    { name: 'Roskomnadzor',  url: 'https://rkn.gov.ru'        },
-    { name: 'Gosuslugi',     url: 'https://www.gosuslugi.ru'  },
-    { name: 'Yandex',        url: 'https://www.yandex.ru'     },
-    { name: 'VK',            url: 'https://vk.com'            },
-    { name: 'Mail.ru',       url: 'https://www.mail.ru'       },
-  ],
-  tech: [
-    { name: 'GitHub',       url: 'https://github.com'        },
-    { name: 'Notion',       url: 'https://www.notion.so'     },
-  ],
+    social: [
+        { name: 'Instagram',    url: 'https://www.instagram.com' },
+        { name: 'Twitter / X',  url: 'https://x.com'             },
+        { name: 'Facebook',     url: 'https://www.facebook.com'  },
+        { name: 'TikTok',       url: 'https://www.tiktok.com'    },
+        { name: 'LinkedIn',     url: 'https://www.linkedin.com'  },
+    ],
+    streaming: [
+        { name: 'YouTube',      url: 'https://www.youtube.com'   },
+        { name: 'Netflix',      url: 'https://www.netflix.com'   },
+        { name: 'Twitch',       url: 'https://www.twitch.tv'     },
+        { name: 'Spotify',      url: 'https://open.spotify.com'  },
+    ],
+    russian: [
+        { name: 'Roskomnadzor',  url: 'https://rkn.gov.ru'        },
+        { name: 'Gosuslugi',     url: 'https://www.gosuslugi.ru'  },
+        { name: 'Yandex',        url: 'https://www.yandex.ru'     },
+        { name: 'VK',            url: 'https://vk.com'            },
+        { name: 'Mail.ru',       url: 'https://www.mail.ru'       },
+    ],
 };
 
-// State
 const state = {};
 let checking = false;
 
 function slug(name) { return name.replace(/[^a-z0-9]/gi, '_'); }
 
 function buildGrid() {
-  for (const [section, sites] of Object.entries(SITES)) {
-    const grid = document.getElementById(section);
-    grid.innerHTML = '';
-    sites.forEach(site => {
-      const id = slug(site.name);
-      const card = document.createElement('div');
-      card.className = 'card';
-      card.id = 'card_' + id;
-      const favicon = faviconUrl(site.name, site.url);
-      const letter = site.name[0].toUpperCase();
-      card.innerHTML = `
-        <div class="site-icon">
-          <img src="${favicon}" alt="${site.name}"
-            onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"
-          />
-          <span class="fallback-letter" style="display:none">${letter}</span>
-        </div>
-        <div class="site-info">
-          <div class="site-name">${site.name}</div>
-          <div class="site-url">${site.url.replace('https://', '')}</div>
-        </div>
-        <div class="status-badge">
-          <div class="status-pill" id="pill_${id}">
-            —
-          </div>
-          <div class="status-time" id="time_${id}"></div>
-          <div class="vpn-badge" id="vpn_badge_${id}">FreeNet: —</div>
-        </div>`;
-      grid.appendChild(card);
-      state[id] = state[id] || { name: site.name, url: site.url };
-    });
-  }
+    console.log("Building grid...");
+    for (const [section, sites] of Object.entries(SITES)) {
+        const grid = document.getElementById(section);
+        if (!grid) {
+             console.error("Grid not found for section: " + section);
+             continue;
+        }
+        grid.innerHTML = '';
+        sites.forEach(site => {
+            const id = slug(site.name);
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.id = 'card_' + id;
+            const favicon = faviconUrl(site.name, site.url);
+            const letter = site.name[0].toUpperCase();
+            card.innerHTML = 
+                '<div class="site-icon">' +
+                    '<img src="' + favicon + '" alt="' + site.name + '" ' +
+                        'onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'" ' +
+                    '/>' +
+                    '<span class="fallback-letter" style="display:none">' + letter + '</span>' +
+                '</div>' +
+                '<div class="site-info">' +
+                    '<div class="site-name">' + site.name + '</div>' + 
+                    '<div class="site-url">' + site.url.replace('https://', '') + '</div>' +
+                '</div>' +
+                '<div class="status-badge">' +
+                    '<div class="status-pill" id="pill_' + id + '">—</div>' +
+                    '<div class="status-time" id="time_' + id + '"></div>' +
+                    '<div class="vpn-badge" id="vpn_badge_' + id + '">FreeNet: —</div>' +
+                '</div>';
+            grid.appendChild(card);
+            state[id] = state[id] || { name: site.name, url: site.url, done: false, accessible: false, freenet: false };
+        });
+    }
+    updateStats();
 }
 
 async function checkSite(site, useVpn = false) {
-  const id = slug(site.name);
-  const start = Date.now();
-  if (useVpn) {
-    document.getElementById('vpn_badge_' + id).className = 'vpn-badge active';
-    document.getElementById('vpn_badge_' + id).innerHTML = '<span class="spin" style="width:6px; height:6px;"></span> Checking…';
-  } else {
+    const id = slug(site.name);
+    const start = Date.now();
+    const badge = document.getElementById('vpn_badge_' + id);
     const pill = document.getElementById('pill_' + id);
-    pill.className = 'status-pill pill-yellow';
-    pill.innerHTML = '<span class="spin"></span> Checking';
-    document.getElementById('card_' + id).className = 'card checking';
-  }
+    const card = document.getElementById('card_' + id);
 
-  try {
-    const url = `/api/check?url=${encodeURIComponent(site.url)}${useVpn ? '&use_vpn=true' : ''}`;
-    const res = await fetch(url, { signal: AbortSignal.timeout(15000) });
-    const data = await res.json();
-    const elapsed = ((Date.now() - start) / 1000).toFixed(2);
-    if (useVpn) {
-      updateVpnStatus(id, data.accessible);
-    } else {
-      updateCard(id, data.accessible, data.http_code, elapsed);
+    if (useVpn && badge) {
+        badge.className = 'vpn-badge active';
+        badge.innerHTML = '<span class="spin" style="width:6px; height:6px;"></span> Checking…';
+    } else if (!useVpn && pill && card) {
+        pill.className = 'status-pill pill-yellow';
+        pill.innerHTML = '<span class="spin"></span> Checking';
+        card.className = 'card checking';
     }
-  } catch(e) {
-    if (useVpn) {
-      updateVpnStatus(id, false);
-    } else {
-      updateCard(id, false, 0, '—');
+
+    try {
+        const url = '/api/check?url=' + encodeURIComponent(site.url) + (useVpn ? '&use_vpn=true' : '');
+        const res = await fetchWithTimeout(url);
+        const data = await res.json();
+        const elapsed = ((Date.now() - start) / 1000).toFixed(2);
+        if (useVpn) {
+            updateVpnStatus(id, data.accessible);
+        } else {
+            updateCard(id, data.accessible, data.http_code, elapsed);
+        }
+    } catch(e) {
+        if (useVpn) updateVpnStatus(id, false);
+        else updateCard(id, false, 0, '—');
     }
-  }
 }
 
 function updateVpnStatus(id, accessible) {
-  const badge = document.getElementById('vpn_badge_' + id);
-  if (!badge) return;
-  badge.className = 'vpn-badge ' + (accessible ? 'accessible' : 'blocked');
-  badge.innerHTML = accessible ? 'FreeNet: ✅ Works' : 'FreeNet: ✗ Still Blocked';
-  state[id].freenet = accessible;
-  updateStats();
+    const badge = document.getElementById('vpn_badge_' + id);
+    if (!badge) return;
+    badge.className = 'vpn-badge ' + (accessible ? 'accessible' : 'blocked');
+    badge.innerHTML = accessible ? 'FreeNet: ✅ Works' : 'FreeNet: ✗ Still Blocked';
+    if (state[id]) state[id].freenet = accessible;
+    updateStats();
 }
 
 function updateCard(id, accessible, code, time) {
-  const card   = document.getElementById('card_' + id);
-  const pill   = document.getElementById('pill_' + id);
-  const timeEl = document.getElementById('time_' + id);
-  if (!card) return;
-  card.className = 'card ' + (accessible ? 'accessible' : 'blocked');
-  if (accessible) {
-    pill.className = 'status-pill pill-green';
-    pill.innerHTML = '● Accessible';
-  } else {
-    pill.className = 'status-pill pill-red';
-    pill.innerHTML = code > 0 ? `✗ HTTP ${code}` : '✗ Blocked';
-  }
-  timeEl.textContent = time !== '—' ? time + 's' : '';
-  state[id].done = true;
-  state[id].accessible = accessible;
-  updateStats();
+    const card   = document.getElementById('card_' + id);
+    const pill   = document.getElementById('pill_' + id);
+    const timeEl = document.getElementById('time_' + id);
+    if (!card || !pill) return;
+    card.className = 'card ' + (accessible ? 'accessible' : 'blocked');
+    if (accessible) {
+        pill.className = 'status-pill pill-green';
+        pill.innerHTML = '● Accessible';
+    } else {
+        pill.className = 'status-pill pill-red';
+        pill.innerHTML = code > 0 ? '✗ HTTP ' + code : '✗ Blocked';
+    }
+    if (timeEl) timeEl.textContent = time !== '—' ? time + 's' : '';
+    if (state[id]) {
+        state[id].done = true;
+        state[id].accessible = accessible;
+    }
+    updateStats();
 }
 
 function updateStats() {
-  const all   = Object.values(state);
-  const done  = all.filter(s => s.done);
-  const ok    = done.filter(s => s.accessible).length;
-  const bad   = done.filter(s => s.done && !s.accessible).length;
-  const vpnOk = all.filter(s => s.freenet).length;
-  const left  = all.length - done.length;
+    const all   = Object.values(state);
+    const done  = all.filter(function(s) { return s.done; });
+    const ok    = all.filter(function(s) { return s.accessible; }).length;
+    const bad   = all.filter(function(s) { return s.done && !s.accessible; }).length;
+    const vpnOk = all.filter(function(s) { return s.freenet; }).length;
+    const left  = all.length - done.length;
 
-  document.getElementById('totalCount').textContent      = all.length;
-  document.getElementById('accessibleCount').textContent = ok;
-  document.getElementById('freenetCount').textContent    = vpnOk;
-  document.getElementById('blockedCount').textContent     = bad;
-  document.getElementById('checkingCount').textContent    = left;
+    const elTotal = document.getElementById('totalCount');
+    const elOk    = document.getElementById('accessibleCount');
+    const elVpn   = document.getElementById('freenetCount');
+    const elBad   = document.getElementById('blockedCount');
+    const elLeft  = document.getElementById('checkingCount');
 
-  const pct = Math.round((done.length / all.length) * 100);
-  document.getElementById('progressBar').style.width = pct + '%';
+    if (elTotal) elTotal.textContent = all.length;
+    if (elOk) elOk.textContent = ok;
+    if (elVpn) elVpn.textContent = vpnOk;
+    if (elBad) elBad.textContent = bad;
+    if (elLeft) elLeft.textContent = left < 0 ? 0 : left;
+
+    const prog = document.getElementById('progressBar');
+    if (prog) {
+        const pct = Math.round((done.length / all.length) * 100);
+        prog.style.width = pct + '%';
+    }
 }
 
-async function startChecks(mode = 'direct') {
-  if (checking) return;
-  checking = true;
-  
-  const directBtn = document.getElementById('refreshBtn');
-  const vpnBtn = document.getElementById('vpnBtn');
-  directBtn.disabled = true;
-  vpnBtn.disabled = true;
-  
-  document.getElementById('lastUpdated').textContent = `Performing ${mode} checks...`;
-
-  const all = Object.values(SITES).flat();
-
-  if (mode === 'direct') {
-    // Reset stats for direct
-    for (const id of Object.keys(state)) {
-      delete state[id].done;
-      delete state[id].accessible;
+async function startChecks(mode) {
+    mode = mode || 'direct';
+    if (checking) return;
+    checking = true;
+    
+    const directBtn = document.getElementById('refreshBtn');
+    const vpnBtn = document.getElementById('vpnBtn');
+    if (directBtn) directBtn.disabled = true;
+    if (vpnBtn) vpnBtn.disabled = true;
+    
+    const statusEl = document.getElementById('lastUpdated');
+    if (statusEl) statusEl.textContent = 'Performing ' + mode + ' checks...';
+    
+    const allSites = [];
+    for (const cat in SITES) {
+        for (let j=0; j<SITES[cat].length; j++) {
+            allSites.push(SITES[cat][j]);
+        }
     }
-    updateStats();
-  } else {
-    // Reset vpn badges
-    for (const id of Object.keys(state)) {
-      delete state[id].freenet;
-      const b = document.getElementById('vpn_badge_' + id);
-      if (b) b.innerHTML = 'FreeNet: —';
+
+    if (mode === 'direct') {
+        for (const id in state) {
+            state[id].done = false;
+            state[id].accessible = false;
+        }
+        updateStats();
+    } else {
+        for (const id in state) {
+            state[id].freenet = false;
+            const b = document.getElementById('vpn_badge_' + id);
+            if (b) {
+                b.className = 'vpn-badge';
+                b.innerHTML = 'FreeNet: —';
+            }
+        }
     }
-  }
 
-  // Check in parallel batches
-  const BATCH = 4;
-  for (let i = 0; i < all.length; i += BATCH) {
-    const batch = all.slice(i, i + BATCH);
-    await Promise.all(batch.map(s => checkSite(s, mode === 'freenet')));
-  }
+    // Run all checks simultaneously as requested
+    await Promise.all(allSites.map(function(s) { 
+        return checkSite(s, mode === 'freenet'); 
+    }));
 
-  document.getElementById('progressBar').style.width = '100%';
-  const now = new Date();
-  document.getElementById('lastUpdated').textContent = 
-    `Last ${mode} scan: ` + now.toLocaleTimeString();
-  
-  directBtn.disabled = false;
-  vpnBtn.disabled = false;
-  checking = false;
+    const prog = document.getElementById('progressBar');
+    if (prog) prog.style.width = '100%';
+    
+    const now = new Date();
+    if (statusEl) statusEl.textContent = 'Last ' + mode + ' scan: ' + now.toLocaleTimeString();
+    
+    if (directBtn) directBtn.disabled = false;
+    if (vpnBtn) vpnBtn.disabled = false;
+    checking = false;
 
-  // Auto-refresh (Direct only)
-  if (mode === 'direct') {
-    clearTimeout(window.refreshTimer);
-    window.refreshTimer = setTimeout(() => startChecks('direct'), 5 * 60 * 1000);
-  }
+    if (mode === 'direct') {
+        clearTimeout(window.refreshTimer);
+        window.refreshTimer = setTimeout(function() { startChecks('direct'); }, 5 * 60 * 1000);
+    }
 }
 
-// Init
-buildGrid();
-startChecks('direct');
-</script>
-</body>
-</html>
-
-// Init
-buildGrid();
-startChecks();
+// Start
+try {
+    buildGrid();
+    startChecks('direct');
+} catch (e) {
+    console.error("Initialization failed", e);
+}
 </script>
 </body>
 </html>
