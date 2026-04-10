@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FreeNet Monster - Connectivity Monitor</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&family=JetBrains+Mono&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --bg-body: #0a0b10;
+            --bg-card: #151921;
+            --accent: #64ffda;
+            --accent-glow: rgba(100, 255, 218, 0.3);
+            --text-primary: #e6f1ff;
+            --text-secondary: #8892b0;
+            --success: #00ff7f;
+            --error: #ff4d4d;
+            --warning: #ffcc00;
+            --font-main: "Outfit", sans-serif;
+            --font-mono: "JetBrains Mono", monospace;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { 
+            background: var(--bg-body); 
+            color: var(--text-primary); 
+            font-family: var(--font-main);
+            min-height: 100vh;
+            padding: 2rem;
+            line-height: 1.6;
+        }
+
+        .container { max-width: 1200px; margin: 0 auto; }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 3rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #233554;
+        }
+
+        .brand { display: flex; align-items: center; gap: 1rem; }
+        .brand h1 { font-size: 1.8rem; font-weight: 600; letter-spacing: -0.5px; }
+        .header-logo { width: 50px; height: 50px; border-radius: 50%; border: 2px solid var(--accent); }
+
+        .controls { display: flex; gap: 1rem; align-items: center; }
+
+        button {
+            background: #112240;
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            padding: 0.6rem 1.2rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+        }
+
+        button:hover:not(:disabled) {
+            background: var(--accent-glow);
+            box-shadow: 0 0 15px var(--accent-glow);
+        }
+
+        button:disabled { opacity: 0.5; cursor: not-allowed; border-color: var(--text-secondary); color: var(--text-secondary); }
+
+        .lang-toggle {
+            border-color: var(--text-secondary);
+            color: var(--text-secondary);
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            padding: 1.5rem;
+            border-radius: 8px;
+            border-left: 4px solid var(--accent);
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .stat-label { color: var(--text-secondary); font-size: 0.9rem; }
+        .stat-value { font-size: 1.5rem; font-weight: 600; font-family: var(--font-mono); }
+        .stat-value.success { color: var(--success); }
+        .stat-value.error { color: var(--error); }
+
+        .category-title {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            margin: 2rem 0 1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: transform 0.2s ease;
+            border: 1px solid transparent;
+        }
+
+        .card:hover { border-color: #233554; transform: translateY(-3px); }
+
+        .site-info { display: flex; align-items: center; justify-content: flex-start; gap: 0.8rem; margin-bottom: 1rem; }
+        .site-name { font-weight: 600; font-size: 1.1rem; }
+        .site-icon { width: 20px; height: 20px; color: var(--accent); }
+        
+        .status-badges { display: flex; flex-direction: column; gap: 0.5rem; }
+        
+        .badge {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-family: var(--font-mono);
+            background: rgba(0,0,0,0.2);
+        }
+
+        .badge.online { color: var(--success); }
+        .badge.offline { color: var(--error); }
+        .badge.checking { color: var(--warning); }
+
+        .badge-status.online { color: var(--success); font-weight: 600; }
+        .badge-status.offline { color: var(--error); font-weight: 600; }
+        .badge-status.checking { color: var(--warning); }
+
+        #progress-container {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            background: transparent;
+            z-index: 1000;
+        }
+        #progressBar {
+            height: 100%;
+            width: 0%;
+            background: var(--accent);
+            box-shadow: 0 0 10px var(--accent);
+            transition: width 0.3s ease;
+        }
+
+        .footer {
+            margin-top: 4rem;
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+<body>
+
+<div id="progress-container"><div id="progressBar"></div></div>
+
+<div class="container">
+    <header class="header">
+        <div class="brand">
+            <img src="app_icon.png" alt="FreeNet Logo" class="header-logo">
+            <h1 id="pageTitle">FreeNet Monitor</h1>
+        </div>
+        <div class="controls">
+            <button id="langToggle" class="lang-toggle">RU</button>
+            <button id="btnDirect" onclick="startChecks('direct')">Refresh Direct</button>
+            <button id="btnVPN" onclick="startChecks('freenet')">Test with FreeNet</button>
+        </div>
+    </header>
+
+    <div class="stats">
+        <div class="stat-card">
+            <div class="stat-label" id="lblGlobalStatus">Global Connectivity</div>
+            <div class="stat-value" id="statusText">Standing by...</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label" id="lblAccessible">Directly Accessible From Moscow</div>
+            <div class="stat-value error" id="countDirect">0/0</div>
+        </div>
+        <div class="stat-card" style="border-left-color: var(--success)">
+            <div class="stat-label" id="lblFreenetReady">FreeNet Accessible</div>
+            <div class="stat-value success" id="countVPN">0/0</div>
+        </div>
+    </div>
+
+    <div id="monitorGrid"></div>
+
+    <footer class="footer">
+        &copy; 2026 FreeNet Monster Infrastructure
+    </footer>
+</div>
+
+<script>
+const translations = {
+    en: {
+        title: "FreeNet Monitor",
+        refreshDirect: "Refresh Direct",
+        testFreenet: "Test with FreeNet",
+        globalStatus: "Global Connectivity",
+        directlyAccessible: "Directly Accessible From Moscow",
+        freenetWorking: "FreeNet Accessible",
+        standingBy: "Standing by...",
+        scanning: "Scanning...",
+        direct: "Direct",
+        freenet: "FreeNet",
+        checking: "Checking...",
+        online: "Online",
+        offline: "Blocked",
+        lang: "RU"
+    },
+    ru: {
+        title: "FreeNet Monitor",
+        refreshDirect: "Обновить (Прямое)",
+        testFreenet: "Тест через FreeNet",
+        globalStatus: "Состояние подключения",
+        directlyAccessible: "Доступно из Москвы",
+        freenetWorking: "Доступно через FreeNet",
+        standingBy: "Ожидание...",
+        scanning: "Сканирование...",
+        direct: "Прямое",
+        freenet: "FreeNet",
+        checking: "Проверка...",
+        online: "Доступен",
+        offline: "Заблокирован",
+        lang: "EN"
+    }
+};
+
+let currentLang = "en";
+
+const siteCategories = {
+    "Social & Video": [
+        { name: "YouTube", url: "https://www.youtube.com", icon: "youtube" },
+        { name: "Instagram", url: "https://www.instagram.com", icon: "instagram" },
+        { name: "Facebook", url: "https://www.facebook.com", icon: "facebook" },
+        { name: "Twitter / X", url: "https://twitter.com", icon: "twitter" }
+    ],
+    "Communication": [
+        { name: "Discord", url: "https://discord.com", icon: "message-square" },
+        { name: "Telegram", url: "https://t.me", icon: "send" },
+        { name: "WhatsApp", url: "https://web.whatsapp.com", icon: "phone" }
+    ],
+    "Entertainment": [
+        { name: "Netflix", url: "https://www.netflix.com", icon: "film" },
+        { name: "Spotify", url: "https://www.spotify.com", icon: "music" },
+        { name: "Twitch", url: "https://www.twitch.tv", icon: "tv" },
+        { name: "TikTok", url: "https://www.tiktok.com", icon: "video" }
+    ],
+    "Knowledge & Work": [
+        { name: "ChatGPT", url: "https://chat.openai.com", icon: "cpu" },
+        { name: "Notion", url: "https://www.notion.so", icon: "book-open" },
+        { name: "Wikipedia", url: "https://www.wikipedia.org", icon: "globe" },
+        { name: "Quora", url: "https://www.quora.com", icon: "help-circle" }
+    ]
+};
+
+const allSites = Object.values(siteCategories).flat();
+let checking = false;
+
+function toggleLanguage() {
+    currentLang = currentLang === "en" ? "ru" : "en";
+    const t = translations[currentLang];
+    
+    document.getElementById("pageTitle").textContent = getTitleWithDate(t.title);
+    document.getElementById("btnDirect").textContent = t.refreshDirect;
+    document.getElementById("btnVPN").textContent = t.testFreenet;
+    document.getElementById("langToggle").textContent = t.lang;
+    document.getElementById("lblGlobalStatus").textContent = t.globalStatus;
+    document.getElementById("lblAccessible").textContent = t.directlyAccessible;
+    document.getElementById("lblFreenetReady").textContent = t.freenetWorking;
+    
+    allSites.forEach(s => {
+        const id = s.name.replace(/[^a-z0-9]/gi, "_");
+        const db = document.getElementById(id + "_direct_val");
+        const vb = document.getElementById(id + "_vpn_val");
+        const dl = document.getElementById(id + "_direct_label");
+        const vl = document.getElementById(id + "_vpn_label");
+        
+        if (dl) dl.textContent = t.direct + ":";
+        if (vl) vl.textContent = t.freenet + ":";
+        
+        if (db) {
+            const status = db.getAttribute("data-status");
+            if (db.classList.contains("checking")) db.textContent = t.checking;
+            else if (status !== null) updateBadgeText(db, status, t);
+        }
+        
+        if (vb) {
+            const status = vb.getAttribute("data-status");
+            if (vb.classList.contains("checking")) vb.textContent = t.checking;
+            else if (status !== null) updateBadgeText(vb, status, t);
+        }
+    });
+}
+
+function updateBadgeText(el, status, t) {
+    if (status === "1") {
+        el.textContent = t.online;
+        el.className = "badge-status online";
+    } else if (status === "0") {
+        el.textContent = t.offline;
+        el.className = "badge-status offline";
+    } else {
+        el.textContent = "—";
+    }
+}
+
+function buildGrid() {
+    const container = document.getElementById("monitorGrid");
+    container.innerHTML = "";
+    const t = translations[currentLang];
+
+    for (const [cat, sites] of Object.entries(siteCategories)) {
+        const title = document.createElement("h2");
+        title.className = "category-title";
+        title.textContent = cat;
+        container.appendChild(title);
+
+        const grid = document.createElement("div");
+        grid.className = "grid";
+        
+        sites.forEach(site => {
+            const id = site.name.replace(/[^a-z0-9]/gi, "_");
+            const card = document.createElement("div");
+            card.className = "card";
+            card.innerHTML = 
+                "<div class=\"site-info\">" +
+                    "<i data-lucide=\"" + (site.icon || 'globe') + "\" class=\"site-icon\"></i>" +
+                    "<span class=\"site-name\">" + site.name + "</span>" +
+                "</div>" +
+                "<div class=\"status-badges\">" +
+                    "<div class=\"badge\" id=\"" + id + "_direct_badge\">" +
+                        "<span id=\"" + id + "_direct_label\">" + t.direct + ":</span>" +
+                        "<span id=\"" + id + "_direct_val\" class=\"badge-status\">—</span>" +
+                    "</div>" +
+                    "<div class=\"badge\" id=\"" + id + "_vpn_badge\">" +
+                        "<span id=\"" + id + "_vpn_label\">" + t.freenet + ":</span>" +
+                        "<span id=\"" + id + "_vpn_val\" class=\"badge-status\">—</span>" +
+                    "</div>" +
+                "</div>";
+            grid.appendChild(card);
+        });
+        container.appendChild(grid);
+    }
+    lucide.createIcons();
+}
+
+async function fetchWithTimeout(resource, options = {}) {
+    const { timeout = 10000 } = options;
+    const controller = new AbortController();
+    const id = setTimeout(() => controller.abort(), timeout);
+    const response = await fetch(resource, { ...options, signal: controller.signal });
+    clearTimeout(id);
+    return response;
+}
+
+async function checkSite(site, useVpn) {
+    const id = site.name.replace(/[^a-z0-9]/gi, "_");
+    const suffix = useVpn ? "_vpn" : "_direct";
+    const valEl = document.getElementById(id + suffix + "_val");
+    const t = translations[currentLang];
+
+    valEl.textContent = t.checking;
+    valEl.className = "badge-status checking";
+
+    try {
+        const res = await fetchWithTimeout("/api/check?url=" + encodeURIComponent(site.url) + "&use_vpn=" + useVpn);
+        const data = await res.json();
+        const status = data.status === "down" ? "0" : "1";
+        valEl.setAttribute("data-status", status);
+        updateBadgeText(valEl, status, t);
+    } catch (e) {
+        valEl.setAttribute("data-status", "0");
+        updateBadgeText(valEl, "0", t);
+    }
+    updateStats();
+}
+
+function updateStats() {
+    const total = allSites.length;
+    const directOnline = document.querySelectorAll("[id$=\"_direct_val\"][data-status=\"1\"]").length;
+    const vpnOnline = document.querySelectorAll("[id$=\"_vpn_val\"][data-status=\"1\"]").length;
+    
+    document.getElementById("countDirect").textContent = directOnline + "/" + total;
+    document.getElementById("countVPN").textContent = vpnOnline + "/" + total;
+}
+
+async function startChecks(mode) {
+    if (checking) return;
+    checking = true;
+    
+    document.getElementById("btnDirect").disabled = true;
+    document.getElementById("btnVPN").disabled = true;
+    document.getElementById("statusText").textContent = translations[currentLang].scanning;
+    
+    const progress = document.getElementById("progressBar");
+    progress.style.width = "10%";
+
+    await Promise.all(allSites.map(s => checkSite(s, mode === "freenet")));
+
+    progress.style.width = "100%";
+    setTimeout(() => progress.style.width = "0%", 1000);
+
+    document.getElementById("statusText").textContent = translations[currentLang].standingBy;
+    document.getElementById("pageTitle").textContent = getTitleWithDate(translations[currentLang].title);
+    document.getElementById("btnDirect").disabled = false;
+    document.getElementById("btnVPN").disabled = false;
+    checking = false;
+}
+
+function getTitleWithDate(base) {
+    const now = new Date();
+    const opts = { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' };
+    return base + ' (' + now.toLocaleDateString('en-GB', opts) + ')';
+}
+
+document.getElementById("langToggle").addEventListener("click", toggleLanguage);
+
+buildGrid();
+(async () => {
+    await startChecks("direct");
+    await startChecks("freenet");
+})();
+</script>
+</body>
+</html>
