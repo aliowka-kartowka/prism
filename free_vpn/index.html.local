@@ -347,8 +347,7 @@ const siteCategories = {
         { name: "Globo", url: "https://globo.com", icon: "globe" },
         { name: "Qq", url: "https://qq.com", icon: "globe" },
         { name: "Msn", url: "https://msn.com", icon: "globe" },
-        { name: "Imdb", url: "https://imdb.com", icon: "globe" },
-        { name: "Espn", url: "https://espn.com", icon: "globe" }
+        { name: "Imdb", url: "https://imdb.com", icon: "globe" }
     ],
     "Social Media": [
         { name: "Facebook", url: "https://facebook.com", icon: "users" },
@@ -402,7 +401,6 @@ const siteCategories = {
     "Technology & Tools": [
         { name: "Office", url: "https://office.com", icon: "cpu" },
         { name: "Zoom", url: "https://zoom.us", icon: "cpu" },
-        { name: "Chatgpt", url: "https://chatgpt.com", icon: "cpu" },
         { name: "Github", url: "https://github.com", icon: "cpu" },
         { name: "Samsung", url: "https://samsung.com", icon: "cpu" },
         { name: "Wordpress", url: "https://wordpress.com", icon: "cpu" },
