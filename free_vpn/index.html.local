@@ -468,11 +468,17 @@ const translations = {
 let currentLang = "en";
 
 const siteCategories = {
+    "Social & Communication": [
+        { name: "Youtube", url: "https://youtube.com", icon: "tv" },
+        { name: "Telegram", url: "https://t.me", icon: "users" },
+        { name: "Whatsapp", url: "https://whatsapp.com", icon: "globe" },
+        { name: "Facebook", url: "https://facebook.com", icon: "users" },
+        { name: "Instagram", url: "https://instagram.com", icon: "users" }
+    ],
     "Search & Information": [
         { name: "Google", url: "https://google.com", icon: "search" },
         { name: "Baidu", url: "https://baidu.com", icon: "search" },
         { name: "Wikipedia", url: "https://wikipedia.org", icon: "book" },
-        { name: "Whatsapp", url: "https://whatsapp.com", icon: "globe" },
         { name: "Bing", url: "https://bing.com", icon: "search" },
         { name: "Naver", url: "https://naver.com", icon: "search" },
         { name: "Coccoc", url: "https://coccoc.com", icon: "book" },
@@ -483,18 +489,14 @@ const siteCategories = {
         { name: "Imdb", url: "https://imdb.com", icon: "globe" }
     ],
     "Social Media": [
-        { name: "Facebook", url: "https://facebook.com", icon: "users" },
         { name: "X", url: "https://x.com", icon: "users" },
-        { name: "Instagram", url: "https://instagram.com", icon: "users" },
         { name: "Tiktok", url: "https://tiktok.com", icon: "users" },
         { name: "Linkedin", url: "https://linkedin.com", icon: "users" },
         { name: "Discord", url: "https://discord.com", icon: "users" },
         { name: "Pinterest", url: "https://pinterest.com", icon: "users" },
-        { name: "Badoo", url: "https://badoo.com", icon: "users" },
-        { name: "Telegram", url: "https://t.me", icon: "users" }
+        { name: "Badoo", url: "https://badoo.com", icon: "users" }
     ],
     "Video & Streaming": [
-        { name: "Youtube", url: "https://youtube.com", icon: "tv" },
         { name: "Netflix", url: "https://netflix.com", icon: "tv" },
         { name: "Twitch", url: "https://twitch.tv", icon: "tv" },
         { name: "Bilibili", url: "https://bilibili.com", icon: "tv" },
