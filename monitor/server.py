@@ -26,7 +26,7 @@ ALLOWED_DOMAINS = {
     'pornhub.com', 'xnxx.com', 'live.com', 'netflix.com',
     'tiktok.com', 'office.com', 'linkedin.com', 'bing.com',
     'twitch.tv', 'weather.com', 'naver.com', 'bilibili.com',
-    'max.com', 'zoom.us', 'pinterest.com',
+    'max.com', 'zoom.us', 'chatgpt.com', 'pinterest.com',
     'aliexpress.com', 'github.com', 'coccoc.com',
     'samsung.com', 'roblox.com', 'duckduckgo.com', 'badoo.com', 'vimeo.com',
     'globo.com', 'paypal.com', 'qq.com', 'hulu.com', 'accuweather.com',

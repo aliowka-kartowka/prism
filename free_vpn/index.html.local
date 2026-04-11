@@ -401,6 +401,7 @@ const siteCategories = {
     "Technology & Tools": [
         { name: "Office", url: "https://office.com", icon: "cpu" },
         { name: "Zoom", url: "https://zoom.us", icon: "cpu" },
+        { name: "Chatgpt", url: "https://chatgpt.com", icon: "cpu" },
         { name: "Github", url: "https://github.com", icon: "cpu" },
         { name: "Samsung", url: "https://samsung.com", icon: "cpu" },
         { name: "Wordpress", url: "https://wordpress.com", icon: "cpu" },
