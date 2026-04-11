@@ -1000,10 +1000,9 @@ async function requestTrial() {
         
         if (data.subscription_url) {
             // Use the first direct proxy link (vless://) for the QR code as requested for better app compatibility (like V2Box)
-            // But keep the subscription URL for copying as it's better for updates.
             const qrContent = (data.links && data.links.length > 0) ? data.links[0] : data.subscription_url;
             const encodedUrl = encodeURIComponent(qrContent);
-            document.getElementById('trialQR').src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodedUrl}&margin=10`;
+            document.getElementById('trialQR').src = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodedUrl}&margin=5&bgcolor=ffffff`;
             
             document.getElementById('trialLink').textContent = data.subscription_url;
             document.getElementById('trialModal').style.display = 'flex';
