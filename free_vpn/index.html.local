@@ -528,6 +528,11 @@ function initLatencyChart() {
             responsive: true,
             maintainAspectRatio: false,
             interaction: { mode: 'index', intersect: false },
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
             scales: {
                 x: {
                     grid: { color: 'rgba(255,255,255,0.05)' },
