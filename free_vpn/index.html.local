@@ -242,7 +242,7 @@
         <div class="brand" style="display: flex; align-items: center; gap: 20px;">
             <img src="assets/icon/app_icon.png" alt="FreeNet Logo" class="header-logo">
             <div style="display: flex; flex-direction: column;">
-                <h1 id="pageTitle" style="margin: 0;">Rasha Inet Monitoring</h1>
+                <h1 id="pageTitle" style="margin: 0;">Russian Internet Ban Monitoring</h1>
                 <span style="color: #8892b0; font-size: 0.9rem; margin-top: 5px; font-family: 'Inter', sans-serif;">Powered by FreeNet Monster VPN</span>
             </div>
         </div>
@@ -289,7 +289,7 @@
 <script>
 const translations = {
     en: {
-        title: "Rasha Inet Monitoring",
+        title: "Russian Internet Ban Monitoring",
         refreshDirect: "Refresh Direct",
         testFreenet: "Test with FreeNet",
         globalStatus: "Global Connectivity",
@@ -310,7 +310,7 @@ const translations = {
         resVPN: "FreeNet Access:"
     },
     ru: {
-        title: "Rasha Inet Monitoring",
+        title: "Russian Internet Ban Monitoring",
         refreshDirect: "Обновить (Прямое)",
         testFreenet: "Тест через FreeNet",
         globalStatus: "Состояние подключения",
