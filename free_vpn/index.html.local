@@ -716,9 +716,19 @@ async function runCustomCheck(isAuto = false) {
         document.getElementById('chartContainer').style.display = 'block';
         if (!latencyChart) {
             initLatencyChart();
-        } else {
-            latencyChart.update();
         }
+
+        const totalReqs = latencyHistory.labels.length;
+        if (totalReqs > 0) {
+            const dirFails = latencyHistory.directStatus.filter(s => s).length;
+            const freeFails = latencyHistory.freenetStatus.filter(s => s).length;
+            const dirPct = Math.round(((totalReqs - dirFails) / totalReqs) * 100);
+            const freePct = Math.round(((totalReqs - freeFails) / totalReqs) * 100);
+            latencyChart.data.datasets[0].label = 'Direct Access (' + dirPct + '% success)';
+            latencyChart.data.datasets[1].label = 'FreeNet Access (' + freePct + '% success)';
+        }
+
+        latencyChart.update();
 
         // Auto-refresh logic
         if (autoRefreshEnabled) {
