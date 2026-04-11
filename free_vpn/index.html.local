@@ -541,7 +541,6 @@ const siteCategories = {
         { name: "Flickr", url: "https://flickr.com", icon: "cpu" }
     ],
     "Travel & Real Estate": [
-        { name: "Craigslist", url: "https://craigslist.org", icon: "map-pin" },
         { name: "Booking", url: "https://booking.com", icon: "map-pin" },
         { name: "Yelp", url: "https://yelp.com", icon: "map-pin" }
     ],

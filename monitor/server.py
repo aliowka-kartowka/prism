@@ -45,7 +45,7 @@ ALLOWED_DOMAINS = {
     'roblox.com', 'duckduckgo.com', 'badoo.com', 'vimeo.com',
     'globo.com', 'paypal.com', 'qq.com', 'hulu.com', 'accuweather.com',
     'cnn.com', 'msn.com', 'imdb.com', 'wordpress.com',
-    'nytimes.com', 'apple.com', 'walmart.com', 'bbc.com', 'craigslist.org',
+    'nytimes.com', 'apple.com', 'walmart.com', 'bbc.com',
     'booking.com', 'chase.com',
     'wellsfargo.com', 'capitalone.com', 'bankofamerica.com',
     'target.com', 'lowes.com',
