@@ -339,17 +339,13 @@ const siteCategories = {
         { name: "Google", url: "https://google.com", icon: "search" },
         { name: "Baidu", url: "https://baidu.com", icon: "search" },
         { name: "Wikipedia", url: "https://wikipedia.org", icon: "book" },
-        { name: "Yahoo", url: "https://yahoo.com", icon: "search" },
         { name: "Whatsapp", url: "https://whatsapp.com", icon: "globe" },
-        { name: "Yahoo", url: "https://yahoo.co.jp", icon: "search" },
         { name: "Bing", url: "https://bing.com", icon: "search" },
         { name: "Naver", url: "https://naver.com", icon: "search" },
-        { name: "Quora", url: "https://quora.com", icon: "book" },
         { name: "Fandom", url: "https://fandom.com", icon: "book" },
         { name: "Coccoc", url: "https://coccoc.com", icon: "book" },
         { name: "Duckduckgo", url: "https://duckduckgo.com", icon: "search" },
         { name: "Globo", url: "https://globo.com", icon: "globe" },
-        { name: "Sohu", url: "https://sohu.com", icon: "book" },
         { name: "Qq", url: "https://qq.com", icon: "globe" },
         { name: "Msn", url: "https://msn.com", icon: "globe" },
         { name: "Imdb", url: "https://imdb.com", icon: "globe" },
@@ -359,7 +355,6 @@ const siteCategories = {
         { name: "Facebook", url: "https://facebook.com", icon: "users" },
         { name: "X", url: "https://x.com", icon: "users" },
         { name: "Instagram", url: "https://instagram.com", icon: "users" },
-        { name: "Reddit", url: "https://reddit.com", icon: "users" },
         { name: "Tiktok", url: "https://tiktok.com", icon: "users" },
         { name: "Linkedin", url: "https://linkedin.com", icon: "users" },
         { name: "Discord", url: "https://discord.com", icon: "users" },
@@ -370,7 +365,6 @@ const siteCategories = {
     "Video & Streaming": [
         { name: "Youtube", url: "https://youtube.com", icon: "tv" },
         { name: "Netflix", url: "https://netflix.com", icon: "tv" },
-        { name: "Zhanqi", url: "https://zhanqi.tv", icon: "tv" },
         { name: "Twitch", url: "https://twitch.tv", icon: "tv" },
         { name: "Bilibili", url: "https://bilibili.com", icon: "tv" },
         { name: "Max", url: "https://max.com", icon: "tv" },
@@ -384,13 +378,8 @@ const siteCategories = {
     "E-Commerce & Retail": [
         { name: "Amazon", url: "https://amazon.com", icon: "shopping-cart" },
         { name: "Aliexpress", url: "https://aliexpress.com", icon: "shopping-cart" },
-        { name: "Ebay", url: "https://ebay.com", icon: "shopping-cart" },
         { name: "Walmart", url: "https://walmart.com", icon: "shopping-cart" },
-        { name: "Wayfair", url: "https://wayfair.com", icon: "shopping-cart" },
-        { name: "Homedepot", url: "https://homedepot.com", icon: "shopping-cart" },
         { name: "Target", url: "https://target.com", icon: "shopping-cart" },
-        { name: "Etsy", url: "https://etsy.com", icon: "shopping-cart" },
-        { name: "Bestbuy", url: "https://bestbuy.com", icon: "shopping-cart" },
         { name: "Lowes", url: "https://lowes.com", icon: "shopping-cart" }
     ],
     "News & Media": [
@@ -404,9 +393,7 @@ const siteCategories = {
         { name: "Foxnews", url: "https://foxnews.com", icon: "file-text" },
         { name: "Washingtonpost", url: "https://washingtonpost.com", icon: "file-text" },
         { name: "Forbes", url: "https://forbes.com", icon: "file-text" },
-        { name: "Businessinsider", url: "https://businessinsider.com", icon: "file-text" },
-        { name: "Bloomberg", url: "https://bloomberg.com", icon: "file-text" },
-        { name: "Wsj", url: "https://wsj.com", icon: "file-text" }
+        { name: "Businessinsider", url: "https://businessinsider.com", icon: "file-text" }
     ],
     "Business & Finance": [
         { name: "Paypal", url: "https://paypal.com", icon: "dollar-sign" },
@@ -427,7 +414,6 @@ const siteCategories = {
         { name: "Apple", url: "https://apple.com", icon: "cpu" },
         { name: "Imgur", url: "https://imgur.com", icon: "cpu" },
         { name: "Canva", url: "https://canva.com", icon: "cpu" },
-        { name: "Ups", url: "https://ups.com", icon: "cpu" },
         { name: "Fedex", url: "https://fedex.com", icon: "cpu" },
         { name: "Usps", url: "https://usps.com", icon: "cpu" },
         { name: "Speedtest", url: "https://speedtest.net", icon: "cpu" },
@@ -443,7 +429,6 @@ const siteCategories = {
     ],
     "Adult Content": [
         { name: "Xvideos", url: "https://xvideos.com", icon: "alert-triangle" },
-        { name: "Xhamster", url: "https://xhamster.com", icon: "alert-triangle" },
         { name: "Pornhub", url: "https://pornhub.com", icon: "alert-triangle" },
         { name: "Xnxx", url: "https://xnxx.com", icon: "alert-triangle" },
         { name: "Live", url: "https://live.com", icon: "alert-triangle" },
