@@ -7,6 +7,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&family=JetBrains+Mono&display=swap" rel="stylesheet">
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="icon" type="image/png" href="assets/icon/app_icon.png">
     <style>
         :root {
             --bg-body: #0a0b10;
@@ -237,7 +240,7 @@
 <div class="container">
     <header class="header">
         <div class="brand">
-            <img src="app_icon.png" alt="FreeNet Logo" class="header-logo">
+            <img src="assets/icon/app_icon.png" alt="FreeNet Logo" class="header-logo">
             <h1 id="pageTitle">FreeNet Monitor</h1>
         </div>
         <div class="controls">
@@ -281,6 +284,10 @@
                 <span id="lblResDirect">Direct Access:</span>
                 <span id="customDirectVal" class="badge-status">—</span>
             </div>
+        </div>
+
+        <div id="chartContainer" style="margin-top: 1.5rem; height: 260px; background: rgba(0,0,0,0.2); border-radius: 8px; padding: 1rem; border: 1px solid #233554; display: none; position: relative;">
+            <canvas id="latencyChart"></canvas>
         </div>
     </section>
 
@@ -349,7 +356,7 @@ const siteCategories = {
     "Communication": [
         { name: "Discord", url: "https://discord.com", icon: "message-square" },
         { name: "Telegram", url: "https://t.me", icon: "send" },
-        { name: "WhatsApp", url: "https://web.whatsapp.com", icon: "phone" }
+        { name: "WhatsApp", url: "https://www.whatsapp.com", icon: "message-circle" }
     ],
     "Entertainment": [
         { name: "Netflix", url: "https://www.netflix.com", icon: "film" },
@@ -359,16 +366,13 @@ const siteCategories = {
     ],
     "Knowledge & Work": [
         { name: "Google", url: "https://www.google.com", icon: "search" },
-        { name: "ChatGPT", url: "https://chat.openai.com", icon: "cpu" },
         { name: "Wikipedia", url: "https://www.wikipedia.org", icon: "globe" },
         { name: "Pinterest", url: "https://www.pinterest.com", icon: "image" },
-        { name: "Reddit", url: "https://www.reddit.com", icon: "layout" },
         { name: "AliExpress", url: "https://www.aliexpress.com", icon: "shopping-cart" }
     ],
     "Adult Content": [
         { name: "Pornhub", url: "https://www.pornhub.com", icon: "heart" },
         { name: "XVideos", url: "https://www.xvideos.com", icon: "heart" },
-        { name: "xHamster", url: "https://www.xhamster.com", icon: "heart" },
         { name: "YouPorn", url: "https://www.youporn.com", icon: "heart" }
     ]
 };
@@ -376,6 +380,79 @@ const siteCategories = {
 const allSites = Object.values(siteCategories).flat();
 let checkingFreenet = false;
 let checkingDirect = false;
+
+let latencyChart = null;
+const latencyHistory = {
+    labels: [],
+    direct: [],
+    freenet: []
+};
+
+function initLatencyChart() {
+    const ctx = document.getElementById('latencyChart').getContext('2d');
+    latencyChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: latencyHistory.labels,
+            datasets: [
+                {
+                    label: 'Direct Access (ms)',
+                    data: latencyHistory.direct,
+                    borderColor: '#ff4d4d',
+                    backgroundColor: 'rgba(255, 77, 77, 0.1)',
+                    borderWidth: 2,
+                    tension: 0.3,
+                    fill: true,
+                    pointBackgroundColor: '#ff4d4d'
+                },
+                {
+                    label: 'FreeNet Access (ms)',
+                    data: latencyHistory.freenet,
+                    borderColor: '#64ffda',
+                    backgroundColor: 'rgba(100, 255, 218, 0.1)',
+                    borderWidth: 2,
+                    tension: 0.3,
+                    fill: true,
+                    pointBackgroundColor: '#64ffda'
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            scales: {
+                x: {
+                    grid: { color: 'rgba(255,255,255,0.05)' },
+                    ticks: { color: '#8892b0', font: { family: 'JetBrains Mono', size: 10 } }
+                },
+                y: {
+                    grid: { color: 'rgba(255,255,255,0.05)' },
+                    ticks: { color: '#8892b0', font: { family: 'JetBrains Mono', size: 10 } },
+                    beginAtZero: true,
+                    title: { display: true, text: 'Latency (ms)', color: '#8892b0', font: { family: 'Outfit' } }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top',
+                    labels: { color: '#e6f1ff', font: { family: 'Outfit', size: 12 }, usePointStyle: true }
+                },
+                tooltip: {
+                    backgroundColor: '#112240',
+                    titleColor: '#64ffda',
+                    bodyColor: '#e6f1ff',
+                    borderColor: '#233554',
+                    borderWidth: 1,
+                    padding: 10,
+                    titleFont: { family: 'Outfit', weight: 'bold' },
+                    bodyFont: { family: 'JetBrains Mono' }
+                }
+            }
+        }
+    });
+}
 
 function toggleLanguage() {
     currentLang = currentLang === "en" ? "ru" : "en";
@@ -439,6 +516,15 @@ function updateBadgeText(el, status, t) {
     }
 }
 
+function getFavicon(site) {
+    if (site.name === "WhatsApp") return "https://static.whatsapp.net/rsrc.php/v3/yP/r/r_oBsbi9V90.png";
+    try {
+        return "https://www.google.com/s2/favicons?sz=64&domain=" + new URL(site.url).hostname;
+    } catch (e) {
+        return "";
+    }
+}
+
 function buildGrid() {
     const container = document.getElementById("monitorGrid");
     container.innerHTML = "";
@@ -455,7 +541,7 @@ function buildGrid() {
         
         sites.forEach(site => {
             const id = site.name.replace(/[^a-z0-9]/gi, "_");
-            const faviconUrl = "https://www.google.com/s2/favicons?sz=64&domain=" + new URL(site.url).hostname;
+            const faviconUrl = getFavicon(site);
             const card = document.createElement("div");
             card.className = "card";
             card.innerHTML = 
@@ -531,23 +617,40 @@ async function runCustomCheck() {
     vVal.textContent = t.checking; vVal.className = "badge-status checking";
 
     try {
+        const startTotal = Date.now();
         // Run both simultaneously
         await Promise.all([
             (async () => {
+                const s = Date.now();
                 const resV = await fetchWithTimeout("/api/check?url=" + encodeURIComponent(url) + "&use_vpn=true");
                 const dataV = await resV.json();
+                const lat = Date.now() - s;
                 const statusV = dataV.status === "down" ? "0" : "1";
                 vVal.setAttribute("data-status", statusV);
                 updateBadgeText(vVal, statusV, t);
+                latencyHistory.freenet.push(lat);
             })(),
             (async () => {
+                const s = Date.now();
                 const resD = await fetchWithTimeout("/api/check?url=" + encodeURIComponent(url) + "&use_vpn=false");
                 const dataD = await resD.json();
+                const lat = Date.now() - s;
                 const statusD = dataD.status === "down" ? "0" : "1";
                 dVal.setAttribute("data-status", statusD);
                 updateBadgeText(dVal, statusD, t);
+                latencyHistory.direct.push(lat);
             })()
         ]);
+
+        const host = new URL(url).hostname;
+        latencyHistory.labels.push(host + " (" + new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'}) + ")");
+        
+        document.getElementById('chartContainer').style.display = 'block';
+        if (!latencyChart) {
+            initLatencyChart();
+        } else {
+            latencyChart.update();
+        }
     } catch (e) {
         if (!vVal.getAttribute("data-status")) { vVal.textContent = t.offline; vVal.className = "badge-status offline"; }
         if (!dVal.getAttribute("data-status")) { dVal.textContent = t.offline; dVal.className = "badge-status offline"; }
