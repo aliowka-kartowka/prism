@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FreeNet Monster - Connectivity Monitor</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&family=JetBrains+Mono&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="icon" type="image/png" href="app_icon.png">
+    <style>
+        :root {
+            --bg-body: #0a0b10;
+            --bg-card: #151921;
+            --accent: #64ffda;
+            --accent-glow: rgba(100, 255, 218, 0.3);
+            --text-primary: #e6f1ff;
+            --text-secondary: #8892b0;
+            --success: #00ff7f;
+            --error: #ff4d4d;
+            --warning: #ffcc00;
+            --font-main: "Outfit", sans-serif;
+            --font-mono: "JetBrains Mono", monospace;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { 
+            background: var(--bg-body); 
+            color: var(--text-primary); 
+            font-family: var(--font-main);
+            min-height: 100vh;
+            padding: 2rem;
+            line-height: 1.6;
+        }
+
+        .container { max-width: 1200px; margin: 0 auto; }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #233554;
+        }
+
+        .brand { display: flex; align-items: center; gap: 1rem; }
+        .brand h1 { font-size: 1.8rem; font-weight: 600; letter-spacing: -0.5px; }
+        .header-logo { width: 50px; height: 50px; border-radius: 50%; border: 2px solid var(--accent); }
+
+        .controls { display: flex; gap: 1rem; align-items: center; }
+
+        button {
+            background: #112240;
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            padding: 0.6rem 1.2rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+        }
+
+        button:hover:not(:disabled) {
+            background: var(--accent-glow);
+            box-shadow: 0 0 15px var(--accent-glow);
+        }
+
+        button:disabled { opacity: 0.5; cursor: not-allowed; border-color: var(--text-secondary); color: var(--text-secondary); }
+
+        .lang-toggle {
+            border-color: var(--text-secondary);
+            color: var(--text-secondary);
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            padding: 1.5rem;
+            border-radius: 8px;
+            border-left: 4px solid var(--accent);
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .stat-label { color: var(--text-secondary); font-size: 0.9rem; }
+        .stat-value { font-size: 1.5rem; font-weight: 600; font-family: var(--font-mono); }
+        .stat-value.success { color: var(--success); }
+        .stat-value.error { color: var(--error); }
+
+        /* Custom Host Check Section */
+        .search-section {
+            background: var(--bg-card);
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 3rem;
+            border: 1px solid #233554;
+        }
+
+        .search-title {
+            font-size: 1.1rem;
+            margin-bottom: 1.5rem;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .search-input {
+            flex: 1;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid #233554;
+            border-radius: 6px;
+            padding: 0.8rem 1.2rem;
+            color: var(--text-primary);
+            font-family: var(--font-mono);
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .search-input:focus { border-color: var(--accent); }
+
+        .search-results {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .result-badge {
+            background: rgba(0,0,0,0.2);
+            padding: 1rem;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+        }
+
+        .category-title {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            margin: 2rem 0 1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: transform 0.2s ease;
+            border: 1px solid transparent;
+        }
+
+        .card:hover { border-color: #233554; transform: translateY(-3px); }
+
+        .site-info { display: flex; align-items: center; justify-content: flex-start; gap: 0.8rem; margin-bottom: 1rem; }
+        .site-name { font-weight: 600; font-size: 1.1rem; }
+        .site-icon { width: 20px; height: 20px; color: var(--accent); }
+        
+        .status-badges { display: flex; flex-direction: column; gap: 0.5rem; }
+        
+        .badge {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-family: var(--font-mono);
+            background: rgba(0,0,0,0.2);
+        }
+
+        .badge-status.online { color: var(--success); font-weight: 600; }
+        .badge-status.offline { color: var(--error); font-weight: 600; }
+        .badge-status.checking { color: var(--warning); }
+
+        #progress-container {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            background: transparent;
+            z-index: 1000;
+        }
+        #progressBar {
+            height: 100%;
+            width: 0%;
+            background: var(--accent);
+            box-shadow: 0 0 10px var(--accent);
+            transition: width 0.3s ease;
+        }
+
+        .footer {
+            margin-top: 4rem;
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+        }
+
+        @media (max-width: 768px) {
+            .search-results { grid-template-columns: 1fr; }
+            .header { flex-direction: column; gap: 1rem; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="progress-container"><div id="progressBar"></div></div>
+
+<div class="container">
+    <header class="header">
+        <div class="brand">
+            <img src="app_icon.png" alt="FreeNet Logo" class="header-logo">
+            <h1 id="pageTitle">FreeNet Monitor</h1>
+        </div>
+        <div class="controls">
+            <button id="langToggle" class="lang-toggle">RU</button>
+            <button id="btnVPN" onclick="startChecks('freenet')">Test with FreeNet</button>
+            <button id="btnDirect" onclick="startChecks('direct')">Refresh Direct</button>
+        </div>
+    </header>
+
+    <div id="monitorGrid"></div>
+
+
+    <footer class="footer">
+        &copy; 2026 FreeNet Monster Infrastructure
+    </footer>
+</div>
+
+<script>
+const translations = {
+    en: {
+        title: "FreeNet Monitor",
+        refreshDirect: "Refresh Direct",
+        testFreenet: "Test with FreeNet",
+        globalStatus: "Global Connectivity",
+        directlyAccessible: "Directly Accessible From Russia",
+        freenetWorking: "FreeNet Accessible",
+        standingBy: "Standing by...",
+        scanning: "Scanning...",
+        direct: "Direct",
+        freenet: "FreeNet",
+        checking: "Checking...",
+        online: "Online",
+        offline: "Blocked",
+        lang: "RU",
+        searchTitle: "Quick Host Check",
+        searchPlaceholder: "Enter hostname (e.g., example.com)...",
+        searchBtn: "Check Now",
+        resDirect: "Direct Access:",
+        resVPN: "FreeNet Access:"
+    },
+    ru: {
+        title: "FreeNet Monitor",
+        refreshDirect: "Обновить (Прямое)",
+        testFreenet: "Тест через FreeNet",
+        globalStatus: "Состояние подключения",
+        directlyAccessible: "Доступно из России",
+        freenetWorking: "Доступно через FreeNet",
+        standingBy: "Ожидание...",
+        scanning: "Сканирование...",
+        direct: "Прямое",
+        freenet: "FreeNet",
+        checking: "Проверка...",
+        online: "Доступен",
+        offline: "Заблокирован",
+        lang: "EN",
+        searchTitle: "Быстрая проверка",
+        searchPlaceholder: "Введите адрес (например, google.com)...",
+        searchBtn: "Проверить",
+        resDirect: "Прямой доступ:",
+        resVPN: "Через FreeNet:"
+    }
+};
+
+let currentLang = "en";
+
+const siteCategories = {
+    "Social & Video": [
+        { name: "YouTube", url: "https://www.youtube.com", icon: "youtube" },
+        { name: "Instagram", url: "https://www.instagram.com", icon: "instagram" },
+        { name: "Facebook", url: "https://www.facebook.com", icon: "facebook" },
+        { name: "Twitter / X", url: "https://twitter.com", icon: "twitter" }
+    ],
+    "Communication": [
+        { name: "Discord", url: "https://discord.com", icon: "message-square" },
+        { name: "Telegram", url: "https://t.me", icon: "send" },
+        { name: "WhatsApp", url: "https://www.whatsapp.com", icon: "message-circle" }
+    ],
+    "Entertainment": [
+        { name: "Netflix", url: "https://www.netflix.com", icon: "film" },
+        { name: "Spotify", url: "https://www.spotify.com", icon: "music" },
+        { name: "Twitch", url: "https://www.twitch.tv", icon: "tv" },
+        { name: "TikTok", url: "https://www.tiktok.com", icon: "video" }
+    ],
+    "Knowledge & Work": [
+        { name: "Google", url: "https://www.google.com", icon: "search" },
+        { name: "Wikipedia", url: "https://www.wikipedia.org", icon: "globe" },
+        { name: "Pinterest", url: "https://www.pinterest.com", icon: "image" },
+        { name: "AliExpress", url: "https://www.aliexpress.com", icon: "shopping-cart" }
+    ],
+    "Top 100 Popular": [
+        { name: "Google", url: "https://google.com", icon: "globe" },
+        { name: "Youtube", url: "https://youtube.com", icon: "globe" },
+        { name: "Facebook", url: "https://facebook.com", icon: "globe" },
+        { name: "Twitter", url: "https://twitter.com", icon: "globe" },
+        { name: "Instagram", url: "https://instagram.com", icon: "globe" },
+        { name: "Baidu", url: "https://baidu.com", icon: "globe" },
+        { name: "Wikipedia", url: "https://wikipedia.org", icon: "globe" },
+        { name: "Yandex", url: "https://yandex.ru", icon: "globe" },
+        { name: "Yahoo", url: "https://yahoo.com", icon: "globe" },
+        { name: "Xvideos", url: "https://xvideos.com", icon: "globe" },
+        { name: "Whatsapp", url: "https://whatsapp.com", icon: "globe" },
+        { name: "Amazon", url: "https://amazon.com", icon: "globe" },
+        { name: "Xhamster", url: "https://xhamster.com", icon: "globe" },
+        { name: "Pornhub", url: "https://pornhub.com", icon: "globe" },
+        { name: "Xnxx", url: "https://xnxx.com", icon: "globe" },
+        { name: "Live", url: "https://live.com", icon: "globe" },
+        { name: "Yahoo", url: "https://yahoo.co.jp", icon: "globe" },
+        { name: "Netflix", url: "https://netflix.com", icon: "globe" },
+        { name: "Zhanqi", url: "https://zhanqi.tv", icon: "globe" },
+        { name: "Reddit", url: "https://reddit.com", icon: "globe" },
+        { name: "Tiktok", url: "https://tiktok.com", icon: "globe" },
+        { name: "Office", url: "https://office.com", icon: "globe" },
+        { name: "Linkedin", url: "https://linkedin.com", icon: "globe" },
+        { name: "Vk", url: "https://vk.com", icon: "globe" },
+        { name: "Bing", url: "https://bing.com", icon: "globe" },
+        { name: "Dzen", url: "https://dzen.ru", icon: "globe" },
+        { name: "Twitch", url: "https://twitch.tv", icon: "globe" },
+        { name: "Mail", url: "https://mail.ru", icon: "globe" },
+        { name: "Discord", url: "https://discord.com", icon: "globe" },
+        { name: "Weather", url: "https://weather.com", icon: "globe" },
+        { name: "Naver", url: "https://naver.com", icon: "globe" },
+        { name: "Bilibili", url: "https://bilibili.com", icon: "globe" },
+        { name: "Microsoft", url: "https://microsoft.com", icon: "globe" },
+        { name: "Max", url: "https://max.com", icon: "globe" },
+        { name: "Zoom", url: "https://zoom.us", icon: "globe" },
+        { name: "Chatgpt", url: "https://chatgpt.com", icon: "globe" },
+        { name: "Pinterest", url: "https://pinterest.com", icon: "globe" },
+        { name: "Quora", url: "https://quora.com", icon: "globe" },
+        { name: "Aliexpress", url: "https://aliexpress.com", icon: "globe" },
+        { name: "Github", url: "https://github.com", icon: "globe" },
+        { name: "Fandom", url: "https://fandom.com", icon: "globe" },
+        { name: "Coccoc", url: "https://coccoc.com", icon: "globe" },
+        { name: "Onlyfans", url: "https://onlyfans.com", icon: "globe" },
+        { name: "Samsung", url: "https://samsung.com", icon: "globe" },
+        { name: "Roblox", url: "https://roblox.com", icon: "globe" },
+        { name: "Ebay", url: "https://ebay.com", icon: "globe" },
+        { name: "Duckduckgo", url: "https://duckduckgo.com", icon: "globe" },
+        { name: "Badoo", url: "https://badoo.com", icon: "globe" },
+        { name: "T", url: "https://t.me", icon: "globe" },
+        { name: "Vimeo", url: "https://vimeo.com", icon: "globe" },
+        { name: "Globo", url: "https://globo.com", icon: "globe" },
+        { name: "Sohu", url: "https://sohu.com", icon: "globe" },
+        { name: "Paypal", url: "https://paypal.com", icon: "globe" },
+        { name: "Qq", url: "https://qq.com", icon: "globe" },
+        { name: "Hulu", url: "https://hulu.com", icon: "globe" },
+        { name: "Accuweather", url: "https://accuweather.com", icon: "globe" },
+        { name: "Cnn", url: "https://cnn.com", icon: "globe" },
+        { name: "Msn", url: "https://msn.com", icon: "globe" },
+        { name: "Imdb", url: "https://imdb.com", icon: "globe" },
+        { name: "Adobe", url: "https://adobe.com", icon: "globe" },
+        { name: "Wordpress", url: "https://wordpress.com", icon: "globe" },
+        { name: "Espn", url: "https://espn.com", icon: "globe" },
+        { name: "Nytimes", url: "https://nytimes.com", icon: "globe" },
+        { name: "Apple", url: "https://apple.com", icon: "globe" },
+        { name: "Walmart", url: "https://walmart.com", icon: "globe" },
+        { name: "Bbc", url: "https://bbc.com", icon: "globe" },
+        { name: "Indeed", url: "https://indeed.com", icon: "globe" },
+        { name: "Craigslist", url: "https://craigslist.org", icon: "globe" },
+        { name: "Booking", url: "https://booking.com", icon: "globe" },
+        { name: "Imgur", url: "https://imgur.com", icon: "globe" },
+        { name: "Canva", url: "https://canva.com", icon: "globe" },
+        { name: "Chase", url: "https://chase.com", icon: "globe" },
+        { name: "Zillow", url: "https://zillow.com", icon: "globe" },
+        { name: "Wayfair", url: "https://wayfair.com", icon: "globe" },
+        { name: "Wellsfargo", url: "https://wellsfargo.com", icon: "globe" },
+        { name: "Homedepot", url: "https://homedepot.com", icon: "globe" },
+        { name: "Capitalone", url: "https://capitalone.com", icon: "globe" },
+        { name: "Bankofamerica", url: "https://bankofamerica.com", icon: "globe" },
+        { name: "Target", url: "https://target.com", icon: "globe" },
+        { name: "Etsy", url: "https://etsy.com", icon: "globe" },
+        { name: "Bestbuy", url: "https://bestbuy.com", icon: "globe" },
+        { name: "Lowes", url: "https://lowes.com", icon: "globe" },
+        { name: "Ups", url: "https://ups.com", icon: "globe" },
+        { name: "Fedex", url: "https://fedex.com", icon: "globe" },
+        { name: "Usps", url: "https://usps.com", icon: "globe" },
+        { name: "Speedtest", url: "https://speedtest.net", icon: "globe" },
+        { name: "Huffpost", url: "https://huffpost.com", icon: "globe" },
+        { name: "Dailymotion", url: "https://dailymotion.com", icon: "globe" },
+        { name: "Soundcloud", url: "https://soundcloud.com", icon: "globe" },
+        { name: "Flickr", url: "https://flickr.com", icon: "globe" },
+        { name: "Yelp", url: "https://yelp.com", icon: "globe" },
+        { name: "Pandora", url: "https://pandora.com", icon: "globe" },
+        { name: "Tripadvisor", url: "https://tripadvisor.com", icon: "globe" },
+        { name: "Cnbc", url: "https://cnbc.com", icon: "globe" },
+        { name: "Foxnews", url: "https://foxnews.com", icon: "globe" },
+        { name: "Washingtonpost", url: "https://washingtonpost.com", icon: "globe" },
+        { name: "Forbes", url: "https://forbes.com", icon: "globe" },
+        { name: "Businessinsider", url: "https://businessinsider.com", icon: "globe" },
+        { name: "Bloomberg", url: "https://bloomberg.com", icon: "globe" },
+        { name: "Wsj", url: "https://wsj.com", icon: "globe" },
+    ],
+
+    "Adult Content": [
+        { name: "Pornhub", url: "https://www.pornhub.com", icon: "heart" },
+        { name: "XVideos", url: "https://www.xvideos.com", icon: "heart" },
+        { name: "YouPorn", url: "https://www.youporn.com", icon: "heart" }
+    ]
+};
+
+const allSites = Object.values(siteCategories).flat();
+let checkingFreenet = false;
+let checkingDirect = false;
+let autoRefreshEnabled = true;
+let autoCheckTimer = null;
+
+let latencyChart = null;
+const latencyHistory = {
+    labels: [],
+    direct: [],
+    directStatus: [],
+    freenet: [],
+    freenetStatus: []
+};
+
+function initLatencyChart() {
+    const ctx = document.getElementById('latencyChart').getContext('2d');
+    latencyChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: latencyHistory.labels,
+            datasets: [
+                {
+                    label: 'Direct Access (ms)',
+                    data: latencyHistory.direct,
+                    borderColor: '#ff4d4d',
+                    backgroundColor: 'rgba(255, 77, 77, 0.1)',
+                    borderWidth: 2,
+                    tension: 0.3,
+                    fill: false,
+                    pointBackgroundColor: '#ff4d4d',
+                    pointStyle: (ctx) => (latencyHistory.directStatus[ctx.dataIndex] ? 'crossRot' : 'circle'),
+                    pointRadius: (ctx) => (latencyHistory.directStatus[ctx.dataIndex] ? 8 : 4),
+                    pointHoverRadius: (ctx) => (latencyHistory.directStatus[ctx.dataIndex] ? 10 : 6),
+                    segment: {
+                        borderColor: ctx => latencyHistory.directStatus[ctx.p1.dataIndex] || latencyHistory.directStatus[ctx.p0.dataIndex] ? 'rgba(255, 77, 77, 0.5)' : undefined,
+                        borderDash: ctx => latencyHistory.directStatus[ctx.p1.dataIndex] || latencyHistory.directStatus[ctx.p0.dataIndex] ? [5, 5] : undefined,
+                    }
+                },
+                {
+                    label: 'FreeNet Access (ms)',
+                    data: latencyHistory.freenet,
+                    borderColor: '#64ffda',
+                    backgroundColor: 'rgba(100, 255, 218, 0.1)',
+                    borderWidth: 3,
+                    tension: 0.3,
+                    fill: true,
+                    pointBackgroundColor: '#64ffda',
+                    pointStyle: (ctx) => (latencyHistory.freenetStatus[ctx.dataIndex] ? 'crossRot' : 'circle'),
+                    pointRadius: (ctx) => (latencyHistory.freenetStatus[ctx.dataIndex] ? 8 : 4),
+                    pointHoverRadius: (ctx) => (latencyHistory.freenetStatus[ctx.dataIndex] ? 10 : 6),
+                    segment: {
+                        borderDash: ctx => latencyHistory.freenetStatus[ctx.p1.dataIndex] || latencyHistory.freenetStatus[ctx.p0.dataIndex] ? [5, 5] : undefined,
+                    }
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            scales: {
+                x: {
+                    grid: { color: 'rgba(255,255,255,0.05)' },
+                    ticks: { color: '#8892b0', font: { family: 'JetBrains Mono', size: 10 } }
+                },
+                y: {
+                    grid: { color: 'rgba(255,255,255,0.05)' },
+                    ticks: { color: '#8892b0', font: { family: 'JetBrains Mono', size: 10 } },
+                    beginAtZero: true,
+                    title: { display: true, text: 'Latency (ms)', color: '#8892b0', font: { family: 'Outfit' } }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top',
+                    labels: { color: '#e6f1ff', font: { family: 'Outfit', size: 12 }, usePointStyle: true }
+                },
+                tooltip: {
+                    backgroundColor: '#112240',
+                    titleColor: '#64ffda',
+                    bodyColor: '#e6f1ff',
+                    borderColor: '#233554',
+                    borderWidth: 1,
+                    padding: 12,
+                    titleFont: { family: 'Outfit', weight: 'bold', size: 14 },
+                    bodyFont: { family: 'JetBrains Mono' },
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            const isFreenet = label.includes('FreeNet');
+                            const isBlocked = isFreenet ? latencyHistory.freenetStatus[context.dataIndex] : latencyHistory.directStatus[context.dataIndex];
+                            if (label) label += ': ';
+                            if (isBlocked) {
+                                return label + '❌ BLOCKED';
+                            }
+                            return label + context.raw + 'ms';
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+function toggleLanguage() {
+    currentLang = currentLang === "en" ? "ru" : "en";
+    const t = translations[currentLang];
+    
+    document.getElementById("pageTitle").textContent = getTitleWithDate(t.title);
+    document.getElementById("btnDirect").textContent = t.refreshDirect;
+    document.getElementById("btnVPN").textContent = t.testFreenet;
+    document.getElementById("langToggle").textContent = t.lang;
+    document.getElementById("lblGlobalStatus").textContent = t.globalStatus;
+    document.getElementById("lblAccessible").textContent = t.directlyAccessible;
+    document.getElementById("lblFreenetReady").textContent = t.freenetWorking;
+    
+    // Search elements
+    document.getElementById("lblSearchTitle").innerHTML = '<i data-lucide="search" style="width: 18px; margin-top: -2px"></i> ' + t.searchTitle;
+    document.getElementById("customUrl").placeholder = t.searchPlaceholder;
+    document.getElementById("btnCustom").textContent = t.searchBtn;
+    document.getElementById("lblResDirect").textContent = t.resDirect;
+    document.getElementById("lblResVPN").textContent = t.resVPN;
+
+    const cdVal = document.getElementById("customDirectVal");
+    const cvVal = document.getElementById("customVPNVal");
+    if (cdVal.getAttribute("data-status")) updateBadgeText(cdVal, cdVal.getAttribute("data-status"), t);
+    if (cvVal.getAttribute("data-status")) updateBadgeText(cvVal, cvVal.getAttribute("data-status"), t);
+
+    allSites.forEach(s => {
+        const id = s.name.replace(/[^a-z0-9]/gi, "_");
+        const db = document.getElementById(id + "_direct_val");
+        const vb = document.getElementById(id + "_vpn_val");
+        const dl = document.getElementById(id + "_direct_label");
+        const vl = document.getElementById(id + "_vpn_label");
+        
+        if (dl) dl.textContent = t.direct + ":";
+        if (vl) vl.textContent = t.freenet + ":";
+        
+        if (db) {
+            const status = db.getAttribute("data-status");
+            if (db.classList.contains("checking")) db.textContent = t.checking;
+            else if (status !== null) updateBadgeText(db, status, t);
+        }
+        
+        if (vb) {
+            const status = vb.getAttribute("data-status");
+            if (vb.classList.contains("checking")) vb.textContent = t.checking;
+            else if (status !== null) updateBadgeText(vb, status, t);
+        }
+    });
+    lucide.createIcons();
+}
+
+function updateBadgeText(el, status, t) {
+    if (status === "1") {
+        el.textContent = t.online;
+        el.className = "badge-status online";
+    } else if (status === "0") {
+        el.textContent = t.offline;
+        el.className = "badge-status offline";
+    } else {
+        el.textContent = "—";
+        el.className = "badge-status";
+    }
+}
+
+function getFavicon(site) {
+    if (site.name === "WhatsApp") return "https://static.whatsapp.net/rsrc.php/v3/yP/r/r_oBsbi9V90.png";
+    try {
+        return "https://www.google.com/s2/favicons?sz=64&domain=" + new URL(site.url).hostname;
+    } catch (e) {
+        return "";
+    }
+}
+
+function buildGrid() {
+    const container = document.getElementById("monitorGrid");
+    container.innerHTML = "";
+    const t = translations[currentLang];
+
+    for (const [cat, sites] of Object.entries(siteCategories)) {
+        const title = document.createElement("h2");
+        title.className = "category-title";
+        title.textContent = cat;
+        container.appendChild(title);
+
+        const grid = document.createElement("div");
+        grid.className = "grid";
+        
+        sites.forEach(site => {
+            const id = site.name.replace(/[^a-z0-9]/gi, "_");
+            const faviconUrl = getFavicon(site);
+            const card = document.createElement("div");
+            card.className = "card";
+            card.innerHTML = 
+                "<div class=\"site-info\">" +
+                    "<img src=\"" + faviconUrl + "\" class=\"site-icon\" onerror=\"this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2224%22 height=%2224%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%2364ffda%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><circle cx=%2212%22 cy=%2212%22 r=%2210%22></circle><line x1=%222%22 y1=%2212%22 x2=%2222%22 y2=%2212%22></line><path d=%22M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z%22></path></svg>'\">" +
+                    "<span class=\"site-name\">" + site.name + "</span>" +
+                "</div>" +
+                "<div class=\"status-badges\">" +
+                    "<div class=\"badge\" id=\"" + id + "_vpn_badge\">" +
+                        "<span id=\"" + id + "_vpn_label\">" + t.freenet + ":</span>" +
+                        "<span id=\"" + id + "_vpn_val\" class=\"badge-status\">—</span>" +
+                    "</div>" +
+                    "<div class=\"badge\" id=\"" + id + "_direct_badge\">" +
+                        "<span id=\"" + id + "_direct_label\">" + t.direct + ":</span>" +
+                        "<span id=\"" + id + "_direct_val\" class=\"badge-status\">—</span>" +
+                    "</div>" +
+                "</div>";
+            grid.appendChild(card);
+        });
+        container.appendChild(grid);
+    }
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+async function fetchWithTimeout(resource, options = {}) {
+    const { timeout = 3000 } = options;
+    const controller = new AbortController();
+    const id = setTimeout(() => controller.abort(), timeout);
+    try {
+        const response = await fetch(resource, { ...options, signal: controller.signal });
+        clearTimeout(id);
+        return response;
+    } catch (e) {
+        clearTimeout(id);
+        throw e;
+    }
+}
+
+async function checkSite(site, useVpn) {
+    const id = site.name.replace(/[^a-z0-9]/gi, "_");
+    const suffix = useVpn ? "_vpn" : "_direct";
+    const valEl = document.getElementById(id + suffix + "_val");
+    const t = translations[currentLang];
+
+    valEl.textContent = t.checking;
+    valEl.className = "badge-status checking";
+
+    try {
+        const res = await fetchWithTimeout("/api/check?url=" + encodeURIComponent(site.url) + "&use_vpn=" + useVpn);
+        const data = await res.json();
+        const status = data.status === "down" ? "0" : "1";
+        valEl.setAttribute("data-status", status);
+        updateBadgeText(valEl, status, t);
+    } catch (e) {
+        valEl.setAttribute("data-status", "0");
+        updateBadgeText(valEl, "0", t);
+    }
+    updateStats();
+}
+
+async function runCustomCheck(isAuto = false) {
+    let url = document.getElementById("customUrl").value.trim();
+    if (!url) return;
+    if (!url.startsWith("http")) url = "https://" + url;
+    
+    if (autoCheckTimer) clearTimeout(autoCheckTimer);
+
+    if (!isAuto) {
+        // Reset history for a fresh manual check
+        latencyHistory.labels = [];
+        latencyHistory.direct = [];
+        latencyHistory.directStatus = [];
+        latencyHistory.freenet = [];
+        latencyHistory.freenetStatus = [];
+        if (latencyChart) {
+            latencyChart.destroy();
+            latencyChart = null;
+        }
+    }
+    
+    const t = translations[currentLang];
+    const dVal = document.getElementById("customDirectVal");
+    const vVal = document.getElementById("customVPNVal");
+    const btn = document.getElementById("btnCustom");
+    
+    btn.disabled = true;
+    dVal.textContent = t.checking; dVal.className = "badge-status checking";
+    vVal.textContent = t.checking; vVal.className = "badge-status checking";
+
+    try {
+        const startTotal = Date.now();
+        // Run both simultaneously with individual error handling to prevent Promise.all from failing
+        await Promise.all([
+            (async () => {
+                const s = Date.now();
+                try {
+                    const resV = await fetchWithTimeout("/api/check?url=" + encodeURIComponent(url) + "&use_vpn=true");
+                    const dataV = await resV.json();
+                    const lat = Date.now() - s;
+                    const statusV = dataV.status === "down" ? "0" : "1";
+                    vVal.setAttribute("data-status", statusV);
+                    updateBadgeText(vVal, statusV, t);
+                    latencyHistory.freenet.push(lat);
+                    latencyHistory.freenetStatus.push(statusV === "0");
+                } catch (e) {
+                    vVal.setAttribute("data-status", "0");
+                    updateBadgeText(vVal, "0", t);
+                    latencyHistory.freenet.push(3000); 
+                    latencyHistory.freenetStatus.push(true);
+                }
+            })(),
+            (async () => {
+                const s = Date.now();
+                try {
+                    const resD = await fetchWithTimeout("/api/check?url=" + encodeURIComponent(url) + "&use_vpn=false");
+                    const dataD = await resD.json();
+                    const lat = Date.now() - s;
+                    const statusD = dataD.status === "down" ? "0" : "1";
+                    dVal.setAttribute("data-status", statusD);
+                    updateBadgeText(dVal, statusD, t);
+                    latencyHistory.direct.push(lat);
+                    latencyHistory.directStatus.push(statusD === "0");
+                } catch (e) {
+                    dVal.setAttribute("data-status", "0");
+                    updateBadgeText(dVal, "0", t);
+                    latencyHistory.direct.push(3000);
+                    latencyHistory.directStatus.push(true);
+                }
+            })()
+        ]);
+
+        const host = new URL(url).hostname;
+        latencyHistory.labels.push(host + " (" + new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'}) + ")");
+        
+        document.getElementById('chartContainer').style.display = 'block';
+        if (!latencyChart) {
+            initLatencyChart();
+        }
+
+        const totalReqs = latencyHistory.labels.length;
+        if (totalReqs > 0) {
+            const dirFails = latencyHistory.directStatus.filter(s => s).length;
+            const freeFails = latencyHistory.freenetStatus.filter(s => s).length;
+            const dirPct = Math.round(((totalReqs - dirFails) / totalReqs) * 100);
+            const freePct = Math.round(((totalReqs - freeFails) / totalReqs) * 100);
+            latencyChart.data.datasets[0].label = 'Direct Access (' + dirPct + '% success)';
+            latencyChart.data.datasets[1].label = 'FreeNet Access (' + freePct + '% success)';
+        }
+
+        latencyChart.update();
+
+        // Auto-refresh logic
+        if (autoRefreshEnabled) {
+            autoCheckTimer = setTimeout(() => runCustomCheck(true), 3000);
+        }
+    } catch (e) {
+        console.error("Custom check fail:", e);
+        // We still check for auto-refresh here just in case of unexpected errors
+        if (autoRefreshEnabled && !autoCheckTimer) {
+            autoCheckTimer = setTimeout(() => runCustomCheck(true), 3000);
+        }
+    }
+    btn.disabled = false;
+}
+
+function updateStats() {
+    // Widgets removed, explicitly doing nothing
+}
+
+async function startChecks(mode) {
+    const isVpn = mode === "freenet";
+    if (isVpn && checkingFreenet) return;
+    if (!isVpn && checkingDirect) return;
+    
+    if (isVpn) checkingFreenet = true; else checkingDirect = true;
+    
+    const btn = isVpn ? document.getElementById("btnVPN") : document.getElementById("btnDirect");
+    btn.disabled = true;
+    document.getElementById("statusText").textContent = translations[currentLang].scanning;
+    
+    const progress = document.getElementById("progressBar");
+    progress.style.width = "10%";
+
+    // Run all sites in parallel for this mode
+    await Promise.all(allSites.map(async (site, index) => {
+        await checkSite(site, isVpn);
+        // Approximation of progress for the mode
+        const currentProgress = parseFloat(progress.style.width);
+        if (currentProgress < 90) progress.style.width = (currentProgress + (80 / allSites.length)) + "%";
+    }));
+
+    progress.style.width = "100%";
+    setTimeout(() => {
+        if (!checkingFreenet && !checkingDirect) progress.style.width = "0%";
+    }, 1000);
+
+    if (isVpn) checkingFreenet = false; else checkingDirect = false;
+    
+    if (!checkingFreenet && !checkingDirect) {
+        document.getElementById("statusText").textContent = translations[currentLang].standingBy;
+        document.getElementById("pageTitle").textContent = getTitleWithDate(translations[currentLang].title);
+    }
+    btn.disabled = false;
+}
+
+function getTitleWithDate(base) {
+    const now = new Date();
+    const opts = { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' };
+    return base + ' (' + now.toLocaleDateString('en-GB', opts) + ')';
+}
+
+document.getElementById("langToggle").addEventListener("click", toggleLanguage);
+
+buildGrid();
+
+// Initial run: PER USER REQUEST: RUN SIMULTANEOUSLY
+(async () => {
+    // Fire both and let them run in parallel
+    startChecks("freenet");
+    startChecks("direct");
+})();
+</script>
+</body>
+</html>
