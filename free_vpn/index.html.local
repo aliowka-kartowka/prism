@@ -787,6 +787,15 @@ async function startGraphForSite(url, name, isAuto = false) {
         const host = new URL(url).hostname;
         latencyHistory.labels.push(host + " (" + new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'}) + ")");
         
+        const MAX_SAMPLES = 50;
+        if (latencyHistory.labels.length > MAX_SAMPLES) {
+            latencyHistory.labels.shift();
+            latencyHistory.direct.shift();
+            latencyHistory.directStatus.shift();
+            latencyHistory.freenet.shift();
+            latencyHistory.freenetStatus.shift();
+        }
+        
         if (!latencyChart) {
             initLatencyChart();
         }
