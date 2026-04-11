@@ -781,8 +781,8 @@ async function startGraphForSite(url, name, isAuto = false) {
             const freePct = Math.round(((totalReqs - freeFails) / totalReqs) * 100);
             document.getElementById('directPctBig').textContent = dirPct + '%';
             document.getElementById('freenetPctBig').textContent = freePct + '%';
-            latencyChart.data.datasets[0].label = 'Direct Access (Lat)';
-            latencyChart.data.datasets[1].label = 'FreeNet Access (Lat)';
+            latencyChart.data.datasets[0].label = 'Direct Access';
+            latencyChart.data.datasets[1].label = 'FreeNet Access';
         }
 
         latencyChart.update();
