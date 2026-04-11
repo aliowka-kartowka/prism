@@ -811,8 +811,9 @@ async function startChecks(mode) {
     if (isVpn) checkingFreenet = true; else checkingDirect = true;
     
     const btn = isVpn ? document.getElementById("btnVPN") : document.getElementById("btnDirect");
-    btn.disabled = true;
-    document.getElementById("statusText").textContent = translations[currentLang].scanning;
+    if(btn) btn.disabled = true;
+    const statusTextEl = document.getElementById("statusText");
+    if (statusTextEl) statusTextEl.textContent = translations[currentLang].scanning;
     
     const progress = document.getElementById("progressBar");
     progress.style.width = "10%";
@@ -833,10 +834,12 @@ async function startChecks(mode) {
     if (isVpn) checkingFreenet = false; else checkingDirect = false;
     
     if (!checkingFreenet && !checkingDirect) {
-        document.getElementById("statusText").textContent = translations[currentLang].standingBy;
-        document.getElementById("pageTitle").textContent = getTitleWithDate(translations[currentLang].title);
+        const finalStatus = document.getElementById("statusText");
+        if (finalStatus) finalStatus.textContent = translations[currentLang].standingBy;
+        const pageTitle = document.getElementById("pageTitle");
+        if (pageTitle) pageTitle.textContent = getTitleWithDate(translations[currentLang].title);
     }
-    btn.disabled = false;
+    if (btn) btn.disabled = false;
 }
 
 function getTitleWithDate(base) {
