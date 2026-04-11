@@ -319,12 +319,13 @@
             background: #112240;
             padding: 2.5rem;
             border-radius: 16px;
-            max-width: 500px;
+            max-width: 600px;
             width: 90%;
             border: 1px solid #233554;
             box-shadow: 0 20px 40px rgba(0,0,0,0.4);
             text-align: center;
             position: relative;
+            overflow: hidden;
         ">
             <button onclick="closeTrialModal()" style="
                 position: absolute;
@@ -336,6 +337,7 @@
                 font-size: 1.5rem;
                 padding: 0;
                 line-height: 1;
+                z-index: 10;
             ">&times;</button>
             <div style="color: #64ffda; margin-bottom: 1.5rem;">
                 <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M8 12l3 3 5-5"></path></svg>
@@ -343,8 +345,9 @@
             <h2 id="modalTitle" style="color: #e6f1ff; margin-bottom: 0.5rem; font-family: 'Outfit';">Trial Created!</h2>
             <p id="modalSub" style="color: #8892b0; font-size: 0.9rem; margin-bottom: 1.5rem;">Your 1GB trial subscription is ready.</p>
             
-            <div id="qrcodeCont" style="background: white; padding: 10px; border-radius: 8px; display: inline-block; margin-bottom: 1.5rem;">
-                <img id="trialQR" src="" alt="QR Code" style="width: 150px; height: 150px; display: block;">
+            <!-- QR code fits to sides by using negative margin to offset modal padding -->
+            <div id="qrcodeCont" style="background: white; padding: 20px; width: calc(100% + 5rem); margin-left: -2.5rem; margin-right: -2.5rem; box-sizing: border-box; display: flex; justify-content: center; margin-bottom: 1.5rem; box-shadow: inset 0 0 10px rgba(0,0,0,0.1);">
+                <img id="trialQR" src="" alt="QR Code" style="width: 100%; max-width: 450px; height: auto; aspect-ratio: 1/1; display: block;">
             </div>
             
             <div style="

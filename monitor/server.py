@@ -201,16 +201,24 @@ class Handler(BaseHTTPRequestHandler):
             logger.info(f"Trial request from IP: {client_ip}")
             
             with TRIAL_LOCK:
-                last_time = TRIAL_LIMITS.get(client_ip, 0)
-                if time.time() - last_time < TRIAL_DURATION:
-                    self.send_response(429)
-                    self.send_header('Content-Type', 'application/json')
-                    self.send_cors()
-                    self.end_headers()
-                    self.wfile.write(json.dumps({"error": "Rate limit exceeded. 1 trial per 24 hours."}).encode())
-                    return
-                # Set limit temporarily
-                TRIAL_LIMITS[client_ip] = time.time()
+                limit_info = TRIAL_LIMITS.get(client_ip)
+                if limit_info:
+                    last_time, last_username = limit_info
+                    if time.time() - last_time < TRIAL_DURATION:
+                        # Fetch existing user instead of error
+                        user = create_marzban_trial(last_username) # This will fetch if it exists
+                        if "error" not in user:
+                            self.send_response(200)
+                            self.send_header('Content-Type', 'application/json')
+                            self.send_cors()
+                            self.end_headers()
+                            self.wfile.write(json.dumps(user).encode())
+                            return
+                        # If fetch failed (e.g. user deleted), allow creating new one
+                        del TRIAL_LIMITS[client_ip]
+
+                # Set limit temporarily (placeholder username)
+                TRIAL_LIMITS[client_ip] = (time.time(), "")
 
             # Generate random username
             suffix = ''.join(random.choices(string.ascii_lowercase + string.digits, k=6))
@@ -228,6 +236,9 @@ class Handler(BaseHTTPRequestHandler):
                 self.end_headers()
                 self.wfile.write(json.dumps(user).encode())
             else:
+                # Update limit with actual username
+                with TRIAL_LOCK:
+                    TRIAL_LIMITS[client_ip] = (TRIAL_LIMITS[client_ip][0], username)
                 self.send_response(200)
                 self.send_header('Content-Type', 'application/json')
                 self.send_cors()
