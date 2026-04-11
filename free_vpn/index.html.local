@@ -247,7 +247,37 @@
             </div>
         </div>
 
+        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px;">
+            <a href="https://t.me/FreeNetMonsterBot" target="_blank" style="text-decoration: none;">
+                <button id="btnSubscribe" style="
+                    background: linear-gradient(135deg, #64ffda 0%, #48bb78 100%);
+                    color: #0a192f;
+                    font-weight: 700;
+                    border: none;
+                    padding: 0.8rem 1.5rem;
+                    border-radius: 8px;
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                    box-shadow: 0 4px 15px rgba(100, 255, 218, 0.3);
+                    animation: pulse 2s infinite;
+                    letter-spacing: 0.5px;
+                ">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                    <span id="txtSubscribe">GET SUBSCRIPTION</span>
+                </button>
+            </a>
+            <span style="font-size: 0.7rem; color: #8892b0; font-family: var(--font-mono);">via @FreeNetMonsterBot</span>
+        </div>
     </header>
+
+    <style>
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 4px 15px rgba(100, 255, 218, 0.3); }
+            50% { transform: scale(1.05); box-shadow: 0 4px 25px rgba(100, 255, 218, 0.5); }
+            100% { transform: scale(1); box-shadow: 0 4px 15px rgba(100, 255, 218, 0.3); }
+        }
+    </style>
 
     <div id="chartContainer" style="margin-bottom: 2rem; height: 260px; background: rgba(0,0,0,0.2); border-radius: 8px; padding: 1rem; border: 1px solid #233554; display: none; position: relative;">
         <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
@@ -307,7 +337,8 @@ const translations = {
         searchPlaceholder: "Enter hostname (e.g., example.com)...",
         searchBtn: "Check Now",
         resDirect: "Direct Access:",
-        resVPN: "FreeNet Access:"
+        resVPN: "FreeNet Access:",
+        subscribe: "GET SUBSCRIPTION"
     },
     ru: {
         title: "Russian Internet Ban Monitoring",
@@ -328,7 +359,8 @@ const translations = {
         searchPlaceholder: "Введите адрес (например, google.com)...",
         searchBtn: "Проверить",
         resDirect: "Прямой доступ:",
-        resVPN: "Через FreeNet:"
+        resVPN: "Через FreeNet:",
+        subscribe: "ПОДПИСКА VPN"
     }
 };
 
@@ -550,6 +582,7 @@ function toggleLanguage() {
     document.getElementById("btnCustom").textContent = t.searchBtn;
     document.getElementById("lblResDirect").textContent = t.resDirect;
     document.getElementById("lblResVPN").textContent = t.resVPN;
+    document.getElementById('txtSubscribe').textContent = t.subscribe;
 
     const cdVal = document.getElementById("customDirectVal");
     const cvVal = document.getElementById("customVPNVal");
