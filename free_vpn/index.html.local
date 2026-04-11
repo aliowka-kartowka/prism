@@ -698,16 +698,27 @@ async function checkSite(site, useVpn) {
     valEl.textContent = t.checking;
     valEl.className = "badge-status checking";
 
-    try {
-        const res = await fetchWithTimeout("/api/check?url=" + encodeURIComponent(site.url) + "&use_vpn=" + useVpn);
-        const data = await res.json();
-        const status = data.status === "down" ? "0" : "1";
-        valEl.setAttribute("data-status", status);
-        updateBadgeText(valEl, status, t);
-    } catch (e) {
-        valEl.setAttribute("data-status", "0");
-        updateBadgeText(valEl, "0", t);
+    let finalStatus = "0";
+    const maxAttempts = 3;
+
+    for (let i = 0; i < maxAttempts; i++) {
+        try {
+            const res = await fetchWithTimeout("/api/check?url=" + encodeURIComponent(site.url) + "&use_vpn=" + useVpn);
+            const data = await res.json();
+            const status = data.status === "down" ? "0" : "1";
+            finalStatus = status;
+            if (status === "1") break;
+        } catch (e) {
+            finalStatus = "0";
+        }
+        // If it was the last attempt, don't wait obviously
+        if (i < maxAttempts - 1 && finalStatus === "0") {
+            await new Promise(r => setTimeout(r, 500));
+        }
     }
+
+    valEl.setAttribute("data-status", finalStatus);
+    updateBadgeText(valEl, finalStatus, t);
     updateStats();
 }
 async function startGraphForSite(url, name, isAuto = false) {
