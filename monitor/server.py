@@ -94,6 +94,17 @@ def create_marzban_trial(username):
     headers = {'Authorization': f'Bearer {token}', 'Content-Type': 'application/json'}
     url = f"{MARZBAN_URL}/api/user"
     
+    # First check if user already exists
+    try:
+        get_url = f"{MARZBAN_URL}/api/user/{username}"
+        get_response = requests.get(get_url, headers=headers, timeout=5)
+        if get_response.status_code == 200:
+            user = get_response.json()
+            return map_user_links(user)
+    except Exception as e:
+        logger.error(f"Error checking existing user: {e}")
+    
+    # User doesn't exist (e.g. 404), so create it
     # 1GB in bytes
     DATA_LIMIT = 1073741824 
     
@@ -101,48 +112,59 @@ def create_marzban_trial(username):
         "username": username,
         "data_limit": DATA_LIMIT,
         "expire": int(time.time() + 86400), # 1 day from now
-        "proxies": {"vless": {}}
+        "proxies": {"vless": {}},
+        "inbounds": {"vless": ["VLESS REALITY"]}
     }
     
     try:
         response = requests.post(url, headers=headers, json=user_data, timeout=10)
         if response.status_code in (200, 201):
             user = response.json()
-            # Map internal/API subscription URL to public domain
-            sub_url = user.get('subscription_url', '')
-            if sub_url and '/sub/' in sub_url:
-                token_part = sub_url.split('/sub/')[-1]
-                user['subscription_url'] = f"https://vpn.freenet.monster/sub/{token_part}"
-            
-            # Also update protocol links to use the public domain if they have an IP or localhost
-            links = user.get('links', [])
-            new_links = []
-            for link in links:
-                if 'vless://' in link:
-                    # Replace IP/host with public domain in vless links
-                    # vless://uuid@IP:PORT?... -> vless://uuid@vpn.freenet.monster:PORT?...
-                    if '@' in link:
-                        parts = link.split('@')
-                        if '/' in parts[1]:
-                            host_port, rest = parts[1].split('/', 1)
-                        else:
-                            host_port = parts[1]
-                            rest = ""
-                        
-                        if ':' in host_port:
-                            port = host_port.split(':')[-1]
-                        else:
-                            port = "443" # Default
-                        
-                        new_host_port = f"vpn.freenet.monster:{port}"
-                        link = f"{parts[0]}@{new_host_port}/{rest}"
-                new_links.append(link)
-            user['links'] = new_links
-            return user
+            return map_user_links(user)
         else:
             return {"error": f"Marzban error {response.status_code}: {response.text}"}
     except Exception as e:
         return {"error": str(e)}
+
+def map_user_links(user):
+    # Map internal/API subscription URL to public domain
+    sub_url = user.get('subscription_url', '')
+    if sub_url and '/sub/' in sub_url:
+        token_part = sub_url.split('/sub/')[-1]
+        user['subscription_url'] = f"https://vpn.freenet.monster/sub/{token_part}"
+    
+    # Also update protocol links to use the public domain if they have an IP or localhost
+    links = user.get('links', [])
+    new_links = []
+    for link in links:
+        if 'vless://' in link:
+            # Replace IP/host with public domain in vless links
+            # vless://uuid@IP:PORT?... -> vless://uuid@vpn.freenet.monster:PORT?...
+            if '@' in link:
+                parts = link.split('@')
+                if '/' in parts[1]:
+                    host_port, rest = parts[1].split('/', 1)
+                else:
+                    host_port = parts[1]
+                    rest = ""
+                
+                if ':' in host_port:
+                    port = host_port.split(':')[-1]
+                else:
+                    port = "443" # Default
+                
+                new_host_port = f"vpn.freenet.monster:{port}"
+                link = f"{parts[0]}@{new_host_port}/{rest}"
+            
+            # Change remark (everything after #) to FreeNet
+            if '#' in link:
+                base, _ = link.split('#', 1)
+                link = f"{base}#FreeNet"
+            else:
+                link = f"{link}#FreeNet"
+        new_links.append(link)
+    user['links'] = new_links
+    return user
 
 class Handler(BaseHTTPRequestHandler):
     def send_cors(self):
