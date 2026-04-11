@@ -46,8 +46,14 @@ def check_url(url, use_vpn=False):
     if use_vpn:
         proxies = {'http': XRAY_SOCKS_PROXY, 'https': XRAY_SOCKS_PROXY}
     try:
-        # Avoid downloading entire payloads
+        # Avoid downloading entire payloads initially
         resp = requests.head(url, proxies=proxies, timeout=3.5, verify=False, allow_redirects=True, headers={'User-Agent': 'Mozilla/5.0'})
+        
+        # If the server rejects HEAD requests (e.g., Yahoo returns 404/405 for HEAD), fallback to an aborted GET request
+        if resp.status_code >= 400:
+            resp = requests.get(url, proxies=proxies, timeout=3.5, verify=False, allow_redirects=True, stream=True, headers={'User-Agent': 'Mozilla/5.0'})
+            resp.close() # Close connection immediately after receiving headers
+            
         return resp.status_code < 400
     except Exception as e:
         logger.error(f'Error checking {url} (VPN: {use_vpn}): {e}')
