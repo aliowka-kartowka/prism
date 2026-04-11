@@ -48,7 +48,7 @@
 
         .brand { display: flex; align-items: center; gap: 1rem; }
         .brand h1 { font-size: 1.8rem; font-weight: 600; letter-spacing: -0.5px; }
-        .header-logo { width: 80px; height: 80px; border-radius: 50%; border: 2px solid var(--accent); }
+        .header-logo { width: 120px; height: 120px; border-radius: 50%; border: 2px solid var(--accent); }
 
         .controls { display: flex; gap: 1rem; align-items: center; }
 
@@ -244,7 +244,7 @@
                 <img src="assets/icon/app_icon.png" alt="FreeNet Logo" class="header-logo">
                 <h1 id="pageTitle" style="margin: 0;">FreeNet Monitor</h1>
             </div>
-            <span style="color: #8892b0; font-size: 0.9rem; margin-top: 5px; margin-left: 95px; font-family: 'Inter', sans-serif;">Russian Internet monitoring with / without Freenet VPN</span>
+            <span style="color: #8892b0; font-size: 0.9rem; margin-top: 5px; margin-left: 135px; font-family: 'Inter', sans-serif;">Russian Internet monitoring with / without Freenet VPN</span>
         </div>
 
     </header>
