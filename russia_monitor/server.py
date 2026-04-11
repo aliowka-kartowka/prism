@@ -15,6 +15,125 @@ import threading
 import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
+ALLOWED_DOMAINS = {
+    'flickr.com',
+    'www.netflix.com',
+    'roblox.com',
+    'tripadvisor.com',
+    'samsung.com',
+    'forbes.com',
+    'fandom.com',
+    'bilibili.com',
+    'espn.com',
+    'huffpost.com',
+    'naver.com',
+    'github.com',
+    'netflix.com',
+    'live.com',
+    'xhamster.com',
+    'tiktok.com',
+    'hulu.com',
+    'cnbc.com',
+    'google.com',
+    'booking.com',
+    'paypal.com',
+    'pornhub.com',
+    'www.youporn.com',
+    'amazon.com',
+    'mail.ru',
+    'qq.com',
+    'nytimes.com',
+    'xnxx.com',
+    'wikipedia.org',
+    'wsj.com',
+    'www.pornhub.com',
+    'badoo.com',
+    'dailymotion.com',
+    'dzen.ru',
+    'vk.com',
+    'www.whatsapp.com',
+    'max.com',
+    'baidu.com',
+    'usps.com',
+    'craigslist.org',
+    'imdb.com',
+    'xvideos.com',
+    'wordpress.com',
+    'homedepot.com',
+    'youtube.com',
+    'cnn.com',
+    'capitalone.com',
+    'www.youtube.com',
+    't.me',
+    'bloomberg.com',
+    'coccoc.com',
+    'www.instagram.com',
+    'fedex.com',
+    'microsoft.com',
+    'walmart.com',
+    'discord.com',
+    'twitch.tv',
+    'target.com',
+    'instagram.com',
+    'wayfair.com',
+    'bing.com',
+    'quora.com',
+    'lowes.com',
+    'reddit.com',
+    'yelp.com',
+    'www.pinterest.com',
+    'globo.com',
+    'www.spotify.com',
+    'ups.com',
+    'ebay.com',
+    'www.facebook.com',
+    'accuweather.com',
+    'yandex.ru',
+    'pandora.com',
+    'linkedin.com',
+    'www.google.com',
+    'wellsfargo.com',
+    'www.wikipedia.org',
+    'weather.com',
+    'indeed.com',
+    'vimeo.com',
+    'www.aliexpress.com',
+    'aliexpress.com',
+    'yahoo.com',
+    'imgur.com',
+    'duckduckgo.com',
+    'twitter.com',
+    'chatgpt.com',
+    'foxnews.com',
+    'chase.com',
+    'bestbuy.com',
+    'facebook.com',
+    'bbc.com',
+    'sohu.com',
+    'zoom.us',
+    'www.tiktok.com',
+    'canva.com',
+    'www.twitch.tv',
+    'businessinsider.com',
+    'yahoo.co.jp',
+    'bankofamerica.com',
+    'msn.com',
+    'soundcloud.com',
+    'zhanqi.tv',
+    'apple.com',
+    'whatsapp.com',
+    'speedtest.net',
+    'www.xvideos.com',
+    'onlyfans.com',
+    'zillow.com',
+    'adobe.com',
+    'etsy.com',
+    'washingtonpost.com',
+    'pinterest.com',
+    'office.com',
+}
+
+
 HEADERS = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124.0.0.0 Safari/537.36',
     'Accept': 'text/html,application/xhtml+xml,*/*',
@@ -66,6 +185,20 @@ class Handler(BaseHTTPRequestHandler):
                 self.send_response(400)
                 self.end_headers()
                 return
+
+            try:
+                parsed_url = urlparse(url)
+                domain = parsed_url.netloc
+                if domain not in ALLOWED_DOMAINS:
+                    self.send_response(403)
+                    self.end_headers()
+                    self.wfile.write(b'{"error": "Forbidden site"}')
+                    return
+            except:
+                self.send_response(400)
+                self.end_headers()
+                return
+
 
             result = check_url(url, use_vpn=use_vpn)
             body = json.dumps(result).encode()

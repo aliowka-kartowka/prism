@@ -250,56 +250,8 @@
         </div>
     </header>
 
-    <div class="stats">
-        <div class="stat-card">
-            <div class="stat-label" id="lblGlobalStatus">Global Connectivity</div>
-            <div class="stat-value" id="statusText">Standing by...</div>
-        </div>
-        <div class="stat-card" style="border-left-color: var(--success)">
-            <div class="stat-label" id="lblFreenetReady">FreeNet Accessible</div>
-            <div class="stat-value success" id="countVPN">0/0</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-label" id="lblAccessible">Directly Accessible From Russia</div>
-            <div class="stat-value error" id="countDirect">0/0</div>
-        </div>
-    </div>
-
-    <!-- Quick Host Check Section -->
-    <section class="search-section">
-        <h2 class="search-title" id="lblSearchTitle">
-            <i data-lucide="search" style="width: 18px; margin-top: -2px"></i>
-            Quick Host Check
-        </h2>
-        <div class="search-box">
-            <input type="text" id="customUrl" class="search-input" placeholder="Enter hostname (e.g., example.com)..." onkeydown="if(event.key==='Enter') runCustomCheck()">
-            <button id="btnCustom" onclick="runCustomCheck()">Check Now</button>
-        </div>
-        <div class="search-results">
-            <div class="result-badge">
-                <span id="lblResVPN">FreeNet Access:</span>
-                <span id="customVPNVal" class="badge-status">—</span>
-            </div>
-            <div class="result-badge">
-                <span id="lblResDirect">Direct Access:</span>
-                <span id="customDirectVal" class="badge-status">—</span>
-            </div>
-        </div>
-
-        <div id="chartContainer" style="margin-top: 1.5rem; height: 260px; background: rgba(0,0,0,0.2); border-radius: 8px; padding: 1rem; border: 1px solid #233554; display: none; position: relative;">
-            <div id="liveIndicator" style="position: absolute; top: 10px; right: 10px; color: var(--success); font-size: 0.7rem; font-family: var(--font-mono); display: flex; align-items: center; gap: 5px;">
-                <span style="width: 6px; height: 6px; background: var(--success); border-radius: 50%; display: inline-block; animation: blink 1s infinite;"></span>
-                LIVE
-            </div>
-            <canvas id="latencyChart"></canvas>
-        </div>
-    </section>
-
-    <style>
-        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
-    </style>
-
     <div id="monitorGrid"></div>
+
 
     <footer class="footer">
         &copy; 2026 FreeNet Monster Infrastructure
@@ -848,12 +800,7 @@ async function runCustomCheck(isAuto = false) {
 }
 
 function updateStats() {
-    const total = allSites.length;
-    const directOnline = document.querySelectorAll("[id$=\"_direct_val\"][data-status=\"1\"]").length;
-    const vpnOnline = document.querySelectorAll("[id$=\"_vpn_val\"][data-status=\"1\"]").length;
-    
-    document.getElementById("countDirect").textContent = directOnline + "/" + total;
-    document.getElementById("countVPN").textContent = vpnOnline + "/" + total;
+    // Widgets removed, explicitly doing nothing
 }
 
 async function startChecks(mode) {
