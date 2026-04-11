@@ -243,11 +243,7 @@
             <img src="assets/icon/app_icon.png" alt="FreeNet Logo" class="header-logo">
             <h1 id="pageTitle">FreeNet Monitor</h1>
         </div>
-        <div class="controls">
-            <button id="langToggle" class="lang-toggle">RU</button>
-            <button id="btnVPN" onclick="startChecks('freenet')">Test with FreeNet</button>
-            <button id="btnDirect" onclick="startChecks('direct')">Refresh Direct</button>
-        </div>
+
     </header>
 
     <div id="chartContainer" style="margin-bottom: 2rem; height: 260px; background: rgba(0,0,0,0.2); border-radius: 8px; padding: 1rem; border: 1px solid #233554; display: none; position: relative;">
@@ -859,7 +855,8 @@ function getTitleWithDate(base) {
     return base + ' (' + now.toLocaleDateString('en-GB', opts) + ')';
 }
 
-document.getElementById("langToggle").addEventListener("click", toggleLanguage);
+    const langBtn = document.getElementById("langToggle");
+    if(langBtn) langBtn.addEventListener("click", toggleLanguage);
 
 buildGrid();
 
