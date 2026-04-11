@@ -412,24 +412,31 @@ function initLatencyChart() {
                     backgroundColor: 'rgba(255, 77, 77, 0.1)',
                     borderWidth: 2,
                     tension: 0.3,
-                    fill: true,
+                    fill: false,
                     pointBackgroundColor: '#ff4d4d',
                     pointStyle: (ctx) => (ctx.raw >= 5000 ? 'crossRot' : 'circle'),
                     pointRadius: (ctx) => (ctx.raw >= 5000 ? 8 : 4),
-                    pointHoverRadius: (ctx) => (ctx.raw >= 5000 ? 10 : 6)
+                    pointHoverRadius: (ctx) => (ctx.raw >= 5000 ? 10 : 6),
+                    segment: {
+                        borderColor: ctx => ctx.p1.raw >= 5000 || ctx.p0.raw >= 5000 ? 'rgba(255, 77, 77, 0.5)' : undefined,
+                        borderDash: ctx => ctx.p1.raw >= 5000 || ctx.p0.raw >= 5000 ? [5, 5] : undefined,
+                    }
                 },
                 {
                     label: 'FreeNet Access (ms)',
                     data: latencyHistory.freenet,
                     borderColor: '#64ffda',
                     backgroundColor: 'rgba(100, 255, 218, 0.1)',
-                    borderWidth: 2,
+                    borderWidth: 3,
                     tension: 0.3,
                     fill: true,
                     pointBackgroundColor: '#64ffda',
                     pointStyle: (ctx) => (ctx.raw >= 5000 ? 'crossRot' : 'circle'),
                     pointRadius: (ctx) => (ctx.raw >= 5000 ? 8 : 4),
-                    pointHoverRadius: (ctx) => (ctx.raw >= 5000 ? 10 : 6)
+                    pointHoverRadius: (ctx) => (ctx.raw >= 5000 ? 10 : 6),
+                    segment: {
+                        borderDash: ctx => ctx.p1.raw >= 5000 || ctx.p0.raw >= 5000 ? [5, 5] : undefined,
+                    }
                 }
             ]
         },
@@ -461,9 +468,19 @@ function initLatencyChart() {
                     bodyColor: '#e6f1ff',
                     borderColor: '#233554',
                     borderWidth: 1,
-                    padding: 10,
-                    titleFont: { family: 'Outfit', weight: 'bold' },
-                    bodyFont: { family: 'JetBrains Mono' }
+                    padding: 12,
+                    titleFont: { family: 'Outfit', weight: 'bold', size: 14 },
+                    bodyFont: { family: 'JetBrains Mono' },
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label) label += ': ';
+                            if (context.raw >= 5000) {
+                                return label + '❌ BLOCKED (Timeout)';
+                            }
+                            return label + context.raw + 'ms';
+                        }
+                    }
                 }
             }
         }
