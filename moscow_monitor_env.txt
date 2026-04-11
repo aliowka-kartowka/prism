@@ -1,0 +1,3 @@
+FREENET_ADMIN_USER=aliowka
+FREENET_ADMIN_PASS=VpnAdmin123!
+MARZBAN_URL=https://vpn.freenet.monster

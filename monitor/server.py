@@ -15,7 +15,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger(__name__)
 
 # Marzban Configuration
-MARZBAN_URL = os.getenv('MARZBAN_URL', 'http://127.0.0.1:8080')
+MARZBAN_URL = os.getenv('MARZBAN_URL', 'http://178.104.135.156:8080')
 ADMIN_USER = os.getenv('FREENET_ADMIN_USER')
 ADMIN_PASS = os.getenv('FREENET_ADMIN_PASS')
 
@@ -100,18 +100,44 @@ def create_marzban_trial(username):
     user_data = {
         "username": username,
         "data_limit": DATA_LIMIT,
-        "proxies": {"vless": {}},
-        "inbounds": {"vless": ["VLESS TCP REALITY"]}
+        "expire": int(time.time() + 86400), # 1 day from now
+        "proxies": {"vless": {}}
     }
     
     try:
         response = requests.post(url, headers=headers, json=user_data, timeout=10)
         if response.status_code in (200, 201):
             user = response.json()
-            # Map local subscription URL to public one
+            # Map internal/API subscription URL to public domain
             sub_url = user.get('subscription_url', '')
-            if sub_url:
-                user['subscription_url'] = sub_url.replace('http://127.0.0.1:8080', 'https://vpn.freenet.monster')
+            if sub_url and '/sub/' in sub_url:
+                token_part = sub_url.split('/sub/')[-1]
+                user['subscription_url'] = f"https://vpn.freenet.monster/sub/{token_part}"
+            
+            # Also update protocol links to use the public domain if they have an IP or localhost
+            links = user.get('links', [])
+            new_links = []
+            for link in links:
+                if 'vless://' in link:
+                    # Replace IP/host with public domain in vless links
+                    # vless://uuid@IP:PORT?... -> vless://uuid@vpn.freenet.monster:PORT?...
+                    if '@' in link:
+                        parts = link.split('@')
+                        if '/' in parts[1]:
+                            host_port, rest = parts[1].split('/', 1)
+                        else:
+                            host_port = parts[1]
+                            rest = ""
+                        
+                        if ':' in host_port:
+                            port = host_port.split(':')[-1]
+                        else:
+                            port = "443" # Default
+                        
+                        new_host_port = f"vpn.freenet.monster:{port}"
+                        link = f"{parts[0]}@{new_host_port}/{rest}"
+                new_links.append(link)
+            user['links'] = new_links
             return user
         else:
             return {"error": f"Marzban error {response.status_code}: {response.text}"}
@@ -157,36 +183,56 @@ class Handler(BaseHTTPRequestHandler):
 
             is_up = check_url(target_url, use_vpn=use_vpn)
             body = json.dumps({'up': is_up, 'status': 'up' if is_up else 'down'}).encode()
+            self.send_response(200)
+            self.send_header('Content-type', 'application/json')
             self.end_headers()
             self.wfile.write(body)
 
         elif parsed.path == '/api/trial':
-            client_ip = self.client_address[0]
-            now = time.time()
+            # Prioritize X-Real-IP or X-Forwarded-For if behind a proxy
+            client_ip = self.headers.get('X-Real-IP')
+            if not client_ip:
+                forwarded = self.headers.get('X-Forwarded-For')
+                if forwarded:
+                    client_ip = forwarded.split(',')[0].strip()
+                else:
+                    client_ip = self.client_address[0]
+            
+            logger.info(f"Trial request from IP: {client_ip}")
             
             with TRIAL_LOCK:
                 last_time = TRIAL_LIMITS.get(client_ip, 0)
-                if now - last_time < TRIAL_DURATION:
+                if time.time() - last_time < TRIAL_DURATION:
                     self.send_response(429)
+                    self.send_header('Content-Type', 'application/json')
                     self.send_cors()
                     self.end_headers()
-                    self.wfile.write(b'{"error": "Rate limit exceeded. 1 trial per 24 hours."}')
+                    self.wfile.write(json.dumps({"error": "Rate limit exceeded. 1 trial per 24 hours."}).encode())
                     return
-                TRIAL_LIMITS[client_ip] = now
+                # Set limit temporarily
+                TRIAL_LIMITS[client_ip] = time.time()
 
             # Generate random username
             suffix = ''.join(random.choices(string.ascii_lowercase + string.digits, k=6))
-            username = f"trial_{suffix}"
+            username = f"FreeNet-trial_{suffix}"
             
-            result = create_marzban_trial(username)
-            
-            body = json.dumps(result).encode()
-            self.send_response(200 if 'error' not in result else 500)
-            self.send_header('Content-Type', 'application/json')
-            self.send_header('Content-Length', len(body))
-            self.send_cors()
-            self.end_headers()
-            self.wfile.write(body)
+            user = create_marzban_trial(username)
+            if "error" in user:
+                # Reset limit on error so user can try again
+                with TRIAL_LOCK:
+                    if client_ip in TRIAL_LIMITS:
+                        del TRIAL_LIMITS[client_ip]
+                self.send_response(400)
+                self.send_header('Content-Type', 'application/json')
+                self.send_cors()
+                self.end_headers()
+                self.wfile.write(json.dumps(user).encode())
+            else:
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/json')
+                self.send_cors()
+                self.end_headers()
+                self.wfile.write(json.dumps(user).encode())
 
         elif parsed.path in ('/', '/index.html'):
             self._serve_file('index.html', 'text/html; charset=utf-8')

@@ -247,7 +247,126 @@
             </div>
         </div>
 
+        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px;">
+            <div style="display: flex; gap: 10px;">
+                <button id="btnTrial" onclick="requestTrial()" style="
+                    background: transparent;
+                    border: 1px solid #64ffda;
+                    color: #64ffda;
+                    font-weight: 600;
+                    padding: 0.8rem 1.5rem;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                    font-family: var(--font-mono);
+                    font-size: 0.85rem;
+                ">
+                    <span id="txtTrial">GET FREE TRIAL</span>
+                </button>
+                <a href="https://t.me/FreeNetMonsterBot" target="_blank" style="text-decoration: none;">
+                    <button id="btnSubscribe" style="
+                        background: linear-gradient(135deg, #64ffda 0%, #48bb78 100%);
+                        color: #0a192f;
+                        font-weight: 700;
+                        border: none;
+                        padding: 0.8rem 1.5rem;
+                        border-radius: 8px;
+                        display: flex;
+                        align-items: center;
+                        gap: 10px;
+                        box-shadow: 0 4px 15px rgba(100, 255, 218, 0.3);
+                        animation: pulse 2s infinite;
+                        letter-spacing: 0.5px;
+                        cursor: pointer;
+                    ">
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                        <span id="txtSubscribe">GET SUBSCRIPTION</span>
+                    </button>
+                </a>
+            </div>
+            <span style="font-size: 0.7rem; color: #8892b0; font-family: var(--font-mono);">via @FreeNetMonsterBot</span>
+        </div>
     </header>
+
+    <!-- Trial Modal -->
+    <div id="trialModal" style="
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(10, 25, 47, 0.95);
+        z-index: 9999;
+        justify-content: center;
+        align-items: center;
+        backdrop-filter: blur(8px);
+    ">
+        <div style="
+            background: #112240;
+            padding: 2.5rem;
+            border-radius: 16px;
+            max-width: 500px;
+            width: 90%;
+            border: 1px solid #233554;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            text-align: center;
+            position: relative;
+        ">
+            <button onclick="closeTrialModal()" style="
+                position: absolute;
+                top: 15px;
+                right: 15px;
+                background: none;
+                border: none;
+                color: #8892b0;
+                font-size: 1.5rem;
+                padding: 0;
+                line-height: 1;
+            ">&times;</button>
+            <div style="color: #64ffda; margin-bottom: 1.5rem;">
+                <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M8 12l3 3 5-5"></path></svg>
+            </div>
+            <h2 id="modalTitle" style="color: #e6f1ff; margin-bottom: 0.5rem; font-family: 'Outfit';">Trial Created!</h2>
+            <p id="modalSub" style="color: #8892b0; font-size: 0.9rem; margin-bottom: 2rem;">Your 1GB trial subscription is ready.</p>
+            
+            <div style="
+                background: rgba(0,0,0,0.3);
+                padding: 1rem;
+                border-radius: 8px;
+                border: 1px solid #233554;
+                font-family: var(--font-mono);
+                font-size: 0.8rem;
+                color: #64ffda;
+                word-break: break-all;
+                margin-bottom: 1.5rem;
+                text-align: left;
+            " id="trialLink">---</div>
+            
+            <button onclick="copyTrialLink()" id="btnCopy" style="
+                width: 100%;
+                background: #64ffda;
+                color: #0a192f;
+                border: none;
+                padding: 0.8rem;
+                border-radius: 6px;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                margin-bottom: 1rem;
+            ">Copy Link</button>
+            
+            <p style="color: #8892b0; font-size: 0.75rem;">Limit: 1GB per user. Accounts expire after data usage.</p>
+        </div>
+    </div>
+
+    <style>
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 4px 15px rgba(100, 255, 218, 0.3); }
+            50% { transform: scale(1.05); box-shadow: 0 4px 25px rgba(100, 255, 218, 0.5); }
+            100% { transform: scale(1); box-shadow: 0 4px 15px rgba(100, 255, 218, 0.3); }
+        }
+    </style>
 
     <div id="chartContainer" style="margin-bottom: 2rem; height: 260px; background: rgba(0,0,0,0.2); border-radius: 8px; padding: 1rem; border: 1px solid #233554; display: none; position: relative;">
         <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
@@ -307,7 +426,14 @@ const translations = {
         searchPlaceholder: "Enter hostname (e.g., example.com)...",
         searchBtn: "Check Now",
         resDirect: "Direct Access:",
-        resVPN: "FreeNet Access:"
+        resVPN: "FreeNet Access:",
+        subscribe: "GET SUBSCRIPTION",
+        trial: "GET FREE TRIAL",
+        modalTitle: "Trial Created!",
+        modalSub: "Your 1GB trial subscription is ready.",
+        btnCopy: "Copy Link",
+        btnCopied: "Copied!",
+        limitText: "Limit: 1GB per user. Accounts expire after data usage."
     },
     ru: {
         title: "Russian Internet Ban Monitoring",
@@ -328,46 +454,52 @@ const translations = {
         searchPlaceholder: "Введите адрес (например, google.com)...",
         searchBtn: "Проверить",
         resDirect: "Прямой доступ:",
-        resVPN: "Через FreeNet:"
+        resVPN: "Через FreeNet:",
+        subscribe: "ПОДПИСКА VPN",
+        trial: "ПРОБНЫЙ ПЕРИОД",
+        modalTitle: "Доступ создан!",
+        modalSub: "Ваша подписка на 1ГБ готова.",
+        btnCopy: "Копировать",
+        btnCopied: "Скопировано!",
+        limitText: "Лимит: 1ГБ на пользователя. Аккаунт отключится после исчерпания трафика."
     }
 };
 
 let currentLang = "en";
 
 const siteCategories = {
+    "Social & Communication": [
+        { name: "Youtube", url: "https://youtube.com", icon: "tv" },
+        { name: "Telegram", url: "https://t.me", icon: "users" },
+        { name: "Whatsapp", url: "https://whatsapp.com", icon: "globe" },
+        { name: "Facebook", url: "https://facebook.com", icon: "users" },
+        { name: "Instagram", url: "https://instagram.com", icon: "users" }
+    ],
     "Search & Information": [
         { name: "Google", url: "https://google.com", icon: "search" },
         { name: "Baidu", url: "https://baidu.com", icon: "search" },
         { name: "Wikipedia", url: "https://wikipedia.org", icon: "book" },
-        { name: "Whatsapp", url: "https://whatsapp.com", icon: "globe" },
         { name: "Bing", url: "https://bing.com", icon: "search" },
         { name: "Naver", url: "https://naver.com", icon: "search" },
-        { name: "Fandom", url: "https://fandom.com", icon: "book" },
         { name: "Coccoc", url: "https://coccoc.com", icon: "book" },
         { name: "Duckduckgo", url: "https://duckduckgo.com", icon: "search" },
         { name: "Globo", url: "https://globo.com", icon: "globe" },
         { name: "Qq", url: "https://qq.com", icon: "globe" },
         { name: "Msn", url: "https://msn.com", icon: "globe" },
-        { name: "Imdb", url: "https://imdb.com", icon: "globe" },
-        { name: "Espn", url: "https://espn.com", icon: "globe" }
+        { name: "Imdb", url: "https://imdb.com", icon: "globe" }
     ],
     "Social Media": [
-        { name: "Facebook", url: "https://facebook.com", icon: "users" },
         { name: "X", url: "https://x.com", icon: "users" },
-        { name: "Instagram", url: "https://instagram.com", icon: "users" },
         { name: "Tiktok", url: "https://tiktok.com", icon: "users" },
         { name: "Linkedin", url: "https://linkedin.com", icon: "users" },
         { name: "Discord", url: "https://discord.com", icon: "users" },
         { name: "Pinterest", url: "https://pinterest.com", icon: "users" },
-        { name: "Badoo", url: "https://badoo.com", icon: "users" },
-        { name: "Telegram", url: "https://t.me", icon: "users" }
+        { name: "Badoo", url: "https://badoo.com", icon: "users" }
     ],
     "Video & Streaming": [
-        { name: "Youtube", url: "https://youtube.com", icon: "tv" },
         { name: "Netflix", url: "https://netflix.com", icon: "tv" },
         { name: "Twitch", url: "https://twitch.tv", icon: "tv" },
         { name: "Bilibili", url: "https://bilibili.com", icon: "tv" },
-        { name: "Max", url: "https://max.com", icon: "tv" },
         { name: "Roblox", url: "https://roblox.com", icon: "tv" },
         { name: "Vimeo", url: "https://vimeo.com", icon: "tv" },
         { name: "Hulu", url: "https://hulu.com", icon: "tv" },
@@ -389,9 +521,7 @@ const siteCategories = {
         { name: "Nytimes", url: "https://nytimes.com", icon: "file-text" },
         { name: "Bbc", url: "https://bbc.com", icon: "file-text" },
         { name: "Huffpost", url: "https://huffpost.com", icon: "file-text" },
-        { name: "Cnbc", url: "https://cnbc.com", icon: "file-text" },
         { name: "Foxnews", url: "https://foxnews.com", icon: "file-text" },
-        { name: "Washingtonpost", url: "https://washingtonpost.com", icon: "file-text" },
         { name: "Forbes", url: "https://forbes.com", icon: "file-text" },
         { name: "Businessinsider", url: "https://businessinsider.com", icon: "file-text" }
     ],
@@ -404,35 +534,23 @@ const siteCategories = {
     ],
     "Technology & Tools": [
         { name: "Office", url: "https://office.com", icon: "cpu" },
-        { name: "Microsoft", url: "https://microsoft.com", icon: "cpu" },
         { name: "Zoom", url: "https://zoom.us", icon: "cpu" },
         { name: "Chatgpt", url: "https://chatgpt.com", icon: "cpu" },
         { name: "Github", url: "https://github.com", icon: "cpu" },
-        { name: "Samsung", url: "https://samsung.com", icon: "cpu" },
-        { name: "Adobe", url: "https://adobe.com", icon: "cpu" },
         { name: "Wordpress", url: "https://wordpress.com", icon: "cpu" },
         { name: "Apple", url: "https://apple.com", icon: "cpu" },
-        { name: "Imgur", url: "https://imgur.com", icon: "cpu" },
-        { name: "Canva", url: "https://canva.com", icon: "cpu" },
-        { name: "Fedex", url: "https://fedex.com", icon: "cpu" },
         { name: "Usps", url: "https://usps.com", icon: "cpu" },
-        { name: "Speedtest", url: "https://speedtest.net", icon: "cpu" },
         { name: "Flickr", url: "https://flickr.com", icon: "cpu" }
     ],
     "Travel & Real Estate": [
-        { name: "Indeed", url: "https://indeed.com", icon: "map-pin" },
-        { name: "Craigslist", url: "https://craigslist.org", icon: "map-pin" },
         { name: "Booking", url: "https://booking.com", icon: "map-pin" },
-        { name: "Zillow", url: "https://zillow.com", icon: "map-pin" },
-        { name: "Yelp", url: "https://yelp.com", icon: "map-pin" },
-        { name: "Tripadvisor", url: "https://tripadvisor.com", icon: "map-pin" }
+        { name: "Yelp", url: "https://yelp.com", icon: "map-pin" }
     ],
     "Adult Content": [
         { name: "Xvideos", url: "https://xvideos.com", icon: "alert-triangle" },
         { name: "Pornhub", url: "https://pornhub.com", icon: "alert-triangle" },
         { name: "Xnxx", url: "https://xnxx.com", icon: "alert-triangle" },
         { name: "Live", url: "https://live.com", icon: "alert-triangle" },
-        { name: "Onlyfans", url: "https://onlyfans.com", icon: "alert-triangle" },
         { name: "YouPorn", url: "https://www.youporn.com", icon: "heart" }
     ]
 };
@@ -563,6 +681,7 @@ function toggleLanguage() {
     document.getElementById("btnCustom").textContent = t.searchBtn;
     document.getElementById("lblResDirect").textContent = t.resDirect;
     document.getElementById("lblResVPN").textContent = t.resVPN;
+    document.getElementById('txtSubscribe').textContent = t.subscribe;
 
     const cdVal = document.getElementById("customDirectVal");
     const cvVal = document.getElementById("customVPNVal");
@@ -791,8 +910,8 @@ async function startGraphForSite(url, name, isAuto = false) {
             const freePct = Math.round(((totalReqs - freeFails) / totalReqs) * 100);
             document.getElementById('directPctBig').textContent = dirPct + '%';
             document.getElementById('freenetPctBig').textContent = freePct + '%';
-            latencyChart.data.datasets[0].label = 'Direct Access (Lat)';
-            latencyChart.data.datasets[1].label = 'FreeNet Access (Lat)';
+            latencyChart.data.datasets[0].label = 'Direct Access';
+            latencyChart.data.datasets[1].label = 'FreeNet Access';
         }
 
         latencyChart.update();
@@ -878,6 +997,49 @@ buildGrid();
     startChecks("freenet");
     startChecks("direct");
 })();
+async function requestTrial() {
+    const btn = document.getElementById('btnTrial');
+    const originalText = document.getElementById('txtTrial').textContent;
+    
+    btn.disabled = true;
+    document.getElementById('txtTrial').textContent = "...";
+    
+    try {
+        const resp = await fetch('/api/trial');
+        const data = await resp.json();
+        
+        if (data.subscription_url) {
+            document.getElementById('trialLink').textContent = data.subscription_url;
+            document.getElementById('trialModal').style.display = 'flex';
+        } else {
+            alert(data.error || "Failed to create trial.");
+        }
+    } catch (e) {
+        alert("Server error. Please try again later.");
+    } finally {
+        btn.disabled = false;
+        document.getElementById('txtTrial').textContent = originalText;
+    }
+}
+
+function closeTrialModal() {
+    document.getElementById('trialModal').style.display = 'none';
+}
+
+function copyTrialLink() {
+    const link = document.getElementById('trialLink').textContent;
+    navigator.clipboard.writeText(link).then(() => {
+        const btn = document.getElementById('btnCopy');
+        const originalText = btn.textContent;
+        const t = translations[currentLang];
+        btn.textContent = t.btnCopied;
+        btn.style.background = "#48bb78";
+        setTimeout(() => {
+            btn.textContent = t.btnCopy;
+            btn.style.background = "#64ffda";
+        }, 2000);
+    });
+}
 </script>
 </body>
 </html>

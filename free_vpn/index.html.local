@@ -240,7 +240,7 @@
 <div class="container">
     <header class="header">
         <div class="brand" style="display: flex; align-items: center; gap: 20px;">
-            <img src="assets/icon/app_icon.png" alt="FreeNet Logo" class="header-logo">
+            <img src="app_icon.png" alt="FreeNet Logo" class="header-logo">
             <div style="display: flex; flex-direction: column;">
                 <h1 id="pageTitle" style="margin: 0;">Russian Internet Ban Monitoring</h1>
                 <span style="color: #8892b0; font-size: 0.9rem; margin-top: 5px; font-family: 'Inter', sans-serif;">Powered by FreeNet Monster VPN</span>
@@ -284,7 +284,20 @@
                     </button>
                 </a>
             </div>
-            <span style="font-size: 0.7rem; color: #8892b0; font-family: var(--font-mono);">via @FreeNetMonsterBot</span>
+            <div style="display: flex; justify-content: flex-end; align-items: center; gap: 15px;">
+                <span style="font-size: 0.7rem; color: #8892b0; font-family: var(--font-mono);">via @FreeNetMonsterBot</span>
+                <button id="langToggle" style="
+                    background: rgba(100, 255, 218, 0.1);
+                    border: 1px solid #64ffda;
+                    color: #64ffda;
+                    padding: 4px 10px;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    font-size: 0.75rem;
+                    font-family: var(--font-mono);
+                    font-weight: 600;
+                ">RU</button>
+            </div>
         </div>
     </header>
 
@@ -328,7 +341,11 @@
                 <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M8 12l3 3 5-5"></path></svg>
             </div>
             <h2 id="modalTitle" style="color: #e6f1ff; margin-bottom: 0.5rem; font-family: 'Outfit';">Trial Created!</h2>
-            <p id="modalSub" style="color: #8892b0; font-size: 0.9rem; margin-bottom: 2rem;">Your 1GB trial subscription is ready.</p>
+            <p id="modalSub" style="color: #8892b0; font-size: 0.9rem; margin-bottom: 1.5rem;">Your 1GB trial subscription is ready.</p>
+            
+            <div id="qrcodeCont" style="background: white; padding: 10px; border-radius: 8px; display: inline-block; margin-bottom: 1.5rem;">
+                <img id="trialQR" src="" alt="QR Code" style="width: 150px; height: 150px; display: block;">
+            </div>
             
             <div style="
                 background: rgba(0,0,0,0.3);
@@ -353,10 +370,21 @@
                 font-weight: 700;
                 text-transform: uppercase;
                 letter-spacing: 1px;
-                margin-bottom: 1rem;
+                margin-bottom: 1.5rem;
+                cursor: pointer;
             ">Copy Link</button>
+
+            <div style="text-align: left; background: rgba(0,0,0,0.2); padding: 1.2rem; border-radius: 8px; margin-bottom: 1.5rem; border: 1px solid rgba(100,255,218,0.1);">
+                <h4 id="howToUseTitle" style="color: #ccd6f6; margin: 0 0 10px 0; font-size: 0.9rem; font-family: 'Outfit';">How to use:</h4>
+                <ul style="color: #8892b0; font-size: 0.8rem; padding-left: 1.2rem; margin: 0; line-height: 1.6; font-family: 'Inter';">
+                    <li id="howToUseStep1">1. Copy the link above.</li>
+                    <li id="howToUseStep2">2. Install a VPN client (v2rayNG, Streisand, or Shadowrocket).</li>
+                    <li id="howToUseStep3">3. Add the link as a "Subscription" or "Import from Clipboard".</li>
+                    <li id="howToUseStep4">4. Update the server list and connect.</li>
+                </ul>
+            </div>
             
-            <p style="color: #8892b0; font-size: 0.75rem;">Limit: 1GB per user. Accounts expire after data usage.</p>
+            <p id="limitText" style="color: #8892b0; font-size: 0.75rem;">Limit: 1GB per user. Accounts expire after data usage.</p>
         </div>
     </div>
 
@@ -433,7 +461,12 @@ const translations = {
         modalSub: "Your 1GB trial subscription is ready.",
         btnCopy: "Copy Link",
         btnCopied: "Copied!",
-        limitText: "Limit: 1GB per user. Accounts expire after data usage."
+        limitText: "Limit: 1GB per user. Accounts expire after data usage.",
+        howToUseTitle: "How to use:",
+        howToUseStep1: "1. Copy the link above.",
+        howToUseStep2: "2. Install a VPN client (v2rayNG, Streisand, or Shadowrocket).",
+        howToUseStep3: "3. Add the link as a 'Subscription' or 'Import from Clipboard'.",
+        howToUseStep4: "4. Update the server list and connect."
     },
     ru: {
         title: "Russian Internet Ban Monitoring",
@@ -461,97 +494,35 @@ const translations = {
         modalSub: "Ваша подписка на 1ГБ готова.",
         btnCopy: "Копировать",
         btnCopied: "Скопировано!",
-        limitText: "Лимит: 1ГБ на пользователя. Аккаунт отключится после исчерпания трафика."
+        limitText: "Лимит: 1ГБ на пользователя. Аккаунт отключится после исчерпания трафика.",
+        howToUseTitle: "Как использовать:",
+        howToUseStep1: "1. Скопируйте ссылку выше.",
+        howToUseStep2: "2. Установите VPN-клиент (v2rayNG, Streisand или Shadowrocket).",
+        howToUseStep3: "3. Добавьте ссылку как «Подписку» или «Импорт из буфера обмена».",
+        howToUseStep4: "4. Обновите список серверов и подключитесь."
     }
 };
 
 let currentLang = "en";
 
 const siteCategories = {
-    "Social & Communication": [
+    "Sites": [
         { name: "Youtube", url: "https://youtube.com", icon: "tv" },
         { name: "Telegram", url: "https://t.me", icon: "users" },
-        { name: "Whatsapp", url: "https://whatsapp.com", icon: "globe" },
+        { name: "Instagram", url: "https://instagram.com", icon: "users" },
         { name: "Facebook", url: "https://facebook.com", icon: "users" },
-        { name: "Instagram", url: "https://instagram.com", icon: "users" }
-    ],
-    "Search & Information": [
+        { name: "Whatsapp", url: "https://whatsapp.com", icon: "globe" },
         { name: "Google", url: "https://google.com", icon: "search" },
-        { name: "Baidu", url: "https://baidu.com", icon: "search" },
-        { name: "Wikipedia", url: "https://wikipedia.org", icon: "book" },
-        { name: "Bing", url: "https://bing.com", icon: "search" },
-        { name: "Naver", url: "https://naver.com", icon: "search" },
-        { name: "Coccoc", url: "https://coccoc.com", icon: "book" },
-        { name: "Duckduckgo", url: "https://duckduckgo.com", icon: "search" },
-        { name: "Globo", url: "https://globo.com", icon: "globe" },
-        { name: "Qq", url: "https://qq.com", icon: "globe" },
-        { name: "Msn", url: "https://msn.com", icon: "globe" },
-        { name: "Imdb", url: "https://imdb.com", icon: "globe" }
-    ],
-    "Social Media": [
-        { name: "X", url: "https://x.com", icon: "users" },
-        { name: "Tiktok", url: "https://tiktok.com", icon: "users" },
         { name: "Linkedin", url: "https://linkedin.com", icon: "users" },
-        { name: "Discord", url: "https://discord.com", icon: "users" },
-        { name: "Pinterest", url: "https://pinterest.com", icon: "users" },
-        { name: "Badoo", url: "https://badoo.com", icon: "users" }
-    ],
-    "Video & Streaming": [
         { name: "Netflix", url: "https://netflix.com", icon: "tv" },
-        { name: "Twitch", url: "https://twitch.tv", icon: "tv" },
-        { name: "Bilibili", url: "https://bilibili.com", icon: "tv" },
-        { name: "Roblox", url: "https://roblox.com", icon: "tv" },
-        { name: "Vimeo", url: "https://vimeo.com", icon: "tv" },
-        { name: "Hulu", url: "https://hulu.com", icon: "tv" },
-        { name: "Dailymotion", url: "https://dailymotion.com", icon: "tv" },
-        { name: "Soundcloud", url: "https://soundcloud.com", icon: "music" },
-        { name: "Pandora", url: "https://pandora.com", icon: "music" }
-    ],
-    "E-Commerce & Retail": [
-        { name: "Amazon", url: "https://amazon.com", icon: "shopping-cart" },
         { name: "Aliexpress", url: "https://aliexpress.com", icon: "shopping-cart" },
-        { name: "Walmart", url: "https://walmart.com", icon: "shopping-cart" },
-        { name: "Target", url: "https://target.com", icon: "shopping-cart" },
-        { name: "Lowes", url: "https://lowes.com", icon: "shopping-cart" }
-    ],
-    "News & Media": [
-        { name: "Weather", url: "https://weather.com", icon: "file-text" },
-        { name: "Accuweather", url: "https://accuweather.com", icon: "file-text" },
-        { name: "Cnn", url: "https://cnn.com", icon: "file-text" },
-        { name: "Nytimes", url: "https://nytimes.com", icon: "file-text" },
         { name: "Bbc", url: "https://bbc.com", icon: "file-text" },
-        { name: "Huffpost", url: "https://huffpost.com", icon: "file-text" },
         { name: "Foxnews", url: "https://foxnews.com", icon: "file-text" },
-        { name: "Forbes", url: "https://forbes.com", icon: "file-text" },
-        { name: "Businessinsider", url: "https://businessinsider.com", icon: "file-text" }
-    ],
-    "Business & Finance": [
-        { name: "Paypal", url: "https://paypal.com", icon: "dollar-sign" },
-        { name: "Chase", url: "https://chase.com", icon: "dollar-sign" },
-        { name: "Wellsfargo", url: "https://wellsfargo.com", icon: "dollar-sign" },
-        { name: "Capitalone", url: "https://capitalone.com", icon: "dollar-sign" },
-        { name: "Bankofamerica", url: "https://bankofamerica.com", icon: "dollar-sign" }
-    ],
-    "Technology & Tools": [
-        { name: "Office", url: "https://office.com", icon: "cpu" },
-        { name: "Zoom", url: "https://zoom.us", icon: "cpu" },
         { name: "Chatgpt", url: "https://chatgpt.com", icon: "cpu" },
-        { name: "Github", url: "https://github.com", icon: "cpu" },
-        { name: "Wordpress", url: "https://wordpress.com", icon: "cpu" },
-        { name: "Apple", url: "https://apple.com", icon: "cpu" },
-        { name: "Usps", url: "https://usps.com", icon: "cpu" },
-        { name: "Flickr", url: "https://flickr.com", icon: "cpu" }
-    ],
-    "Travel & Real Estate": [
-        { name: "Booking", url: "https://booking.com", icon: "map-pin" },
-        { name: "Yelp", url: "https://yelp.com", icon: "map-pin" }
-    ],
-    "Adult Content": [
         { name: "Xvideos", url: "https://xvideos.com", icon: "alert-triangle" },
         { name: "Pornhub", url: "https://pornhub.com", icon: "alert-triangle" },
         { name: "Xnxx", url: "https://xnxx.com", icon: "alert-triangle" },
-        { name: "Live", url: "https://live.com", icon: "alert-triangle" },
-        { name: "YouPorn", url: "https://www.youporn.com", icon: "heart" }
+        { name: "Youport", url: "https://www.youporn.com", icon: "heart" }
     ]
 };
 
@@ -682,11 +653,35 @@ function toggleLanguage() {
     document.getElementById("lblResDirect").textContent = t.resDirect;
     document.getElementById("lblResVPN").textContent = t.resVPN;
     document.getElementById('txtSubscribe').textContent = t.subscribe;
+    const qrHint = document.getElementById("qrHint");
+    if (qrHint) qrHint.textContent = currentLang === "ru" ? "Сканируйте или сделайте скриншот" : "Scan or Screenshot to Import";
 
     const cdVal = document.getElementById("customDirectVal");
-    const cvVal = document.getElementById("customVPNVal");
-    if (cdVal.getAttribute("data-status")) updateBadgeText(cdVal, cdVal.getAttribute("data-status"), t);
     if (cvVal.getAttribute("data-status")) updateBadgeText(cvVal, cvVal.getAttribute("data-status"), t);
+    
+    // Updated Trial Modal text
+    const mTitle = document.getElementById("modalTitle");
+    const mSub = document.getElementById("modalSub");
+    const bCopy = document.getElementById("btnCopy");
+    const lText = document.getElementById("limitText");
+    const hTitle = document.getElementById("howToUseTitle");
+    const hStep1 = document.getElementById("howToUseStep1");
+    const hStep2 = document.getElementById("howToUseStep2");
+    const hStep3 = document.getElementById("howToUseStep3");
+    const hStep4 = document.getElementById("howToUseStep4");
+
+    if (mTitle) mTitle.textContent = t.modalTitle;
+    if (mSub) mSub.textContent = t.modalSub;
+    if (bCopy) bCopy.textContent = t.btnCopy;
+    if (lText) lText.textContent = t.limitText;
+    if (hTitle) hTitle.textContent = t.howToUseTitle;
+    if (hStep1) hStep1.textContent = t.howToUseStep1;
+    if (hStep2) hStep2.textContent = t.howToUseStep2;
+    if (hStep3) hStep3.textContent = t.howToUseStep3;
+    if (hStep4) hStep4.textContent = t.howToUseStep4;
+    
+    const txtTrial = document.getElementById('txtTrial');
+    if (txtTrial) txtTrial.textContent = t.trial;
 
     allSites.forEach(s => {
         const id = s.name.replace(/[^a-z0-9]/gi, "_");
@@ -741,11 +736,6 @@ function buildGrid() {
     const t = translations[currentLang];
 
     for (const [cat, sites] of Object.entries(siteCategories)) {
-        const title = document.createElement("h2");
-        title.className = "category-title";
-        title.textContent = cat;
-        container.appendChild(title);
-
         const grid = document.createElement("div");
         grid.className = "grid";
         
@@ -1009,6 +999,12 @@ async function requestTrial() {
         const data = await resp.json();
         
         if (data.subscription_url) {
+            // Use the first direct proxy link (vless://) for the QR code as requested for better app compatibility (like V2Box)
+            // But keep the subscription URL for copying as it's better for updates.
+            const qrContent = (data.links && data.links.length > 0) ? data.links[0] : data.subscription_url;
+            const encodedUrl = encodeURIComponent(qrContent);
+            document.getElementById('trialQR').src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodedUrl}&margin=10`;
+            
             document.getElementById('trialLink').textContent = data.subscription_url;
             document.getElementById('trialModal').style.display = 'flex';
         } else {
