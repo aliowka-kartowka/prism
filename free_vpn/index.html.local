@@ -335,30 +335,7 @@ const translations = {
 let currentLang = "en";
 
 const siteCategories = {
-    "Social & Video": [
-        { name: "YouTube", url: "https://www.youtube.com", icon: "youtube" },
-        { name: "Instagram", url: "https://www.instagram.com", icon: "instagram" },
-        { name: "Facebook", url: "https://www.facebook.com", icon: "facebook" },
-        { name: "X", url: "https://x.com", icon: "twitter" }
-    ],
-    "Communication": [
-        { name: "Discord", url: "https://discord.com", icon: "message-square" },
-        { name: "Telegram", url: "https://t.me", icon: "send" },
-        { name: "WhatsApp", url: "https://www.whatsapp.com", icon: "message-circle" }
-    ],
-    "Entertainment": [
-        { name: "Netflix", url: "https://www.netflix.com", icon: "film" },
-        { name: "Spotify", url: "https://www.spotify.com", icon: "music" },
-        { name: "Twitch", url: "https://www.twitch.tv", icon: "tv" },
-        { name: "TikTok", url: "https://www.tiktok.com", icon: "video" }
-    ],
-    "Knowledge & Work": [
-        { name: "Google", url: "https://www.google.com", icon: "search" },
-        { name: "Wikipedia", url: "https://www.wikipedia.org", icon: "globe" },
-        { name: "Pinterest", url: "https://www.pinterest.com", icon: "image" },
-        { name: "AliExpress", url: "https://www.aliexpress.com", icon: "shopping-cart" }
-    ],
-        "Search & Information": [
+    "Search & Information": [
         { name: "Google", url: "https://google.com", icon: "search" },
         { name: "Baidu", url: "https://baidu.com", icon: "search" },
         { name: "Wikipedia", url: "https://wikipedia.org", icon: "book" },
@@ -389,7 +366,7 @@ const siteCategories = {
         { name: "Discord", url: "https://discord.com", icon: "users" },
         { name: "Pinterest", url: "https://pinterest.com", icon: "users" },
         { name: "Badoo", url: "https://badoo.com", icon: "users" },
-        { name: "T", url: "https://t.me", icon: "users" }
+        { name: "Telegram", url: "https://t.me", icon: "users" }
     ],
     "Video & Streaming": [
         { name: "Youtube", url: "https://youtube.com", icon: "tv" },
@@ -471,13 +448,7 @@ const siteCategories = {
         { name: "Pornhub", url: "https://pornhub.com", icon: "alert-triangle" },
         { name: "Xnxx", url: "https://xnxx.com", icon: "alert-triangle" },
         { name: "Live", url: "https://live.com", icon: "alert-triangle" },
-        { name: "Onlyfans", url: "https://onlyfans.com", icon: "alert-triangle" }
-    ]
-
-
-    "Adult Content": [
-        { name: "Pornhub", url: "https://www.pornhub.com", icon: "heart" },
-        { name: "XVideos", url: "https://www.xvideos.com", icon: "heart" },
+        { name: "Onlyfans", url: "https://onlyfans.com", icon: "alert-triangle" },
         { name: "YouPorn", url: "https://www.youporn.com", icon: "heart" }
     ]
 };
