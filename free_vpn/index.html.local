@@ -397,7 +397,6 @@ const siteCategories = {
         { name: "Netflix", url: "https://netflix.com", icon: "tv" },
         { name: "Twitch", url: "https://twitch.tv", icon: "tv" },
         { name: "Bilibili", url: "https://bilibili.com", icon: "tv" },
-        { name: "Max", url: "https://max.com", icon: "tv" },
         { name: "Roblox", url: "https://roblox.com", icon: "tv" },
         { name: "Vimeo", url: "https://vimeo.com", icon: "tv" },
         { name: "Hulu", url: "https://hulu.com", icon: "tv" },
