@@ -630,27 +630,39 @@ async function runCustomCheck() {
 
     try {
         const startTotal = Date.now();
-        // Run both simultaneously
+        // Run both simultaneously with individual error handling to prevent Promise.all from failing
         await Promise.all([
             (async () => {
                 const s = Date.now();
-                const resV = await fetchWithTimeout("/api/check?url=" + encodeURIComponent(url) + "&use_vpn=true");
-                const dataV = await resV.json();
-                const lat = Date.now() - s;
-                const statusV = dataV.status === "down" ? "0" : "1";
-                vVal.setAttribute("data-status", statusV);
-                updateBadgeText(vVal, statusV, t);
-                latencyHistory.freenet.push(lat);
+                try {
+                    const resV = await fetchWithTimeout("/api/check?url=" + encodeURIComponent(url) + "&use_vpn=true");
+                    const dataV = await resV.json();
+                    const lat = Date.now() - s;
+                    const statusV = dataV.status === "down" ? "0" : "1";
+                    vVal.setAttribute("data-status", statusV);
+                    updateBadgeText(vVal, statusV, t);
+                    latencyHistory.freenet.push(lat);
+                } catch (e) {
+                    vVal.setAttribute("data-status", "0");
+                    updateBadgeText(vVal, "0", t);
+                    latencyHistory.freenet.push(5000); 
+                }
             })(),
             (async () => {
                 const s = Date.now();
-                const resD = await fetchWithTimeout("/api/check?url=" + encodeURIComponent(url) + "&use_vpn=false");
-                const dataD = await resD.json();
-                const lat = Date.now() - s;
-                const statusD = dataD.status === "down" ? "0" : "1";
-                dVal.setAttribute("data-status", statusD);
-                updateBadgeText(dVal, statusD, t);
-                latencyHistory.direct.push(lat);
+                try {
+                    const resD = await fetchWithTimeout("/api/check?url=" + encodeURIComponent(url) + "&use_vpn=false");
+                    const dataD = await resD.json();
+                    const lat = Date.now() - s;
+                    const statusD = dataD.status === "down" ? "0" : "1";
+                    dVal.setAttribute("data-status", statusD);
+                    updateBadgeText(dVal, statusD, t);
+                    latencyHistory.direct.push(lat);
+                } catch (e) {
+                    dVal.setAttribute("data-status", "0");
+                    updateBadgeText(dVal, "0", t);
+                    latencyHistory.direct.push(5000);
+                }
             })()
         ]);
 
@@ -668,12 +680,14 @@ async function runCustomCheck() {
         if (autoRefreshEnabled) {
             autoCheckTimer = setTimeout(runCustomCheck, 5000);
         }
-    } catch (e) {
-        if (autoRefreshEnabled) {
             autoCheckTimer = setTimeout(runCustomCheck, 5000);
         }
-        if (!vVal.getAttribute("data-status")) { vVal.textContent = t.offline; vVal.className = "badge-status offline"; }
-        if (!dVal.getAttribute("data-status")) { dVal.textContent = t.offline; dVal.className = "badge-status offline"; }
+    } catch (e) {
+        console.error("Custom check fail:", e);
+        // We still check for auto-refresh here just in case of unexpected errors
+        if (autoRefreshEnabled && !autoCheckTimer) {
+            autoCheckTimer = setTimeout(runCustomCheck, 5000);
+        }
     }
     btn.disabled = false;
 }
