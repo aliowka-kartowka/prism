@@ -10,16 +10,44 @@ import mimetypes
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
 STATIC_DIR = os.path.dirname(os.path.abspath(__file__))
 XRAY_SOCKS_PROXY = 'socks5h://127.0.0.1:1081'
+
+ALLOWED_DOMAINS = {
+    'www.youtube.com', 'www.instagram.com', 'www.facebook.com', 'twitter.com',
+    'discord.com', 't.me', 'www.whatsapp.com', 'www.netflix.com', 'www.spotify.com',
+    'www.twitch.tv', 'www.tiktok.com', 'www.google.com', 'www.wikipedia.org',
+    'www.pinterest.com', 'www.aliexpress.com', 'google.com', 'youtube.com',
+    'facebook.com', 'instagram.com', 'baidu.com', 'wikipedia.org', 'yandex.ru',
+    'yahoo.com', 'xvideos.com', 'whatsapp.com', 'amazon.com', 'xhamster.com',
+    'pornhub.com', 'xnxx.com', 'live.com', 'yahoo.co.jp', 'netflix.com', 'zhanqi.tv',
+    'reddit.com', 'tiktok.com', 'office.com', 'linkedin.com', 'vk.com', 'bing.com',
+    'dzen.ru', 'twitch.tv', 'mail.ru', 'weather.com', 'naver.com', 'bilibili.com',
+    'microsoft.com', 'max.com', 'zoom.us', 'chatgpt.com', 'pinterest.com', 'quora.com',
+    'aliexpress.com', 'github.com', 'fandom.com', 'coccoc.com', 'onlyfans.com',
+    'samsung.com', 'roblox.com', 'ebay.com', 'duckduckgo.com', 'badoo.com', 'vimeo.com',
+    'globo.com', 'sohu.com', 'paypal.com', 'qq.com', 'hulu.com', 'accuweather.com',
+    'cnn.com', 'msn.com', 'imdb.com', 'adobe.com', 'wordpress.com', 'espn.com',
+    'nytimes.com', 'apple.com', 'walmart.com', 'bbc.com', 'indeed.com', 'craigslist.org',
+    'booking.com', 'imgur.com', 'canva.com', 'chase.com', 'zillow.com', 'wayfair.com',
+    'wellsfargo.com', 'homedepot.com', 'capitalone.com', 'bankofamerica.com',
+    'target.com', 'etsy.com', 'bestbuy.com', 'lowes.com', 'ups.com', 'fedex.com',
+    'usps.com', 'speedtest.net', 'huffpost.com', 'dailymotion.com', 'soundcloud.com',
+    'flickr.com', 'yelp.com', 'pandora.com', 'tripadvisor.com', 'cnbc.com', 'foxnews.com',
+    'washingtonpost.com', 'forbes.com', 'businessinsider.com', 'bloomberg.com',
+    'wsj.com', 'www.pornhub.com', 'www.xvideos.com', 'www.youporn.com'
+}
 
 def check_url(url, use_vpn=False):
     proxies = None
     if use_vpn:
         proxies = {'http': XRAY_SOCKS_PROXY, 'https': XRAY_SOCKS_PROXY}
     try:
-        logger.info(f'Checking {url} (VPN: {use_vpn})')
-        resp = requests.get(url, proxies=proxies, timeout=10, verify=False, headers={'User-Agent': 'Mozilla/5.0'})
+        # Avoid downloading entire payloads
+        resp = requests.head(url, proxies=proxies, timeout=3.5, verify=False, allow_redirects=True, headers={'User-Agent': 'Mozilla/5.0'})
         return resp.status_code < 400
     except Exception as e:
         logger.error(f'Error checking {url} (VPN: {use_vpn}): {e}')
@@ -45,6 +73,19 @@ class Handler(BaseHTTPRequestHandler):
             use_vpn = params.get('use_vpn', ['false'])[0].lower() == 'true'
 
             if not target_url:
+                self.send_response(400)
+                self.end_headers()
+                return
+
+            try:
+                parsed_url = urlparse.urlparse(target_url)
+                domain = parsed_url.netloc
+                if domain not in ALLOWED_DOMAINS:
+                    self.send_response(403)
+                    self.end_headers()
+                    self.wfile.write(b'{"error": "Forbidden site"}')
+                    return
+            except:
                 self.send_response(400)
                 self.end_headers()
                 return

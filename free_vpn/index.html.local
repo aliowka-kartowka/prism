@@ -818,13 +818,23 @@ async function startChecks(mode) {
     const progress = document.getElementById("progressBar");
     progress.style.width = "10%";
 
-    // Run all sites in parallel for this mode
-    await Promise.all(allSites.map(async (site, index) => {
-        await checkSite(site, isVpn);
-        // Approximation of progress for the mode
-        const currentProgress = parseFloat(progress.style.width);
-        if (currentProgress < 90) progress.style.width = (currentProgress + (80 / allSites.length)) + "%";
-    }));
+    // Run sites with a concurrency limit to prevent browser connection queue timeouts
+    const concurrencyLimit = 5;
+    let activePromises = [];
+    
+    for (let i = 0; i < allSites.length; i++) {
+        const p = checkSite(allSites[i], isVpn).then(() => {
+            const currentProgress = parseFloat(progress.style.width);
+            if (currentProgress < 90) progress.style.width = (currentProgress + (80 / allSites.length)) + "%";
+            activePromises.splice(activePromises.indexOf(p), 1);
+        });
+        activePromises.push(p);
+        
+        if (activePromises.length >= concurrencyLimit) {
+            await Promise.race(activePromises);
+        }
+    }
+    await Promise.all(activePromises);
 
     progress.style.width = "100%";
     setTimeout(() => {
