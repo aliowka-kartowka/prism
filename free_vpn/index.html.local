@@ -287,9 +287,17 @@
         </div>
 
         <div id="chartContainer" style="margin-top: 1.5rem; height: 260px; background: rgba(0,0,0,0.2); border-radius: 8px; padding: 1rem; border: 1px solid #233554; display: none; position: relative;">
+            <div id="liveIndicator" style="position: absolute; top: 10px; right: 10px; color: var(--success); font-size: 0.7rem; font-family: var(--font-mono); display: flex; align-items: center; gap: 5px;">
+                <span style="width: 6px; height: 6px; background: var(--success); border-radius: 50%; display: inline-block; animation: blink 1s infinite;"></span>
+                LIVE
+            </div>
             <canvas id="latencyChart"></canvas>
         </div>
     </section>
+
+    <style>
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+    </style>
 
     <div id="monitorGrid"></div>
 
@@ -380,6 +388,8 @@ const siteCategories = {
 const allSites = Object.values(siteCategories).flat();
 let checkingFreenet = false;
 let checkingDirect = false;
+let autoRefreshEnabled = true;
+let autoCheckTimer = null;
 
 let latencyChart = null;
 const latencyHistory = {
@@ -607,6 +617,8 @@ async function runCustomCheck() {
     if (!url) return;
     if (!url.startsWith("http")) url = "https://" + url;
     
+    if (autoCheckTimer) clearTimeout(autoCheckTimer);
+    
     const t = translations[currentLang];
     const dVal = document.getElementById("customDirectVal");
     const vVal = document.getElementById("customVPNVal");
@@ -651,7 +663,15 @@ async function runCustomCheck() {
         } else {
             latencyChart.update();
         }
+
+        // Auto-refresh logic
+        if (autoRefreshEnabled) {
+            autoCheckTimer = setTimeout(runCustomCheck, 5000);
+        }
     } catch (e) {
+        if (autoRefreshEnabled) {
+            autoCheckTimer = setTimeout(runCustomCheck, 5000);
+        }
         if (!vVal.getAttribute("data-status")) { vVal.textContent = t.offline; vVal.className = "badge-status offline"; }
         if (!dVal.getAttribute("data-status")) { dVal.textContent = t.offline; dVal.className = "badge-status offline"; }
     }
