@@ -156,12 +156,14 @@ def map_user_links(user):
                 new_host_port = f"vpn.freenet.monster:{port}"
                 link = f"{parts[0]}@{new_host_port}/{rest}"
             
-            # Change remark (everything after #) to FreeNet
+            # Change remark to FreeNet (username) for better identification
+            import re
+            user_id = user.get('username', 'trial')
+            remark = f"FreeNet ({user_id})"
             if '#' in link:
-                base, _ = link.split('#', 1)
-                link = f"{base}#FreeNet"
+                link = re.sub(r'#.*$', f"#{remark}", link)
             else:
-                link = f"{link}#FreeNet"
+                link = f"{link}#{remark}"
         new_links.append(link)
     user['links'] = new_links
     return user
@@ -244,7 +246,7 @@ class Handler(BaseHTTPRequestHandler):
 
             # Generate random username
             suffix = ''.join(random.choices(string.ascii_lowercase + string.digits, k=6))
-            username = f"FreeNet-trial_{suffix}"
+            username = f"user_{suffix}"
             
             user = create_marzban_trial(username)
             if "error" in user:
