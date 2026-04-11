@@ -406,12 +406,10 @@ const siteCategories = {
         { name: "Wordpress", url: "https://wordpress.com", icon: "cpu" },
         { name: "Apple", url: "https://apple.com", icon: "cpu" },
         { name: "Imgur", url: "https://imgur.com", icon: "cpu" },
-        { name: "Fedex", url: "https://fedex.com", icon: "cpu" },
         { name: "Usps", url: "https://usps.com", icon: "cpu" },
         { name: "Flickr", url: "https://flickr.com", icon: "cpu" }
     ],
     "Travel & Real Estate": [
-        { name: "Indeed", url: "https://indeed.com", icon: "map-pin" },
         { name: "Craigslist", url: "https://craigslist.org", icon: "map-pin" },
         { name: "Booking", url: "https://booking.com", icon: "map-pin" },
         { name: "Yelp", url: "https://yelp.com", icon: "map-pin" }
