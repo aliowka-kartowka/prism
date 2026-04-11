@@ -525,11 +525,6 @@ function initLatencyChart() {
             responsive: true,
             maintainAspectRatio: false,
             interaction: { mode: 'index', intersect: false },
-            plugins: {
-                legend: {
-                    display: false
-                }
-            },
             scales: {
                 x: {
                     grid: { color: 'rgba(255,255,255,0.05)' },
@@ -544,7 +539,7 @@ function initLatencyChart() {
             },
             plugins: {
                 legend: {
-                    display: true,
+                    display: false,
                     position: 'top',
                     labels: { color: '#e6f1ff', font: { family: 'Outfit', size: 12 }, usePointStyle: true }
                 },
