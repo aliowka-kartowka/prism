@@ -413,7 +413,10 @@ function initLatencyChart() {
                     borderWidth: 2,
                     tension: 0.3,
                     fill: true,
-                    pointBackgroundColor: '#ff4d4d'
+                    pointBackgroundColor: '#ff4d4d',
+                    pointStyle: (ctx) => (ctx.raw >= 5000 ? 'crossRot' : 'circle'),
+                    pointRadius: (ctx) => (ctx.raw >= 5000 ? 8 : 4),
+                    pointHoverRadius: (ctx) => (ctx.raw >= 5000 ? 10 : 6)
                 },
                 {
                     label: 'FreeNet Access (ms)',
@@ -423,7 +426,10 @@ function initLatencyChart() {
                     borderWidth: 2,
                     tension: 0.3,
                     fill: true,
-                    pointBackgroundColor: '#64ffda'
+                    pointBackgroundColor: '#64ffda',
+                    pointStyle: (ctx) => (ctx.raw >= 5000 ? 'crossRot' : 'circle'),
+                    pointRadius: (ctx) => (ctx.raw >= 5000 ? 8 : 4),
+                    pointHoverRadius: (ctx) => (ctx.raw >= 5000 ? 10 : 6)
                 }
             ]
         },
@@ -612,12 +618,23 @@ async function checkSite(site, useVpn) {
     updateStats();
 }
 
-async function runCustomCheck() {
+async function runCustomCheck(isAuto = false) {
     let url = document.getElementById("customUrl").value.trim();
     if (!url) return;
     if (!url.startsWith("http")) url = "https://" + url;
     
     if (autoCheckTimer) clearTimeout(autoCheckTimer);
+
+    if (!isAuto) {
+        // Reset history for a fresh manual check
+        latencyHistory.labels = [];
+        latencyHistory.direct = [];
+        latencyHistory.freenet = [];
+        if (latencyChart) {
+            latencyChart.destroy();
+            latencyChart = null;
+        }
+    }
     
     const t = translations[currentLang];
     const dVal = document.getElementById("customDirectVal");
@@ -678,15 +695,13 @@ async function runCustomCheck() {
 
         // Auto-refresh logic
         if (autoRefreshEnabled) {
-            autoCheckTimer = setTimeout(runCustomCheck, 5000);
-        }
-            autoCheckTimer = setTimeout(runCustomCheck, 5000);
+            autoCheckTimer = setTimeout(() => runCustomCheck(true), 5000);
         }
     } catch (e) {
         console.error("Custom check fail:", e);
         // We still check for auto-refresh here just in case of unexpected errors
         if (autoRefreshEnabled && !autoCheckTimer) {
-            autoCheckTimer = setTimeout(runCustomCheck, 5000);
+            autoCheckTimer = setTimeout(() => runCustomCheck(true), 5000);
         }
     }
     btn.disabled = false;
