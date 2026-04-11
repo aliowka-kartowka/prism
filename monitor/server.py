@@ -5,10 +5,24 @@ import requests
 import logging
 import os
 import mimetypes
+import time
+import threading
+import random
+import string
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
+
+# Marzban Configuration
+MARZBAN_URL = os.getenv('MARZBAN_URL', 'http://127.0.0.1:8080')
+ADMIN_USER = os.getenv('FREENET_ADMIN_USER')
+ADMIN_PASS = os.getenv('FREENET_ADMIN_PASS')
+
+# Rate limiting for trials: 1 per IP per 24 hours
+TRIAL_LIMITS = {}
+TRIAL_LOCK = threading.Lock()
+TRIAL_DURATION = 86400 # 24 hours in seconds
 
 import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -59,6 +73,51 @@ def check_url(url, use_vpn=False):
         logger.error(f'Error checking {url} (VPN: {use_vpn}): {e}')
         return False
 
+def get_marzban_token():
+    url = f"{MARZBAN_URL}/api/admin/token"
+    data = {'username': ADMIN_USER, 'password': ADMIN_PASS}
+    try:
+        response = requests.post(url, data=data, timeout=10)
+        if response.status_code == 200:
+            return response.json()['access_token']
+        else:
+            logger.error(f"Marzban Auth failed: {response.status_code} {response.text}")
+    except Exception as e:
+        logger.error(f"Marzban Auth exception: {e}")
+    return None
+
+def create_marzban_trial(username):
+    token = get_marzban_token()
+    if not token:
+        return {"error": "Authentication failed"}
+    
+    headers = {'Authorization': f'Bearer {token}', 'Content-Type': 'application/json'}
+    url = f"{MARZBAN_URL}/api/user"
+    
+    # 1GB in bytes
+    DATA_LIMIT = 1073741824 
+    
+    user_data = {
+        "username": username,
+        "data_limit": DATA_LIMIT,
+        "proxies": {"vless": {}},
+        "inbounds": {"vless": ["VLESS TCP REALITY"]}
+    }
+    
+    try:
+        response = requests.post(url, headers=headers, json=user_data, timeout=10)
+        if response.status_code in (200, 201):
+            user = response.json()
+            # Map local subscription URL to public one
+            sub_url = user.get('subscription_url', '')
+            if sub_url:
+                user['subscription_url'] = sub_url.replace('http://127.0.0.1:8080', 'https://vpn.freenet.monster')
+            return user
+        else:
+            return {"error": f"Marzban error {response.status_code}: {response.text}"}
+    except Exception as e:
+        return {"error": str(e)}
+
 class Handler(BaseHTTPRequestHandler):
     def send_cors(self):
         self.send_header('Access-Control-Allow-Origin', '*')
@@ -98,7 +157,31 @@ class Handler(BaseHTTPRequestHandler):
 
             is_up = check_url(target_url, use_vpn=use_vpn)
             body = json.dumps({'up': is_up, 'status': 'up' if is_up else 'down'}).encode()
-            self.send_response(200)
+            self.end_headers()
+            self.wfile.write(body)
+
+        elif parsed.path == '/api/trial':
+            client_ip = self.client_address[0]
+            now = time.time()
+            
+            with TRIAL_LOCK:
+                last_time = TRIAL_LIMITS.get(client_ip, 0)
+                if now - last_time < TRIAL_DURATION:
+                    self.send_response(429)
+                    self.send_cors()
+                    self.end_headers()
+                    self.wfile.write(b'{"error": "Rate limit exceeded. 1 trial per 24 hours."}')
+                    return
+                TRIAL_LIMITS[client_ip] = now
+
+            # Generate random username
+            suffix = ''.join(random.choices(string.ascii_lowercase + string.digits, k=6))
+            username = f"trial_{suffix}"
+            
+            result = create_marzban_trial(username)
+            
+            body = json.dumps(result).encode()
+            self.send_response(200 if 'error' not in result else 500)
             self.send_header('Content-Type', 'application/json')
             self.send_header('Content-Length', len(body))
             self.send_cors()

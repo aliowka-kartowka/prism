@@ -248,28 +248,117 @@
         </div>
 
         <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px;">
-            <a href="https://t.me/FreeNetMonsterBot" target="_blank" style="text-decoration: none;">
-                <button id="btnSubscribe" style="
-                    background: linear-gradient(135deg, #64ffda 0%, #48bb78 100%);
-                    color: #0a192f;
-                    font-weight: 700;
-                    border: none;
+            <div style="display: flex; gap: 10px;">
+                <button id="btnTrial" onclick="requestTrial()" style="
+                    background: transparent;
+                    border: 1px solid #64ffda;
+                    color: #64ffda;
+                    font-weight: 600;
                     padding: 0.8rem 1.5rem;
                     border-radius: 8px;
-                    display: flex;
-                    align-items: center;
-                    gap: 10px;
-                    box-shadow: 0 4px 15px rgba(100, 255, 218, 0.3);
-                    animation: pulse 2s infinite;
-                    letter-spacing: 0.5px;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                    font-family: var(--font-mono);
+                    font-size: 0.85rem;
                 ">
-                    <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
-                    <span id="txtSubscribe">GET SUBSCRIPTION</span>
+                    <span id="txtTrial">GET FREE TRIAL</span>
                 </button>
-            </a>
+                <a href="https://t.me/FreeNetMonsterBot" target="_blank" style="text-decoration: none;">
+                    <button id="btnSubscribe" style="
+                        background: linear-gradient(135deg, #64ffda 0%, #48bb78 100%);
+                        color: #0a192f;
+                        font-weight: 700;
+                        border: none;
+                        padding: 0.8rem 1.5rem;
+                        border-radius: 8px;
+                        display: flex;
+                        align-items: center;
+                        gap: 10px;
+                        box-shadow: 0 4px 15px rgba(100, 255, 218, 0.3);
+                        animation: pulse 2s infinite;
+                        letter-spacing: 0.5px;
+                        cursor: pointer;
+                    ">
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                        <span id="txtSubscribe">GET SUBSCRIPTION</span>
+                    </button>
+                </a>
+            </div>
             <span style="font-size: 0.7rem; color: #8892b0; font-family: var(--font-mono);">via @FreeNetMonsterBot</span>
         </div>
     </header>
+
+    <!-- Trial Modal -->
+    <div id="trialModal" style="
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(10, 25, 47, 0.95);
+        z-index: 9999;
+        justify-content: center;
+        align-items: center;
+        backdrop-filter: blur(8px);
+    ">
+        <div style="
+            background: #112240;
+            padding: 2.5rem;
+            border-radius: 16px;
+            max-width: 500px;
+            width: 90%;
+            border: 1px solid #233554;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            text-align: center;
+            position: relative;
+        ">
+            <button onclick="closeTrialModal()" style="
+                position: absolute;
+                top: 15px;
+                right: 15px;
+                background: none;
+                border: none;
+                color: #8892b0;
+                font-size: 1.5rem;
+                padding: 0;
+                line-height: 1;
+            ">&times;</button>
+            <div style="color: #64ffda; margin-bottom: 1.5rem;">
+                <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M8 12l3 3 5-5"></path></svg>
+            </div>
+            <h2 id="modalTitle" style="color: #e6f1ff; margin-bottom: 0.5rem; font-family: 'Outfit';">Trial Created!</h2>
+            <p id="modalSub" style="color: #8892b0; font-size: 0.9rem; margin-bottom: 2rem;">Your 1GB trial subscription is ready.</p>
+            
+            <div style="
+                background: rgba(0,0,0,0.3);
+                padding: 1rem;
+                border-radius: 8px;
+                border: 1px solid #233554;
+                font-family: var(--font-mono);
+                font-size: 0.8rem;
+                color: #64ffda;
+                word-break: break-all;
+                margin-bottom: 1.5rem;
+                text-align: left;
+            " id="trialLink">---</div>
+            
+            <button onclick="copyTrialLink()" id="btnCopy" style="
+                width: 100%;
+                background: #64ffda;
+                color: #0a192f;
+                border: none;
+                padding: 0.8rem;
+                border-radius: 6px;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                margin-bottom: 1rem;
+            ">Copy Link</button>
+            
+            <p style="color: #8892b0; font-size: 0.75rem;">Limit: 1GB per user. Accounts expire after data usage.</p>
+        </div>
+    </div>
 
     <style>
         @keyframes pulse {
@@ -338,7 +427,13 @@ const translations = {
         searchBtn: "Check Now",
         resDirect: "Direct Access:",
         resVPN: "FreeNet Access:",
-        subscribe: "GET SUBSCRIPTION"
+        subscribe: "GET SUBSCRIPTION",
+        trial: "GET FREE TRIAL",
+        modalTitle: "Trial Created!",
+        modalSub: "Your 1GB trial subscription is ready.",
+        btnCopy: "Copy Link",
+        btnCopied: "Copied!",
+        limitText: "Limit: 1GB per user. Accounts expire after data usage."
     },
     ru: {
         title: "Russian Internet Ban Monitoring",
@@ -360,7 +455,13 @@ const translations = {
         searchBtn: "Проверить",
         resDirect: "Прямой доступ:",
         resVPN: "Через FreeNet:",
-        subscribe: "ПОДПИСКА VPN"
+        subscribe: "ПОДПИСКА VPN",
+        trial: "ПРОБНЫЙ ПЕРИОД",
+        modalTitle: "Доступ создан!",
+        modalSub: "Ваша подписка на 1ГБ готова.",
+        btnCopy: "Копировать",
+        btnCopied: "Скопировано!",
+        limitText: "Лимит: 1ГБ на пользователя. Аккаунт отключится после исчерпания трафика."
     }
 };
 
@@ -895,6 +996,49 @@ buildGrid();
     startChecks("freenet");
     startChecks("direct");
 })();
+async function requestTrial() {
+    const btn = document.getElementById('btnTrial');
+    const originalText = document.getElementById('txtTrial').textContent;
+    
+    btn.disabled = true;
+    document.getElementById('txtTrial').textContent = "...";
+    
+    try {
+        const resp = await fetch('/api/trial');
+        const data = await resp.json();
+        
+        if (data.subscription_url) {
+            document.getElementById('trialLink').textContent = data.subscription_url;
+            document.getElementById('trialModal').style.display = 'flex';
+        } else {
+            alert(data.error || "Failed to create trial.");
+        }
+    } catch (e) {
+        alert("Server error. Please try again later.");
+    } finally {
+        btn.disabled = false;
+        document.getElementById('txtTrial').textContent = originalText;
+    }
+}
+
+function closeTrialModal() {
+    document.getElementById('trialModal').style.display = 'none';
+}
+
+function copyTrialLink() {
+    const link = document.getElementById('trialLink').textContent;
+    navigator.clipboard.writeText(link).then(() => {
+        const btn = document.getElementById('btnCopy');
+        const originalText = btn.textContent;
+        const t = translations[currentLang];
+        btn.textContent = t.btnCopied;
+        btn.style.background = "#48bb78";
+        setTimeout(() => {
+            btn.textContent = t.btnCopy;
+            btn.style.background = "#64ffda";
+        }, 2000);
+    });
+}
 </script>
 </body>
 </html>
