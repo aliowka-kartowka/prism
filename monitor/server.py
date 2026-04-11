@@ -17,7 +17,7 @@ STATIC_DIR = os.path.dirname(os.path.abspath(__file__))
 XRAY_SOCKS_PROXY = 'socks5h://127.0.0.1:1081'
 
 ALLOWED_DOMAINS = {
-    'www.youtube.com', 'www.instagram.com', 'www.facebook.com', 'twitter.com',
+    'www.youtube.com', 'www.instagram.com', 'www.facebook.com', 'x.com',
     'discord.com', 't.me', 'www.whatsapp.com', 'www.netflix.com', 'www.spotify.com',
     'www.twitch.tv', 'www.tiktok.com', 'www.google.com', 'www.wikipedia.org',
     'www.pinterest.com', 'www.aliexpress.com', 'google.com', 'youtube.com',

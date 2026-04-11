@@ -336,7 +336,7 @@ const siteCategories = {
         { name: "YouTube", url: "https://www.youtube.com", icon: "youtube" },
         { name: "Instagram", url: "https://www.instagram.com", icon: "instagram" },
         { name: "Facebook", url: "https://www.facebook.com", icon: "facebook" },
-        { name: "Twitter / X", url: "https://twitter.com", icon: "twitter" }
+        { name: "X", url: "https://x.com", icon: "twitter" }
     ],
     "Communication": [
         { name: "Discord", url: "https://discord.com", icon: "message-square" },
@@ -359,7 +359,7 @@ const siteCategories = {
         { name: "Google", url: "https://google.com", icon: "globe" },
         { name: "Youtube", url: "https://youtube.com", icon: "globe" },
         { name: "Facebook", url: "https://facebook.com", icon: "globe" },
-        { name: "Twitter", url: "https://twitter.com", icon: "globe" },
+        { name: "X", url: "https://x.com", icon: "globe" },
         { name: "Instagram", url: "https://instagram.com", icon: "globe" },
         { name: "Baidu", url: "https://baidu.com", icon: "globe" },
         { name: "Wikipedia", url: "https://wikipedia.org", icon: "globe" },
