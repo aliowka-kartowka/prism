@@ -491,8 +491,8 @@ function initLatencyChart() {
                     pointRadius: (ctx) => (latencyHistory.directStatus[ctx.dataIndex] ? 8 : 4),
                     pointHoverRadius: (ctx) => (latencyHistory.directStatus[ctx.dataIndex] ? 10 : 6),
                     segment: {
-                        borderColor: ctx => latencyHistory.directStatus[ctx.p1.dataIndex] || latencyHistory.directStatus[ctx.p0.dataIndex] ? 'rgba(255, 77, 77, 0.5)' : undefined,
-                        borderDash: ctx => latencyHistory.directStatus[ctx.p1.dataIndex] || latencyHistory.directStatus[ctx.p0.dataIndex] ? [5, 5] : undefined,
+                        borderColor: ctx => latencyHistory.directStatus[ctx.p1DataIndex] || latencyHistory.directStatus[ctx.p0DataIndex] ? 'rgba(255, 77, 77, 0.5)' : undefined,
+                        borderDash: ctx => latencyHistory.directStatus[ctx.p1DataIndex] || latencyHistory.directStatus[ctx.p0DataIndex] ? [5, 5] : undefined,
                     }
                 },
                 {
@@ -508,7 +508,7 @@ function initLatencyChart() {
                     pointRadius: (ctx) => (latencyHistory.freenetStatus[ctx.dataIndex] ? 8 : 4),
                     pointHoverRadius: (ctx) => (latencyHistory.freenetStatus[ctx.dataIndex] ? 10 : 6),
                     segment: {
-                        borderDash: ctx => latencyHistory.freenetStatus[ctx.p1.dataIndex] || latencyHistory.freenetStatus[ctx.p0.dataIndex] ? [5, 5] : undefined,
+                        borderDash: ctx => latencyHistory.freenetStatus[ctx.p1DataIndex] || latencyHistory.freenetStatus[ctx.p0DataIndex] ? [5, 5] : undefined,
                     }
                 }
             ]
