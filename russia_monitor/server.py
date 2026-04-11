@@ -31,7 +31,7 @@ def check_url(url, use_vpn=False):
     try:
         # verify=False matches the previous SSL context bypass
         # allow_redirects=True to handle cases where HEAD might be redirected
-        r = requests.head(url, headers=HEADERS, proxies=proxies, timeout=5, verify=False, allow_redirects=True)
+        r = requests.head(url, headers=HEADERS, proxies=proxies, timeout=3, verify=False, allow_redirects=True)
         return {'accessible': True, 'http_code': r.status_code, 'error': None}
     except requests.exceptions.HTTPError as e:
         return {'accessible': True, 'http_code': e.response.status_code, 'error': str(e)}

@@ -395,7 +395,9 @@ let latencyChart = null;
 const latencyHistory = {
     labels: [],
     direct: [],
-    freenet: []
+    directStatus: [],
+    freenet: [],
+    freenetStatus: []
 };
 
 function initLatencyChart() {
@@ -414,12 +416,12 @@ function initLatencyChart() {
                     tension: 0.3,
                     fill: false,
                     pointBackgroundColor: '#ff4d4d',
-                    pointStyle: (ctx) => (ctx.raw >= 5000 ? 'crossRot' : 'circle'),
-                    pointRadius: (ctx) => (ctx.raw >= 5000 ? 8 : 4),
-                    pointHoverRadius: (ctx) => (ctx.raw >= 5000 ? 10 : 6),
+                    pointStyle: (ctx) => (latencyHistory.directStatus[ctx.dataIndex] ? 'crossRot' : 'circle'),
+                    pointRadius: (ctx) => (latencyHistory.directStatus[ctx.dataIndex] ? 8 : 4),
+                    pointHoverRadius: (ctx) => (latencyHistory.directStatus[ctx.dataIndex] ? 10 : 6),
                     segment: {
-                        borderColor: ctx => ctx.p1.raw >= 5000 || ctx.p0.raw >= 5000 ? 'rgba(255, 77, 77, 0.5)' : undefined,
-                        borderDash: ctx => ctx.p1.raw >= 5000 || ctx.p0.raw >= 5000 ? [5, 5] : undefined,
+                        borderColor: ctx => latencyHistory.directStatus[ctx.p1.dataIndex] || latencyHistory.directStatus[ctx.p0.dataIndex] ? 'rgba(255, 77, 77, 0.5)' : undefined,
+                        borderDash: ctx => latencyHistory.directStatus[ctx.p1.dataIndex] || latencyHistory.directStatus[ctx.p0.dataIndex] ? [5, 5] : undefined,
                     }
                 },
                 {
@@ -431,11 +433,11 @@ function initLatencyChart() {
                     tension: 0.3,
                     fill: true,
                     pointBackgroundColor: '#64ffda',
-                    pointStyle: (ctx) => (ctx.raw >= 5000 ? 'crossRot' : 'circle'),
-                    pointRadius: (ctx) => (ctx.raw >= 5000 ? 8 : 4),
-                    pointHoverRadius: (ctx) => (ctx.raw >= 5000 ? 10 : 6),
+                    pointStyle: (ctx) => (latencyHistory.freenetStatus[ctx.dataIndex] ? 'crossRot' : 'circle'),
+                    pointRadius: (ctx) => (latencyHistory.freenetStatus[ctx.dataIndex] ? 8 : 4),
+                    pointHoverRadius: (ctx) => (latencyHistory.freenetStatus[ctx.dataIndex] ? 10 : 6),
                     segment: {
-                        borderDash: ctx => ctx.p1.raw >= 5000 || ctx.p0.raw >= 5000 ? [5, 5] : undefined,
+                        borderDash: ctx => latencyHistory.freenetStatus[ctx.p1.dataIndex] || latencyHistory.freenetStatus[ctx.p0.dataIndex] ? [5, 5] : undefined,
                     }
                 }
             ]
@@ -474,9 +476,11 @@ function initLatencyChart() {
                     callbacks: {
                         label: function(context) {
                             let label = context.dataset.label || '';
+                            const isFreenet = label.includes('FreeNet');
+                            const isBlocked = isFreenet ? latencyHistory.freenetStatus[context.dataIndex] : latencyHistory.directStatus[context.dataIndex];
                             if (label) label += ': ';
-                            if (context.raw >= 5000) {
-                                return label + '❌ BLOCKED (Timeout)';
+                            if (isBlocked) {
+                                return label + '❌ BLOCKED';
                             }
                             return label + context.raw + 'ms';
                         }
@@ -600,7 +604,7 @@ function buildGrid() {
 }
 
 async function fetchWithTimeout(resource, options = {}) {
-    const { timeout = 5000 } = options;
+    const { timeout = 3000 } = options;
     const controller = new AbortController();
     const id = setTimeout(() => controller.abort(), timeout);
     try {
@@ -646,7 +650,9 @@ async function runCustomCheck(isAuto = false) {
         // Reset history for a fresh manual check
         latencyHistory.labels = [];
         latencyHistory.direct = [];
+        latencyHistory.directStatus = [];
         latencyHistory.freenet = [];
+        latencyHistory.freenetStatus = [];
         if (latencyChart) {
             latencyChart.destroy();
             latencyChart = null;
@@ -676,10 +682,12 @@ async function runCustomCheck(isAuto = false) {
                     vVal.setAttribute("data-status", statusV);
                     updateBadgeText(vVal, statusV, t);
                     latencyHistory.freenet.push(lat);
+                    latencyHistory.freenetStatus.push(statusV === "0");
                 } catch (e) {
                     vVal.setAttribute("data-status", "0");
                     updateBadgeText(vVal, "0", t);
-                    latencyHistory.freenet.push(5000); 
+                    latencyHistory.freenet.push(3000); 
+                    latencyHistory.freenetStatus.push(true);
                 }
             })(),
             (async () => {
@@ -692,10 +700,12 @@ async function runCustomCheck(isAuto = false) {
                     dVal.setAttribute("data-status", statusD);
                     updateBadgeText(dVal, statusD, t);
                     latencyHistory.direct.push(lat);
+                    latencyHistory.directStatus.push(statusD === "0");
                 } catch (e) {
                     dVal.setAttribute("data-status", "0");
                     updateBadgeText(dVal, "0", t);
-                    latencyHistory.direct.push(5000);
+                    latencyHistory.direct.push(3000);
+                    latencyHistory.directStatus.push(true);
                 }
             })()
         ]);
@@ -712,13 +722,13 @@ async function runCustomCheck(isAuto = false) {
 
         // Auto-refresh logic
         if (autoRefreshEnabled) {
-            autoCheckTimer = setTimeout(() => runCustomCheck(true), 5000);
+            autoCheckTimer = setTimeout(() => runCustomCheck(true), 3000);
         }
     } catch (e) {
         console.error("Custom check fail:", e);
         // We still check for auto-refresh here just in case of unexpected errors
         if (autoRefreshEnabled && !autoCheckTimer) {
-            autoCheckTimer = setTimeout(() => runCustomCheck(true), 5000);
+            autoCheckTimer = setTimeout(() => runCustomCheck(true), 3000);
         }
     }
     btn.disabled = false;
