@@ -339,7 +339,6 @@ const siteCategories = {
         { name: "Google", url: "https://google.com", icon: "search" },
         { name: "Baidu", url: "https://baidu.com", icon: "search" },
         { name: "Wikipedia", url: "https://wikipedia.org", icon: "book" },
-        { name: "Yandex", url: "https://yandex.ru", icon: "book" },
         { name: "Yahoo", url: "https://yahoo.com", icon: "search" },
         { name: "Whatsapp", url: "https://whatsapp.com", icon: "globe" },
         { name: "Yahoo", url: "https://yahoo.co.jp", icon: "search" },
