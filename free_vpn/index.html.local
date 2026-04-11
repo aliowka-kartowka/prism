@@ -828,7 +828,7 @@ async function startChecks(mode) {
     progress.style.width = "10%";
 
     // Run sites with a concurrency limit to prevent browser connection queue timeouts
-    const concurrencyLimit = 5;
+    const concurrencyLimit = 3;
     let activePromises = [];
     
     for (let i = 0; i < allSites.length; i++) {
