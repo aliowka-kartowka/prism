@@ -48,7 +48,7 @@
 
         .brand { display: flex; align-items: center; gap: 1rem; }
         .brand h1 { font-size: 1.8rem; font-weight: 600; letter-spacing: -0.5px; }
-        .header-logo { width: 50px; height: 50px; border-radius: 50%; border: 2px solid var(--accent); }
+        .header-logo { width: 80px; height: 80px; border-radius: 50%; border: 2px solid var(--accent); }
 
         .controls { display: flex; gap: 1rem; align-items: center; }
 
@@ -239,16 +239,41 @@
 
 <div class="container">
     <header class="header">
-        <div class="brand">
-            <img src="app_icon.png" alt="FreeNet Logo" class="header-logo">
-            <h1 id="pageTitle">FreeNet Monitor</h1>
+        <div class="brand" style="display: flex; flex-direction: column; justify-content: center;">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <img src="app_icon.png" alt="FreeNet Logo" class="header-logo">
+                <h1 id="pageTitle" style="margin: 0;">FreeNet Monitor</h1>
+            </div>
+            <span style="color: #8892b0; font-size: 0.9rem; margin-top: 5px; margin-left: 95px; font-family: 'Inter', sans-serif;">Russian Internet monitoring with / without Freenet VPN</span>
         </div>
-        <div class="controls">
-            <button id="langToggle" class="lang-toggle">RU</button>
-            <button id="btnVPN" onclick="startChecks('freenet')">Test with FreeNet</button>
-            <button id="btnDirect" onclick="startChecks('direct')">Refresh Direct</button>
-        </div>
+
     </header>
+
+    <div id="chartContainer" style="margin-bottom: 2rem; height: 260px; background: rgba(0,0,0,0.2); border-radius: 8px; padding: 1rem; border: 1px solid #233554; display: none; position: relative;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
+            <h2 id="chartTitle" style="margin: 0; font-size: 1.1rem; color: #e6f1ff; font-family: 'Outfit';">Monitoring</h2>
+            <div style="display: flex; gap: 20px; align-items: baseline; margin-right: 60px;">
+                <div style="text-align: right;">
+                    <span style="font-size: 0.7rem; color: rgba(255, 77, 77, 0.8); text-transform: uppercase; font-weight: 600; letter-spacing: 1px;">Direct</span>
+                    <div id="directPctBig" style="font-size: 1.6rem; font-weight: 700; color: #ff4d4d; font-family: 'Outfit'; line-height: 1;">--%</div>
+                </div>
+                <div style="text-align: right;">
+                    <span style="font-size: 0.7rem; color: rgba(100, 255, 218, 0.8); text-transform: uppercase; font-weight: 600; letter-spacing: 1px;">FreeNet</span>
+                    <div id="freenetPctBig" style="font-size: 1.6rem; font-weight: 700; color: #64ffda; font-family: 'Outfit'; line-height: 1;">--%</div>
+                </div>
+            </div>
+        </div>
+        <div id="liveIndicator" style="position: absolute; top: 15px; right: 15px; color: var(--success); font-size: 0.7rem; font-family: var(--font-mono); display: flex; align-items: center; gap: 5px;">
+            <span style="width: 6px; height: 6px; background: var(--success); border-radius: 50%; display: inline-block; animation: blink 1s infinite;"></span>
+            LIVE
+        </div>
+        <div style="position: relative; height: 180px; width: 100%;">
+            <canvas id="latencyChart"></canvas>
+        </div>
+    </div>
+    <style>
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+    </style>
 
     <div id="monitorGrid"></div>
 
@@ -354,11 +379,8 @@ const siteCategories = {
         { name: "Tiktok", url: "https://tiktok.com", icon: "globe" },
         { name: "Office", url: "https://office.com", icon: "globe" },
         { name: "Linkedin", url: "https://linkedin.com", icon: "globe" },
-        { name: "Vk", url: "https://vk.com", icon: "globe" },
         { name: "Bing", url: "https://bing.com", icon: "globe" },
-        { name: "Dzen", url: "https://dzen.ru", icon: "globe" },
         { name: "Twitch", url: "https://twitch.tv", icon: "globe" },
-        { name: "Mail", url: "https://mail.ru", icon: "globe" },
         { name: "Discord", url: "https://discord.com", icon: "globe" },
         { name: "Weather", url: "https://weather.com", icon: "globe" },
         { name: "Naver", url: "https://naver.com", icon: "globe" },
@@ -445,6 +467,8 @@ let checkingFreenet = false;
 let checkingDirect = false;
 let autoRefreshEnabled = true;
 let autoCheckTimer = null;
+let currentGraphUrl = null;
+let currentGraphName = null;
 
 let latencyChart = null;
 const latencyHistory = {
@@ -475,8 +499,8 @@ function initLatencyChart() {
                     pointRadius: (ctx) => (latencyHistory.directStatus[ctx.dataIndex] ? 8 : 4),
                     pointHoverRadius: (ctx) => (latencyHistory.directStatus[ctx.dataIndex] ? 10 : 6),
                     segment: {
-                        borderColor: ctx => latencyHistory.directStatus[ctx.p1.dataIndex] || latencyHistory.directStatus[ctx.p0.dataIndex] ? 'rgba(255, 77, 77, 0.5)' : undefined,
-                        borderDash: ctx => latencyHistory.directStatus[ctx.p1.dataIndex] || latencyHistory.directStatus[ctx.p0.dataIndex] ? [5, 5] : undefined,
+                        borderColor: ctx => latencyHistory.directStatus[ctx.p1DataIndex] || latencyHistory.directStatus[ctx.p0DataIndex] ? 'rgba(255, 77, 77, 0.5)' : undefined,
+                        borderDash: ctx => latencyHistory.directStatus[ctx.p1DataIndex] || latencyHistory.directStatus[ctx.p0DataIndex] ? [5, 5] : undefined,
                     }
                 },
                 {
@@ -492,7 +516,7 @@ function initLatencyChart() {
                     pointRadius: (ctx) => (latencyHistory.freenetStatus[ctx.dataIndex] ? 8 : 4),
                     pointHoverRadius: (ctx) => (latencyHistory.freenetStatus[ctx.dataIndex] ? 10 : 6),
                     segment: {
-                        borderDash: ctx => latencyHistory.freenetStatus[ctx.p1.dataIndex] || latencyHistory.freenetStatus[ctx.p0.dataIndex] ? [5, 5] : undefined,
+                        borderDash: ctx => latencyHistory.freenetStatus[ctx.p1DataIndex] || latencyHistory.freenetStatus[ctx.p0DataIndex] ? [5, 5] : undefined,
                     }
                 }
             ]
@@ -501,6 +525,11 @@ function initLatencyChart() {
             responsive: true,
             maintainAspectRatio: false,
             interaction: { mode: 'index', intersect: false },
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
             scales: {
                 x: {
                     grid: { color: 'rgba(255,255,255,0.05)' },
@@ -636,6 +665,8 @@ function buildGrid() {
             const faviconUrl = getFavicon(site);
             const card = document.createElement("div");
             card.className = "card";
+            card.style.cursor = "pointer";
+            card.onclick = () => { startGraphForSite(site.url, site.name); };
             card.innerHTML = 
                 "<div class=\"site-info\">" +
                     "<img src=\"" + faviconUrl + "\" class=\"site-icon\" onerror=\"this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2224%22 height=%2224%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%2364ffda%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><circle cx=%2212%22 cy=%2212%22 r=%2210%22></circle><line x1=%222%22 y1=%2212%22 x2=%2222%22 y2=%2212%22></line><path d=%22M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z%22></path></svg>'\">" +
@@ -693,16 +724,14 @@ async function checkSite(site, useVpn) {
     }
     updateStats();
 }
-
-async function runCustomCheck(isAuto = false) {
-    let url = document.getElementById("customUrl").value.trim();
+async function startGraphForSite(url, name, isAuto = false) {
     if (!url) return;
-    if (!url.startsWith("http")) url = "https://" + url;
     
     if (autoCheckTimer) clearTimeout(autoCheckTimer);
 
     if (!isAuto) {
-        // Reset history for a fresh manual check
+        currentGraphUrl = url;
+        currentGraphName = name;
         latencyHistory.labels = [];
         latencyHistory.direct = [];
         latencyHistory.directStatus = [];
@@ -712,20 +741,20 @@ async function runCustomCheck(isAuto = false) {
             latencyChart.destroy();
             latencyChart = null;
         }
+        document.getElementById('directPctBig').textContent = '--%';
+        document.getElementById('freenetPctBig').textContent = '--%';
+        
+        const titleEl = document.getElementById('chartTitle');
+        if(titleEl) titleEl.textContent = `Monitoring: ${name}`;
+        
+        const chartCont = document.getElementById('chartContainer');
+        if(chartCont) chartCont.style.display = 'block';
+        
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
     
-    const t = translations[currentLang];
-    const dVal = document.getElementById("customDirectVal");
-    const vVal = document.getElementById("customVPNVal");
-    const btn = document.getElementById("btnCustom");
-    
-    btn.disabled = true;
-    dVal.textContent = t.checking; dVal.className = "badge-status checking";
-    vVal.textContent = t.checking; vVal.className = "badge-status checking";
-
     try {
         const startTotal = Date.now();
-        // Run both simultaneously with individual error handling to prevent Promise.all from failing
         await Promise.all([
             (async () => {
                 const s = Date.now();
@@ -734,13 +763,9 @@ async function runCustomCheck(isAuto = false) {
                     const dataV = await resV.json();
                     const lat = Date.now() - s;
                     const statusV = dataV.status === "down" ? "0" : "1";
-                    vVal.setAttribute("data-status", statusV);
-                    updateBadgeText(vVal, statusV, t);
                     latencyHistory.freenet.push(lat);
                     latencyHistory.freenetStatus.push(statusV === "0");
                 } catch (e) {
-                    vVal.setAttribute("data-status", "0");
-                    updateBadgeText(vVal, "0", t);
                     latencyHistory.freenet.push(3000); 
                     latencyHistory.freenetStatus.push(true);
                 }
@@ -752,13 +777,9 @@ async function runCustomCheck(isAuto = false) {
                     const dataD = await resD.json();
                     const lat = Date.now() - s;
                     const statusD = dataD.status === "down" ? "0" : "1";
-                    dVal.setAttribute("data-status", statusD);
-                    updateBadgeText(dVal, statusD, t);
                     latencyHistory.direct.push(lat);
                     latencyHistory.directStatus.push(statusD === "0");
                 } catch (e) {
-                    dVal.setAttribute("data-status", "0");
-                    updateBadgeText(dVal, "0", t);
                     latencyHistory.direct.push(3000);
                     latencyHistory.directStatus.push(true);
                 }
@@ -766,9 +787,17 @@ async function runCustomCheck(isAuto = false) {
         ]);
 
         const host = new URL(url).hostname;
-        latencyHistory.labels.push(host + " (" + new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'}) + ")");
+        latencyHistory.labels.push(new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'}));
         
-        document.getElementById('chartContainer').style.display = 'block';
+        const MAX_SAMPLES = 20;
+        if (latencyHistory.labels.length > MAX_SAMPLES) {
+            latencyHistory.labels.shift();
+            latencyHistory.direct.shift();
+            latencyHistory.directStatus.shift();
+            latencyHistory.freenet.shift();
+            latencyHistory.freenetStatus.shift();
+        }
+        
         if (!latencyChart) {
             initLatencyChart();
         }
@@ -779,24 +808,23 @@ async function runCustomCheck(isAuto = false) {
             const freeFails = latencyHistory.freenetStatus.filter(s => s).length;
             const dirPct = Math.round(((totalReqs - dirFails) / totalReqs) * 100);
             const freePct = Math.round(((totalReqs - freeFails) / totalReqs) * 100);
-            latencyChart.data.datasets[0].label = 'Direct Access (' + dirPct + '% success)';
-            latencyChart.data.datasets[1].label = 'FreeNet Access (' + freePct + '% success)';
+            document.getElementById('directPctBig').textContent = dirPct + '%';
+            document.getElementById('freenetPctBig').textContent = freePct + '%';
+            latencyChart.data.datasets[0].label = 'Direct Access (Lat)';
+            latencyChart.data.datasets[1].label = 'FreeNet Access (Lat)';
         }
 
         latencyChart.update();
 
-        // Auto-refresh logic
         if (autoRefreshEnabled) {
-            autoCheckTimer = setTimeout(() => runCustomCheck(true), 3000);
+            autoCheckTimer = setTimeout(() => startGraphForSite(currentGraphUrl, currentGraphName, true), 3000);
         }
     } catch (e) {
         console.error("Custom check fail:", e);
-        // We still check for auto-refresh here just in case of unexpected errors
         if (autoRefreshEnabled && !autoCheckTimer) {
-            autoCheckTimer = setTimeout(() => runCustomCheck(true), 3000);
+            autoCheckTimer = setTimeout(() => startGraphForSite(currentGraphUrl, currentGraphName, true), 3000);
         }
     }
-    btn.disabled = false;
 }
 
 function updateStats() {
@@ -811,19 +839,30 @@ async function startChecks(mode) {
     if (isVpn) checkingFreenet = true; else checkingDirect = true;
     
     const btn = isVpn ? document.getElementById("btnVPN") : document.getElementById("btnDirect");
-    btn.disabled = true;
-    document.getElementById("statusText").textContent = translations[currentLang].scanning;
+    if(btn) btn.disabled = true;
+    const statusTextEl = document.getElementById("statusText");
+    if (statusTextEl) statusTextEl.textContent = translations[currentLang].scanning;
     
     const progress = document.getElementById("progressBar");
     progress.style.width = "10%";
 
-    // Run all sites in parallel for this mode
-    await Promise.all(allSites.map(async (site, index) => {
-        await checkSite(site, isVpn);
-        // Approximation of progress for the mode
-        const currentProgress = parseFloat(progress.style.width);
-        if (currentProgress < 90) progress.style.width = (currentProgress + (80 / allSites.length)) + "%";
-    }));
+    // Run sites with a concurrency limit to prevent browser connection queue timeouts
+    const concurrencyLimit = 5;
+    let activePromises = [];
+    
+    for (let i = 0; i < allSites.length; i++) {
+        const p = checkSite(allSites[i], isVpn).then(() => {
+            const currentProgress = parseFloat(progress.style.width);
+            if (currentProgress < 90) progress.style.width = (currentProgress + (80 / allSites.length)) + "%";
+            activePromises.splice(activePromises.indexOf(p), 1);
+        });
+        activePromises.push(p);
+        
+        if (activePromises.length >= concurrencyLimit) {
+            await Promise.race(activePromises);
+        }
+    }
+    await Promise.all(activePromises);
 
     progress.style.width = "100%";
     setTimeout(() => {
@@ -833,10 +872,12 @@ async function startChecks(mode) {
     if (isVpn) checkingFreenet = false; else checkingDirect = false;
     
     if (!checkingFreenet && !checkingDirect) {
-        document.getElementById("statusText").textContent = translations[currentLang].standingBy;
-        document.getElementById("pageTitle").textContent = getTitleWithDate(translations[currentLang].title);
+        const finalStatus = document.getElementById("statusText");
+        if (finalStatus) finalStatus.textContent = translations[currentLang].standingBy;
+        const pageTitle = document.getElementById("pageTitle");
+        if (pageTitle) pageTitle.textContent = getTitleWithDate(translations[currentLang].title);
     }
-    btn.disabled = false;
+    if (btn) btn.disabled = false;
 }
 
 function getTitleWithDate(base) {
@@ -845,7 +886,8 @@ function getTitleWithDate(base) {
     return base + ' (' + now.toLocaleDateString('en-GB', opts) + ')';
 }
 
-document.getElementById("langToggle").addEventListener("click", toggleLanguage);
+    const langBtn = document.getElementById("langToggle");
+    if(langBtn) langBtn.addEventListener("click", toggleLanguage);
 
 buildGrid();
 
