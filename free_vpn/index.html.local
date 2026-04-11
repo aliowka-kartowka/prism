@@ -247,7 +247,19 @@
     </header>
 
     <div id="chartContainer" style="margin-bottom: 2rem; height: 260px; background: rgba(0,0,0,0.2); border-radius: 8px; padding: 1rem; border: 1px solid #233554; display: none; position: relative;">
-        <h2 id="chartTitle" style="margin: 0 0 10px 0; font-size: 1.1rem; color: #e6f1ff; font-family: 'Outfit';">Monitoring</h2>
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
+            <h2 id="chartTitle" style="margin: 0; font-size: 1.1rem; color: #e6f1ff; font-family: 'Outfit';">Monitoring</h2>
+            <div style="display: flex; gap: 20px; align-items: baseline; margin-right: 60px;">
+                <div style="text-align: right;">
+                    <span style="font-size: 0.7rem; color: rgba(255, 77, 77, 0.8); text-transform: uppercase; font-weight: 600; letter-spacing: 1px;">Direct</span>
+                    <div id="directPctBig" style="font-size: 1.6rem; font-weight: 700; color: #ff4d4d; font-family: 'Outfit'; line-height: 1;">--%</div>
+                </div>
+                <div style="text-align: right;">
+                    <span style="font-size: 0.7rem; color: rgba(100, 255, 218, 0.8); text-transform: uppercase; font-weight: 600; letter-spacing: 1px;">FreeNet</span>
+                    <div id="freenetPctBig" style="font-size: 1.6rem; font-weight: 700; color: #64ffda; font-family: 'Outfit'; line-height: 1;">--%</div>
+                </div>
+            </div>
+        </div>
         <div id="liveIndicator" style="position: absolute; top: 15px; right: 15px; color: var(--success); font-size: 0.7rem; font-family: var(--font-mono); display: flex; align-items: center; gap: 5px;">
             <span style="width: 6px; height: 6px; background: var(--success); border-radius: 50%; display: inline-block; animation: blink 1s infinite;"></span>
             LIVE
@@ -724,6 +736,9 @@ async function startGraphForSite(url, name, isAuto = false) {
             latencyChart.destroy();
             latencyChart = null;
         }
+        document.getElementById('directPctBig').textContent = '--%';
+        document.getElementById('freenetPctBig').textContent = '--%';
+        
         const titleEl = document.getElementById('chartTitle');
         if(titleEl) titleEl.textContent = `Monitoring: ${name}`;
         
@@ -779,8 +794,10 @@ async function startGraphForSite(url, name, isAuto = false) {
             const freeFails = latencyHistory.freenetStatus.filter(s => s).length;
             const dirPct = Math.round(((totalReqs - dirFails) / totalReqs) * 100);
             const freePct = Math.round(((totalReqs - freeFails) / totalReqs) * 100);
-            latencyChart.data.datasets[0].label = 'Direct Access (' + dirPct + '% success)';
-            latencyChart.data.datasets[1].label = 'FreeNet Access (' + freePct + '% success)';
+            document.getElementById('directPctBig').textContent = dirPct + '%';
+            document.getElementById('freenetPctBig').textContent = freePct + '%';
+            latencyChart.data.datasets[0].label = 'Direct Access (Lat)';
+            latencyChart.data.datasets[1].label = 'FreeNet Access (Lat)';
         }
 
         latencyChart.update();
