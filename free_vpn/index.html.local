@@ -250,6 +250,20 @@
         </div>
     </header>
 
+    <div id="chartContainer" style="margin-bottom: 2rem; height: 260px; background: rgba(0,0,0,0.2); border-radius: 8px; padding: 1rem; border: 1px solid #233554; display: none; position: relative;">
+        <h2 id="chartTitle" style="margin: 0 0 10px 0; font-size: 1.1rem; color: #e6f1ff; font-family: 'Outfit';">Monitoring</h2>
+        <div id="liveIndicator" style="position: absolute; top: 15px; right: 15px; color: var(--success); font-size: 0.7rem; font-family: var(--font-mono); display: flex; align-items: center; gap: 5px;">
+            <span style="width: 6px; height: 6px; background: var(--success); border-radius: 50%; display: inline-block; animation: blink 1s infinite;"></span>
+            LIVE
+        </div>
+        <div style="position: relative; height: 180px; width: 100%;">
+            <canvas id="latencyChart"></canvas>
+        </div>
+    </div>
+    <style>
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+    </style>
+
     <div id="monitorGrid"></div>
 
 
@@ -445,6 +459,8 @@ let checkingFreenet = false;
 let checkingDirect = false;
 let autoRefreshEnabled = true;
 let autoCheckTimer = null;
+let currentGraphUrl = null;
+let currentGraphName = null;
 
 let latencyChart = null;
 const latencyHistory = {
@@ -636,6 +652,8 @@ function buildGrid() {
             const faviconUrl = getFavicon(site);
             const card = document.createElement("div");
             card.className = "card";
+            card.style.cursor = "pointer";
+            card.onclick = () => { startGraphForSite(site.url, site.name); };
             card.innerHTML = 
                 "<div class=\"site-info\">" +
                     "<img src=\"" + faviconUrl + "\" class=\"site-icon\" onerror=\"this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2224%22 height=%2224%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%2364ffda%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><circle cx=%2212%22 cy=%2212%22 r=%2210%22></circle><line x1=%222%22 y1=%2212%22 x2=%2222%22 y2=%2212%22></line><path d=%22M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z%22></path></svg>'\">" +
@@ -693,16 +711,14 @@ async function checkSite(site, useVpn) {
     }
     updateStats();
 }
-
-async function runCustomCheck(isAuto = false) {
-    let url = document.getElementById("customUrl").value.trim();
+async function startGraphForSite(url, name, isAuto = false) {
     if (!url) return;
-    if (!url.startsWith("http")) url = "https://" + url;
     
     if (autoCheckTimer) clearTimeout(autoCheckTimer);
 
     if (!isAuto) {
-        // Reset history for a fresh manual check
+        currentGraphUrl = url;
+        currentGraphName = name;
         latencyHistory.labels = [];
         latencyHistory.direct = [];
         latencyHistory.directStatus = [];
@@ -712,20 +728,17 @@ async function runCustomCheck(isAuto = false) {
             latencyChart.destroy();
             latencyChart = null;
         }
+        const titleEl = document.getElementById('chartTitle');
+        if(titleEl) titleEl.textContent = `Monitoring: ${name}`;
+        
+        const chartCont = document.getElementById('chartContainer');
+        if(chartCont) chartCont.style.display = 'block';
+        
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
     
-    const t = translations[currentLang];
-    const dVal = document.getElementById("customDirectVal");
-    const vVal = document.getElementById("customVPNVal");
-    const btn = document.getElementById("btnCustom");
-    
-    btn.disabled = true;
-    dVal.textContent = t.checking; dVal.className = "badge-status checking";
-    vVal.textContent = t.checking; vVal.className = "badge-status checking";
-
     try {
         const startTotal = Date.now();
-        // Run both simultaneously with individual error handling to prevent Promise.all from failing
         await Promise.all([
             (async () => {
                 const s = Date.now();
@@ -734,13 +747,9 @@ async function runCustomCheck(isAuto = false) {
                     const dataV = await resV.json();
                     const lat = Date.now() - s;
                     const statusV = dataV.status === "down" ? "0" : "1";
-                    vVal.setAttribute("data-status", statusV);
-                    updateBadgeText(vVal, statusV, t);
                     latencyHistory.freenet.push(lat);
                     latencyHistory.freenetStatus.push(statusV === "0");
                 } catch (e) {
-                    vVal.setAttribute("data-status", "0");
-                    updateBadgeText(vVal, "0", t);
                     latencyHistory.freenet.push(3000); 
                     latencyHistory.freenetStatus.push(true);
                 }
@@ -752,13 +761,9 @@ async function runCustomCheck(isAuto = false) {
                     const dataD = await resD.json();
                     const lat = Date.now() - s;
                     const statusD = dataD.status === "down" ? "0" : "1";
-                    dVal.setAttribute("data-status", statusD);
-                    updateBadgeText(dVal, statusD, t);
                     latencyHistory.direct.push(lat);
                     latencyHistory.directStatus.push(statusD === "0");
                 } catch (e) {
-                    dVal.setAttribute("data-status", "0");
-                    updateBadgeText(dVal, "0", t);
                     latencyHistory.direct.push(3000);
                     latencyHistory.directStatus.push(true);
                 }
@@ -768,7 +773,6 @@ async function runCustomCheck(isAuto = false) {
         const host = new URL(url).hostname;
         latencyHistory.labels.push(host + " (" + new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'}) + ")");
         
-        document.getElementById('chartContainer').style.display = 'block';
         if (!latencyChart) {
             initLatencyChart();
         }
@@ -785,18 +789,15 @@ async function runCustomCheck(isAuto = false) {
 
         latencyChart.update();
 
-        // Auto-refresh logic
         if (autoRefreshEnabled) {
-            autoCheckTimer = setTimeout(() => runCustomCheck(true), 3000);
+            autoCheckTimer = setTimeout(() => startGraphForSite(currentGraphUrl, currentGraphName, true), 3000);
         }
     } catch (e) {
         console.error("Custom check fail:", e);
-        // We still check for auto-refresh here just in case of unexpected errors
         if (autoRefreshEnabled && !autoCheckTimer) {
-            autoCheckTimer = setTimeout(() => runCustomCheck(true), 3000);
+            autoCheckTimer = setTimeout(() => startGraphForSite(currentGraphUrl, currentGraphName, true), 3000);
         }
     }
-    btn.disabled = false;
 }
 
 function updateStats() {
