@@ -9,6 +9,8 @@ import time
 import threading
 import random
 import string
+import hashlib
+import hmac
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -25,12 +27,14 @@ MARZBAN_URL = os.getenv('MARZBAN_URL', 'http://178.104.135.156:8080')
 ADMIN_USER = os.getenv('FREENET_ADMIN_USER')
 ADMIN_PASS = os.getenv('FREENET_ADMIN_PASS')
 
-# Rate limiting for trials: 1 per IP per 24 hours
+# Trial limits tracked by Telegram ID (tg_id -> (timestamp, username))
 TRIAL_LIMITS = {}
 TRIAL_LOCK = threading.Lock()
-TRIAL_DURATION = 86400 # 24 hours in seconds
+TRIAL_DURATION = 86400 # 24 hours
+BOT_TOKEN = "8516762550:AAGHstL8XhUutL910W5kol3pfypmaNEsb6w"
 
-import urllib3
+try: import urllib3
+except ImportError: from requests.packages import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 STATIC_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -215,6 +219,85 @@ class Handler(BaseHTTPRequestHandler):
         self.send_response(200)
         self.send_cors()
         self.end_headers()
+
+    def do_POST(self):
+        parsed = urlparse.urlparse(self.path)
+        self.send_cors()
+
+        if parsed.path == '/api/trial':
+            content_length = int(self.headers.get('Content-Length', 0))
+            if content_length == 0:
+                self.send_response(400)
+                self.end_headers()
+                return
+
+            post_data = self.rfile.read(content_length).decode('utf-8')
+            try:
+                auth_data = json.loads(post_data)
+                if self.verify_telegram(auth_data):
+                    self.handle_telegram_trial(auth_data)
+                else:
+                    self.send_response(403)
+                    self.end_headers()
+                    self.wfile.write(b'{"error": "Invalid Telegram Authentication"}')
+            except Exception as e:
+                logger.error(f"Error processing POST trial: {e}")
+                self.send_response(500)
+                self.end_headers()
+
+    def verify_telegram(self, auth_data):
+        # Verify hash from Telegram Login Widget
+        if 'hash' not in auth_data:
+            return False
+        
+        check_hash = auth_data['hash']
+        data_check_arr = []
+        for key, value in sorted(auth_data.items()):
+            if key != 'hash':
+                data_check_arr.append(f"{key}={value}")
+        data_check_string = "\n".join(data_check_arr)
+
+        secret_key = hashlib.sha256(BOT_TOKEN.encode()).digest()
+        hash_result = hmac.new(secret_key, data_check_string.encode(), hashlib.sha256).hexdigest()
+        
+        return hash_result == check_hash
+
+    def handle_telegram_trial(self, auth_data):
+        tg_id = str(auth_data.get('id'))
+        if not tg_id:
+            self.send_response(400)
+            self.end_headers()
+            return
+
+        with TRIAL_LOCK:
+            limit_info = TRIAL_LIMITS.get(tg_id)
+            if limit_info:
+                last_time, last_username = limit_info
+                if time.time() - last_time < TRIAL_DURATION:
+                    user = create_marzban_trial(last_username)
+                    if "error" not in user:
+                        self.send_response(200)
+                        self.send_header('Content-Type', 'application/json')
+                        self.end_headers()
+                        self.wfile.write(json.dumps(user).encode())
+                        return
+
+        # Create or renew trial linked to TG ID
+        username = f"tg_{tg_id}"
+        user = create_marzban_trial(username)
+        
+        if "error" in user:
+            self.send_response(400)
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+            self.wfile.write(json.dumps(user).encode())
+        else:
+            with TRIAL_LOCK:
+                TRIAL_LIMITS[tg_id] = (time.time(), username)
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+            self.wfile.write(json.dumps(user).encode())
 
     def do_GET(self):
         parsed = urlparse.urlparse(self.path)

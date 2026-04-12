@@ -402,9 +402,15 @@
                     Get started with 1GB of high-speed data. Renewable every 24 hours if exhausted.
                 </p>
             </div>
-            <button id="btnTrial" onclick="requestTrial()" style="background: #64ffda; color: #0a192f; border: none; padding: 0.8rem 1.5rem; border-radius: 6px; font-weight: 700; cursor: pointer; transition: all 0.3s ease; width: fit-content;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 5px 15px rgba(100, 255, 218, 0.3)'" onmouseout="this.style.transform='none'; this.style.boxShadow='none'">
-                <span id="txtTrial">Get Trial Link</span>
-            </button>
+                <!-- Telegram Login Widget -->
+                <div id="tg-login-container" style="margin-top: 1.5rem;">
+                    <script async src="https://telegram.org/js/telegram-widget.js?22" 
+                        data-telegram-login="FreeNetMonsterBot" 
+                        data-size="large" 
+                        data-onauth="onTelegramAuth(user)" 
+                        data-request-access="write"></script>
+                </div>
+            </div>
         </div>
 
         <!-- Premium Teaser Card -->
@@ -1023,19 +1029,20 @@ buildGrid();
     startChecks("freenet");
     startChecks("direct");
 })();
-async function requestTrial() {
-    const btn = document.getElementById('btnTrial');
-    const originalText = document.getElementById('txtTrial').textContent;
+function onTelegramAuth(user) {
+    const progressBar = document.getElementById("progressBar");
+    if(progressBar) progressBar.style.width = "50%";
     
-    btn.disabled = true;
-    document.getElementById('txtTrial').textContent = "...";
-    
-    try {
-        const resp = await fetch('/api/trial');
-        const data = await resp.json();
-        
+    fetch('/api/trial', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(user)
+    })
+    .then(res => res.json())
+    .then(data => {
+        if(progressBar) progressBar.style.width = "100%";
         if (data.subscription_url) {
-            // Use the first direct proxy link (vless://) for the QR code as requested for better app compatibility (like V2Box)
+            // Use the first VLESS link for the QR code for better app compatibility
             const qrContent = (data.links && data.links.length > 0) ? data.links[0] : data.subscription_url;
             const encodedUrl = encodeURIComponent(qrContent);
             document.getElementById('trialQR').src = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodedUrl}&margin=5&bgcolor=ffffff`;
@@ -1043,14 +1050,14 @@ async function requestTrial() {
             document.getElementById('trialLink').textContent = data.subscription_url;
             document.getElementById('trialModal').style.display = 'flex';
         } else {
-            alert(data.error || "Failed to create trial.");
+            alert(data.error || "TRIAL LIMIT: 1 per 24 hours per Telegram account.");
         }
-    } catch (e) {
+        setTimeout(() => { if(progressBar) progressBar.style.width = "0%"; }, 1000);
+    })
+    .catch(err => {
+        if(progressBar) progressBar.style.width = "0%";
         alert("Server error. Please try again later.");
-    } finally {
-        btn.disabled = false;
-        document.getElementById('txtTrial').textContent = originalText;
-    }
+    });
 }
 
 function closeTrialModal() {
