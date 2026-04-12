@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Legal - FreeNet Russian VPN</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-body: #0a0b10;
+            --bg-card: #151921;
+            --accent: #64ffda;
+            --text-primary: #e6f1ff;
+            --text-secondary: #8892b0;
+            --font-main: "Outfit", sans-serif;
+            --font-content: "Inter", sans-serif;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { 
+            background: var(--bg-body); 
+            color: var(--text-primary); 
+            font-family: var(--font-main);
+            line-height: 1.6;
+            padding: 4rem 2rem;
+        }
+
+        .container { max-width: 800px; margin: 0 auto; }
+
+        header {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .logo { width: 80px; height: 80px; margin-bottom: 1rem; border-radius: 50%; border: 2px solid var(--accent); }
+        h1 { font-size: 2.5rem; color: var(--text-primary); margin-bottom: 0.5rem; }
+        .subtitle { color: var(--accent); font-weight: 600; letter-spacing: 2px; text-transform: uppercase; font-size: 0.8rem; }
+
+        section {
+            background: var(--bg-card);
+            padding: 2.5rem;
+            border-radius: 16px;
+            border: 1px solid #233554;
+            margin-bottom: 2rem;
+        }
+
+        h2 { color: var(--accent); font-size: 1.4rem; margin-bottom: 1.5rem; border-bottom: 1px solid rgba(100, 255, 218, 0.2); padding-bottom: 0.5rem; }
+        
+        p, li {
+            font-family: var(--font-content);
+            color: var(--text-secondary);
+            font-size: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        ul { padding-left: 1.5rem; margin-bottom: 1rem; }
+        li { margin-bottom: 0.5rem; }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 2rem;
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 600;
+            transition: opacity 0.2s;
+        }
+        .back-link:hover { opacity: 0.8; }
+
+        .contact-box {
+            background: rgba(100, 255, 218, 0.05);
+            border: 1px dashed var(--accent);
+            padding: 1.5rem;
+            border-radius: 8px;
+            text-align: center;
+            margin-top: 3rem;
+        }
+        .contact-box a { color: var(--accent); text-decoration: none; font-weight: 600; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <img src="app_icon.png" alt="FreeNet Logo" class="logo">
+        <h1>Legal Documents</h1>
+        <div class="subtitle">Terms of Service & Privacy</div>
+    </header>
+
+    <section id="privacy">
+        <h2>Privacy Policy (No-Logs)</h2>
+        <p>At FreeNet Monster, we believe in absolute privacy. Our infrastructure is designed from the ground up to protect your digital footprint.</p>
+        <ul>
+            <li><strong>No Browsing Logs</strong>: We do not monitor, record, or store any information about the websites you visit or the services you use.</li>
+            <li><strong>No Connection Logs</strong>: We do not log connection timestamps, session durations, or original IP addresses.</li>
+            <li><strong>Data Encryption</strong>: All traffic passing through our VLESS Reality infrastructure is encrypted using robust, industry-standard protocols.</li>
+            <li><strong>User Identity</strong>: Since we identify users via Telegram handles, we do not require your real name, physical address, or phone number.</li>
+        </ul>
+    </section>
+
+    <section id="terms">
+        <h2>Terms of Service</h2>
+        <p>By using FreeNet Monster VPN, you agree to the following terms and guidelines:</p>
+        <ul>
+            <li><strong>Acceptable Use</strong>: The service is provided for personal privacy and bypassing censorship. You agree not to use the service for illegal activities, including but not limited to DDoS attacks, spamming, or fraudulent behavior.</li>
+            <li><strong>Trial Limits</strong>: The free trial is limited to 1GB per user. Abuse of the trial system (e.g., creating multiple accounts) may lead to a permanent ban.</li>
+            <li><strong>Disclaimer</strong>: The service is provided "as is" and "as available". While we strive for 100% uptime, we are not responsible for interrupted service or data loss.</li>
+            <li><strong>Suspension</strong>: We reserve the right to terminate access for users found in violation of these terms or those causing excessive strain on our infrastructure.</li>
+        </ul>
+    </section>
+
+    <div class="contact-box">
+        Questions? Contact our legal team:<br>
+        <a href="mailto:support@freenet.monster">support@freenet.monster</a>
+    </div>
+
+    <a href="/" class="back-link">← Back to Dashboard</a>
+</div>
+
+</body>
+</html>

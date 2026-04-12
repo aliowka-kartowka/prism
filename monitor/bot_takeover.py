@@ -189,3 +189,72 @@ if __name__ == '__main__':
     print('FreeNet Takeover Bot is starting...')
     bot.set_my_commands([telebot.types.BotCommand("start", "Start the bot"), telebot.types.BotCommand("status", "Check system status")])
     bot.infinity_polling()
+    markup.add(telebot.types.InlineKeyboardButton("💎 Premium (200GB, 1 Month) - 2$", callback_data="buy_premium"))
+    bot.reply_to(message, "Welcome to FreeNet Monster! 🚀\nPlease choose your connection type:", reply_markup=markup)
+
+@bot.callback_query_handler(func=lambda call: True)
+def handle_query(call):
+    tg_username = call.from_user.username or f"tg_{call.from_user.id}"
+
+    if call.data == "get_trial":
+        bot.answer_callback_query(call.id, "Processing your trial...")
+        bot.send_message(call.message.chat.id, f"⌛ Setting up your secure connection for {tg_username}...")
+        
+        user = ensure_user(tg_username, data_limit=1073741824, expire_days=1)
+        if user and 'subscription_url' in user:
+            sub_url = user['subscription_url']
+            qr_buf = generate_qr(sub_url)
+            caption = f"✅ **Your Free Trial is ready!**\n\nSubscription Link:\n`{sub_url}`\n\n1. Scan the QR code or copy the link above.\n2. Import into **v2rayNG** or **V2BOX**.\n3. Enjoy freedom! 🌍"
+            bot.send_photo(call.message.chat.id, qr_buf, caption=caption, parse_mode='Markdown')
+        else:
+            bot.send_message(call.message.chat.id, "❌ Connection error. Please try again later.")
+            
+    elif call.data == "buy_premium":
+        bot.answer_callback_query(call.id, "Preparing invoice...")
+        invoice = create_crypto_invoice(2.0, tg_username)
+        if invoice:
+            invoices = load_invoices()
+            invoices[str(call.from_user.id)] = invoice['invoice_id']
+            save_invoices(invoices)
+            
+            markup = telebot.types.InlineKeyboardMarkup()
+            markup.add(telebot.types.InlineKeyboardButton("💳 Pay with Crypto", url=invoice['bot_invoice_url']))
+            markup.add(telebot.types.InlineKeyboardButton("✅ I Have Paid", callback_data="check_payment"))
+            bot.send_message(call.message.chat.id, "💎 **FreeNet Premium**\n\n- Limit: **200 GB**\n- Duration: **1 Month**\n- Price: **2 $**\n\nPlease pay using the button below:", reply_markup=markup, parse_mode='Markdown')
+        else:
+            bot.send_message(call.message.chat.id, "❌ Payment error. Please contact @aliowka.")
+
+    elif call.data == "check_payment":
+        invoices = load_invoices()
+        invoice_id = invoices.get(str(call.from_user.id))
+        if not invoice_id:
+            bot.answer_callback_query(call.id, "No active invoice.")
+            return
+
+        bot.answer_callback_query(call.id, "Checking...")
+        if check_crypto_invoice(invoice_id):
+            bot.send_message(call.message.chat.id, "🎉 **Payment Confirmed!**")
+            user = ensure_user(tg_username, data_limit=214748364800, expire_days=30)
+            if user and 'subscription_url' in user:
+                sub_url = user['subscription_url']
+                qr_buf = generate_qr(sub_url)
+                caption = f"🚀 **SUCCESS!** Your account is now **Premium**.\n\nNew Subscription Link:\n`{sub_url}`\n\nLimit: 200GB | Valid: 30 Days."
+                bot.send_photo(call.message.chat.id, qr_buf, caption=caption, parse_mode='Markdown')
+                del invoices[str(call.from_user.id)]
+                save_invoices(invoices)
+            else:
+                bot.send_message(call.message.chat.id, "❌ Update error. Contact @aliowka.")
+        else:
+            bot.send_message(call.message.chat.id, "⌛ Payment not detected yet.")
+
+@bot.message_handler(commands=['status'])
+def send_status(message):
+    stats = get_detailed_stats()
+    if stats:
+        resp = f"🛡 **FreeNet Monster Status**\n\n👥 Total Users: `{stats['total']}`\n✅ Active: `{stats['active']}`\n🔥 Online: `{stats['online']}`"
+        bot.send_message(message.chat.id, resp, parse_mode='Markdown')
+
+if __name__ == '__main__':
+    print('FreeNet Takeover Bot is starting...')
+    bot.set_my_commands([telebot.types.BotCommand("start", "Start the bot"), telebot.types.BotCommand("status", "Check system status")])
+    bot.infinity_polling()

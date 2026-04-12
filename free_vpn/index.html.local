@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FreeNet Monster - Connectivity Monitor</title>
+    <title>FreeNet Russian VPN - Connectivity Monitor</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&family=JetBrains+Mono&display=swap" rel="stylesheet">
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -242,7 +242,7 @@
         <div class="brand" style="display: flex; align-items: center; gap: 20px;">
             <img src="app_icon.png" alt="FreeNet Logo" class="header-logo">
             <div style="display: flex; flex-direction: column;">
-                <h1 id="pageTitle" style="margin: 0;">Russian Internet Ban Monitoring</h1>
+                <h1 id="pageTitle" style="margin: 0;">FreeNet Russian VPN</h1>
                 <span style="color: #8892b0; font-size: 0.9rem; margin-top: 5px; font-family: 'Inter', sans-serif;">Powered by FreeNet Monster VPN</span>
             </div>
         </div>
@@ -428,9 +428,9 @@
     <div id="monitorGrid"></div>
 
 
-    <footer class="footer">
-        <div style="margin-bottom: 10px; font-size: 0.95rem; color: #8892b0; font-family: 'Inter', sans-serif;">
-            We ❤️ 🇺🇦<br>To support Ukraine visit <a href="https://u24.gov.ua/" target="_blank" style="color: #64ffda; text-decoration: none;">https://u24.gov.ua/</a>
+        <div style="margin-bottom: 10px; font-size: 0.8rem; color: #8892b0; font-family: 'Inter', sans-serif;">
+            <a href="/legal.html" id="footerLegal" style="color: #64ffda; text-decoration: none; margin-right: 15px;">Terms & Privacy</a>
+            <span id="footerSupport">Support: support@freenet.monster</span>
         </div>
         &copy; 2026 FreeNet Monster Infrastructure
     </footer>
@@ -439,7 +439,7 @@
 <script>
 const translations = {
     en: {
-        title: "Russian Internet Ban Monitoring",
+        title: "FreeNet Russian VPN",
         refreshDirect: "Refresh Direct",
         testFreenet: "Test with FreeNet",
         globalStatus: "Global Connectivity",
@@ -469,10 +469,12 @@ const translations = {
         howToUseStep1: "1. Copy the link above.",
         howToUseStep2: "2. Install a VPN client (v2rayNG, Streisand, or Shadowrocket).",
         howToUseStep3: "3. Add the link as a 'Subscription' or 'Import from Clipboard'.",
-        howToUseStep4: "4. Update the server list and connect."
+        howToUseStep4: "4. Update the server list and connect.",
+        footerLegal: "Terms & Privacy",
+        footerSupport: "Support: support@freenet.monster"
     },
     ru: {
-        title: "Russian Internet Ban Monitoring",
+        title: "FreeNet Russian VPN",
         refreshDirect: "Обновить (Прямое)",
         testFreenet: "Тест через FreeNet",
         globalStatus: "Состояние подключения",
@@ -502,7 +504,9 @@ const translations = {
         howToUseStep1: "1. Скопируйте ссылку выше.",
         howToUseStep2: "2. Установите VPN-клиент (v2rayNG, Streisand или Shadowrocket).",
         howToUseStep3: "3. Добавьте ссылку как «Подписку» или «Импорт из буфера обмена».",
-        howToUseStep4: "4. Обновите список серверов и подключитесь."
+        howToUseStep4: "4. Обновите список серверов и подключитесь.",
+        footerLegal: "Условия и Конфиденциальность",
+        footerSupport: "Поддержка: support@freenet.monster"
     }
 };
 
@@ -682,6 +686,11 @@ function toggleLanguage() {
     if (hStep2) hStep2.textContent = t.howToUseStep2;
     if (hStep3) hStep3.textContent = t.howToUseStep3;
     if (hStep4) hStep4.textContent = t.howToUseStep4;
+    
+    const fLegal = document.getElementById("footerLegal");
+    const fSupport = document.getElementById("footerSupport");
+    if (fLegal) fLegal.textContent = t.footerLegal;
+    if (fSupport) fSupport.textContent = t.footerSupport;
     
     const txtTrial = document.getElementById('txtTrial');
     if (txtTrial) txtTrial.textContent = t.trial;

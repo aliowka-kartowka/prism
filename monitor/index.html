@@ -194,7 +194,7 @@
     <header class="header">
         <div class="brand">
             <img src="app_icon.png" alt="FreeNet Logo" class="header-logo">
-            <h1 id="pageTitle">FreeNet Monitor</h1>
+            <h1 id="pageTitle">FreeNet Russian VPN</h1>
         </div>
         <div class="controls">
             <button id="langToggle" class="lang-toggle">RU</button>
@@ -220,7 +220,10 @@
 
     <div id="monitorGrid"></div>
 
-    <footer class="footer">
+        <div style="margin-bottom: 5px; font-size: 0.75rem;">
+            <a href="/legal.html" id="footerLegal" style="color: #64ffda; text-decoration: none; margin-right: 15px;">Terms & Privacy</a>
+            <span id="footerSupport">Support: support@freenet.monster</span>
+        </div>
         &copy; 2026 FreeNet Monster Infrastructure
     </footer>
 </div>
@@ -228,7 +231,7 @@
 <script>
 const translations = {
     en: {
-        title: "FreeNet Monitor",
+        title: "FreeNet Russian VPN",
         refreshDirect: "Refresh Direct",
         testFreenet: "Test with FreeNet",
         globalStatus: "Global Connectivity",
@@ -241,10 +244,12 @@ const translations = {
         checking: "Checking...",
         online: "Online",
         offline: "Blocked",
-        lang: "RU"
+        lang: "RU",
+        footerLegal: "Terms & Privacy",
+        footerSupport: "Support: support@freenet.monster"
     },
     ru: {
-        title: "FreeNet Monitor",
+        title: "FreeNet Russian VPN",
         refreshDirect: "Обновить (Прямое)",
         testFreenet: "Тест через FreeNet",
         globalStatus: "Состояние подключения",
@@ -257,7 +262,9 @@ const translations = {
         checking: "Проверка...",
         online: "Доступен",
         offline: "Заблокирован",
-        lang: "EN"
+        lang: "EN",
+        footerLegal: "Условия и Конфиденциальность",
+        footerSupport: "Поддержка: support@freenet.monster"
     }
 };
 
@@ -305,6 +312,11 @@ function toggleLanguage() {
     document.getElementById("lblGlobalStatus").textContent = t.globalStatus;
     document.getElementById("lblAccessible").textContent = t.directlyAccessible;
     document.getElementById("lblFreenetReady").textContent = t.freenetWorking;
+    
+    const fLegal = document.getElementById("footerLegal");
+    const fSupport = document.getElementById("footerSupport");
+    if (fLegal) fLegal.textContent = t.footerLegal;
+    if (fSupport) fSupport.textContent = t.footerSupport;
     
     allSites.forEach(s => {
         const id = s.name.replace(/[^a-z0-9]/gi, "_");
