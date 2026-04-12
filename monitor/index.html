@@ -414,6 +414,31 @@
         </div>
 
     </div>
+    
+    <!-- Top Standalone Master Widget for freenet.monster -->
+    <div id="topMasterWidget" style="background: linear-gradient(135deg, rgba(100, 255, 218, 0.05) 0%, rgba(10, 25, 47, 0.4) 100%); border: 1px solid rgba(100, 255, 218, 0.3); border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 20px; box-shadow: 0 10px 30px -15px rgba(2, 12, 27, 0.7); position: relative; overflow: hidden;">
+        <div style="display: flex; align-items: center; gap: 15px; position: relative; z-index: 1;">
+            <div style="background: #64ffda; width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #0a192f; box-shadow: 0 0 20px rgba(100, 255, 218, 0.2);">
+                <i data-lucide="shield-check" style="width: 28px; height: 28px;"></i>
+            </div>
+            <div>
+                <h2 style="margin: 0; font-size: 1.4rem; color: #ccd6f6; font-family: 'Outfit';">freenet.monster</h2>
+                <span style="font-size: 0.8rem; color: #8892b0; font-family: 'Inter';">Primary Service Infrastructure</span>
+            </div>
+        </div>
+        
+        <div style="display: flex; gap: 15px; flex-wrap: wrap; position: relative; z-index: 1;">
+            <div id="masterDirect" style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1); padding: 10px 20px; border-radius: 8px; min-width: 140px; text-align: center;">
+                <div style="font-size: 0.65rem; text-transform: uppercase; color: #8892b0; margin-bottom: 4px; letter-spacing: 1px;">Direct View</div>
+                <div class="status-indicator" style="font-weight: 700; color: #a8b2d1;">Wait...</div>
+            </div>
+            <div id="masterVPN" style="background: rgba(100, 255, 218, 0.05); border: 1px solid rgba(100, 255, 218, 0.2); padding: 10px 20px; border-radius: 8px; min-width: 140px; text-align: center;">
+                <div style="font-size: 0.65rem; text-transform: uppercase; color: #64ffda; margin-bottom: 4px; letter-spacing: 1px;">FreeNet View</div>
+                <div class="status-indicator" style="font-weight: 700; color: #64ffda;">Wait...</div>
+            </div>
+        </div>
+        <div style="position: absolute; right: -50px; bottom: -50px; width: 150px; height: 150px; background: rgba(100, 255, 218, 0.03); border-radius: 50%; z-index: 0;"></div>
+    </div>
 
     <div id="monitorGrid"></div>
 
@@ -506,6 +531,7 @@ let currentLang = "en";
 
 const siteCategories = {
     "Sites": [
+        { name: "Main Site", url: "https://freenet.monster", icon: "shield-check" },
         { name: "Youtube", url: "https://youtube.com", icon: "tv" },
         { name: "Telegram", url: "https://t.me", icon: "users" },
         { name: "Instagram", url: "https://instagram.com", icon: "users" },
@@ -655,11 +681,6 @@ function toggleLanguage() {
     // Promo
     document.getElementById("lblPromoFreeTitle").innerHTML = '<i data-lucide="zap" style="width: 20px;"></i> ' + t.promoFreeTitle;
     document.getElementById("lblPromoFreeDesc").textContent = t.promoFreeDesc;
-    document.getElementById("lblPromoPremiumTitle").textContent = t.promoPremiumTitle;
-    document.getElementById("liPrem1").textContent = t.prem1;
-    document.getElementById("liPrem2").textContent = t.prem2;
-    document.getElementById("liPrem3").textContent = t.prem3;
-    document.getElementById("liPrem4").textContent = t.prem4;
     
     document.getElementById('txtSubscribe').textContent = t.subscribe;
     const qrHint = document.getElementById("qrHint");
@@ -696,11 +717,6 @@ function toggleLanguage() {
     // Update promo texts
     document.getElementById("lblPromoFreeTitle").innerHTML = '<i data-lucide="zap" style="width: 20px;"></i> ' + t.promoFreeTitle;
     document.getElementById("lblPromoFreeDesc").textContent = t.promoFreeDesc;
-    document.getElementById("lblPromoPremiumTitle").textContent = t.promoPremiumTitle;
-    document.getElementById("liPrem1").textContent = t.prem1;
-    document.getElementById("liPrem2").textContent = t.prem2;
-    document.getElementById("liPrem3").textContent = t.prem3;
-    document.getElementById("liPrem4").textContent = t.prem4;
     
     const txtTrial = document.getElementById('txtTrial');
     if (txtTrial) txtTrial.textContent = t.trial;
@@ -834,6 +850,27 @@ async function checkSite(site, useVpn) {
 
     valEl.setAttribute("data-status", finalStatus);
     updateBadgeText(valEl, finalStatus, t);
+
+    // MASTER WIDGET SYNC
+    if (site.url.includes("freenet.monster")) {
+        const masterId = useVpn ? "masterVPN" : "masterDirect";
+        const masterEl = document.getElementById(masterId);
+        if (masterEl) {
+            const label = masterEl.querySelector('.status-indicator');
+            if (finalStatus === "1") {
+                label.textContent = t.online;
+                label.style.color = useVpn ? "#64ffda" : "#48bb78";
+                masterEl.style.borderColor = useVpn ? "rgba(100, 255, 218, 0.5)" : "rgba(72, 187, 120, 0.5)";
+                masterEl.style.background = useVpn ? "rgba(100, 255, 218, 0.1)" : "rgba(72, 187, 120, 0.1)";
+            } else {
+                label.textContent = t.offline;
+                label.style.color = "#ff4d4d";
+                masterEl.style.borderColor = "rgba(255, 77, 77, 0.5)";
+                masterEl.style.background = "rgba(255, 77, 77, 0.1)";
+            }
+        }
+    }
+
     updateStats();
 }
 async function startGraphForSite(url, name, isAuto = false) {
