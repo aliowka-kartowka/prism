@@ -3,10 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FreeNet Monster - Connectivity Monitor</title>
+    <title>FreeNet Russian VPN - Connectivity Monitor</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&family=JetBrains+Mono&display=swap" rel="stylesheet">
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="icon" type="image/png" href="assets/icon/app_icon.png">
     <style>
         :root {
             --bg-body: #0a0b10;
@@ -38,14 +41,14 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 3rem;
+            margin-bottom: 2rem;
             padding-bottom: 1rem;
             border-bottom: 1px solid #233554;
         }
 
         .brand { display: flex; align-items: center; gap: 1rem; }
         .brand h1 { font-size: 1.8rem; font-weight: 600; letter-spacing: -0.5px; }
-        .header-logo { width: 50px; height: 50px; border-radius: 50%; border: 2px solid var(--accent); }
+        .header-logo { width: 120px; height: 120px; border-radius: 50%; border: 2px solid var(--accent); }
 
         .controls { display: flex; gap: 1rem; align-items: center; }
 
@@ -78,7 +81,7 @@
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 1.5rem;
-            margin-bottom: 3rem;
+            margin-bottom: 2rem;
         }
 
         .stat-card {
@@ -95,6 +98,64 @@
         .stat-value { font-size: 1.5rem; font-weight: 600; font-family: var(--font-mono); }
         .stat-value.success { color: var(--success); }
         .stat-value.error { color: var(--error); }
+
+        /* Custom Host Check Section */
+        .search-section {
+            background: var(--bg-card);
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 3rem;
+            border: 1px solid #233554;
+        }
+
+        .search-title {
+            font-size: 1.1rem;
+            margin-bottom: 1.5rem;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .search-input {
+            flex: 1;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid #233554;
+            border-radius: 6px;
+            padding: 0.8rem 1.2rem;
+            color: var(--text-primary);
+            font-family: var(--font-mono);
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .search-input:focus { border-color: var(--accent); }
+
+        .search-results {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .result-badge {
+            background: rgba(0,0,0,0.2);
+            padding: 1rem;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+        }
 
         .category-title {
             font-size: 1.2rem;
@@ -140,28 +201,9 @@
             background: rgba(0,0,0,0.2);
         }
 
-        .badge.online { color: var(--success); }
-        .badge.offline { color: var(--error); }
-        .badge.checking { color: var(--warning); }
-
         .badge-status.online { color: var(--success); font-weight: 600; }
         .badge-status.offline { color: var(--error); font-weight: 600; }
         .badge-status.checking { color: var(--warning); }
-
-        .site-icon-img {
-            width: 24px;
-            height: 24px;
-            border-radius: 4px;
-            margin-right: 12px;
-            background: #fff;
-            padding: 2px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        .site-name {
-            font-weight: 600;
-            color: var(--text-main);
-        }
 
         #progress-container {
             position: fixed;
@@ -184,6 +226,11 @@
             color: var(--text-secondary);
             font-size: 0.8rem;
         }
+
+        @media (max-width: 768px) {
+            .search-results { grid-template-columns: 1fr; }
+            .header { flex-direction: column; gap: 1rem; text-align: center; }
+        }
     </style>
     <meta name="lava-verify" content="adf89e0b6ef39bbb" />
 </head>
@@ -193,29 +240,187 @@
 
 <div class="container">
     <header class="header">
-        <div class="brand">
+        <div class="brand" style="display: flex; align-items: center; gap: 20px;">
             <img src="app_icon.png" alt="FreeNet Logo" class="header-logo">
-            <h1 id="pageTitle">FreeNet Russian VPN</h1>
+            <div style="display: flex; flex-direction: column;">
+                <h1 id="pageTitle" style="margin: 0;">FreeNet Russian VPN</h1>
+                <span style="color: #8892b0; font-size: 0.9rem; margin-top: 5px; font-family: 'Inter', sans-serif;">Powered by FreeNet Monster VPN</span>
+            </div>
         </div>
-        <div class="controls">
-            <button id="langToggle" class="lang-toggle">RU</button>
-            <button id="btnDirect" onclick="startChecks('direct')">Refresh Direct</button>
-            <button id="btnVPN" onclick="startChecks('freenet')">Test with FreeNet</button>
+
+        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px;">
+            <div style="display: flex; justify-content: flex-end; align-items: center; gap: 15px;">
+                <button id="langToggle" onclick="toggleLanguage()" style="
+                    background: rgba(100, 255, 218, 0.1);
+                    border: 1px solid #64ffda;
+                    color: #64ffda;
+                    padding: 4px 10px;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    font-size: 0.75rem;
+                    font-family: var(--font-mono);
+                    font-weight: 600;
+                ">RU</button>
+            </div>
         </div>
     </header>
 
-    <div class="stats">
-        <div class="stat-card">
-            <div class="stat-label" id="lblGlobalStatus">Global Connectivity</div>
-            <div class="stat-value" id="statusText">Standing by...</div>
+    <!-- Trial Modal -->
+    <div id="trialModal" style="
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(10, 25, 47, 0.95);
+        z-index: 9999;
+        justify-content: center;
+        align-items: center;
+        backdrop-filter: blur(8px);
+    ">
+        <div style="
+            background: #112240;
+            padding: 1.5rem;
+            border-radius: 16px;
+            max-width: 400px;
+            width: 90%;
+            max-height: 85vh;
+            overflow-y: auto;
+            border: 1px solid #233554;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            text-align: center;
+            position: relative;
+        ">
+            <button onclick="closeTrialModal()" style="
+                position: absolute;
+                top: 15px;
+                right: 15px;
+                background: none;
+                border: none;
+                color: #8892b0;
+                font-size: 1.5rem;
+                padding: 0;
+                line-height: 1;
+                z-index: 10;
+            ">&times;</button>
+            <div style="color: #64ffda; margin-bottom: 1.5rem;">
+                <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M8 12l3 3 5-5"></path></svg>
+            </div>
+            <h2 id="modalTitle" style="color: #e6f1ff; margin-bottom: 0.5rem; font-family: 'Outfit';">Trial Created!</h2>
+            <p id="modalSub" style="color: #8892b0; font-size: 0.9rem; margin-bottom: 1.5rem;">Your 1GB trial subscription is ready.</p>
+            
+            <!-- QR code fits to sides by using negative margin to offset modal padding -->
+            <div id="qrcodeCont" style="background: white; padding: 15px; width: calc(100% + 3rem); margin-left: -1.5rem; margin-right: -1.5rem; box-sizing: border-box; display: flex; justify-content: center; margin-bottom: 1.5rem; box-shadow: inset 0 0 10px rgba(0,0,0,0.1);">
+                <img id="trialQR" src="" alt="QR Code" style="max-width: 240px; width: 100%; height: auto; display: block;">
+            </div>
+            
+            <div style="
+                background: rgba(0,0,0,0.3);
+                padding: 1rem;
+                border-radius: 8px;
+                border: 1px solid #233554;
+                font-family: var(--font-mono);
+                font-size: 0.8rem;
+                color: #64ffda;
+                word-break: break-all;
+                margin-bottom: 1.5rem;
+                text-align: left;
+            " id="trialLink">---</div>
+            
+            <button onclick="copyTrialLink()" id="btnCopy" style="
+                width: 100%;
+                background: #64ffda;
+                color: #0a192f;
+                border: none;
+                padding: 0.8rem;
+                border-radius: 6px;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                margin-bottom: 1.5rem;
+                cursor: pointer;
+            ">Copy Link</button>
+
+            <div style="text-align: left; background: rgba(0,0,0,0.2); padding: 1.2rem; border-radius: 8px; margin-bottom: 1.5rem; border: 1px solid rgba(100,255,218,0.1);">
+                <h4 id="howToUseTitle" style="color: #ccd6f6; margin: 0 0 10px 0; font-size: 0.9rem; font-family: 'Outfit';">How to use:</h4>
+                <ul style="color: #8892b0; font-size: 0.8rem; padding-left: 1.2rem; margin: 0; line-height: 1.6; font-family: 'Inter';">
+                    <li id="howToUseStep1">1. Copy the link above.</li>
+                    <li id="howToUseStep2">2. Install a VPN client (v2rayNG, Streisand, or Shadowrocket).</li>
+                    <li id="howToUseStep3">3. Add the link as a "Subscription" or "Import from Clipboard".</li>
+                    <li id="howToUseStep4">4. Update the server list and connect.</li>
+                </ul>
+            </div>
+            
+            <p id="limitText" style="color: #8892b0; font-size: 0.75rem;">Limit: 1GB per user. Accounts expire after data usage.</p>
         </div>
-        <div class="stat-card">
-            <div class="stat-label" id="lblAccessible">Directly Accessible From Russia</div>
-            <div class="stat-value error" id="countDirect">0/0</div>
+    </div>
+
+    <style>
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 4px 15px rgba(100, 255, 218, 0.3); }
+            50% { transform: scale(1.05); box-shadow: 0 4px 25px rgba(100, 255, 218, 0.5); }
+            100% { transform: scale(1); box-shadow: 0 4px 15px rgba(100, 255, 218, 0.3); }
+        }
+    </style>
+
+    <div id="chartContainer" style="margin-bottom: 2rem; height: 260px; background: rgba(0,0,0,0.2); border-radius: 8px; padding: 1rem; border: 1px solid #233554; display: none; position: relative;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
+            <h2 id="chartTitle" style="margin: 0; font-size: 1.1rem; color: #e6f1ff; font-family: 'Outfit';">Monitoring</h2>
+            <div style="display: flex; gap: 20px; align-items: baseline; margin-right: 60px;">
+                <div style="text-align: right;">
+                    <span style="font-size: 0.7rem; color: rgba(255, 77, 77, 0.8); text-transform: uppercase; font-weight: 600; letter-spacing: 1px;">Direct</span>
+                    <div id="directPctBig" style="font-size: 1.6rem; font-weight: 700; color: #ff4d4d; font-family: 'Outfit'; line-height: 1;">--%</div>
+                </div>
+                <div style="text-align: right;">
+                    <span style="font-size: 0.7rem; color: rgba(100, 255, 218, 0.8); text-transform: uppercase; font-weight: 600; letter-spacing: 1px;">FreeNet</span>
+                    <div id="freenetPctBig" style="font-size: 1.6rem; font-weight: 700; color: #64ffda; font-family: 'Outfit'; line-height: 1;">--%</div>
+                </div>
+            </div>
         </div>
-        <div class="stat-card" style="border-left-color: var(--success)">
-            <div class="stat-label" id="lblFreenetReady">FreeNet Accessible</div>
-            <div class="stat-value success" id="countVPN">0/0</div>
+        <div id="liveIndicator" style="position: absolute; top: 15px; right: 15px; color: var(--success); font-size: 0.7rem; font-family: var(--font-mono); display: flex; align-items: center; gap: 5px;">
+            <span style="width: 6px; height: 6px; background: var(--success); border-radius: 50%; display: inline-block; animation: blink 1s infinite;"></span>
+            LIVE
+        </div>
+        <div style="position: relative; height: 180px; width: 100%;">
+            <canvas id="latencyChart"></canvas>
+        </div>
+    </div>
+    <style>
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+    </style>
+
+    <!-- Promo Section -->
+    <div id="promoSection" style="margin-bottom: 2.5rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+        <!-- Free Trial Card -->
+        <div style="background: rgba(100, 255, 218, 0.05); border: 1px solid rgba(100, 255, 218, 0.2); border-radius: 12px; padding: 1.5rem; display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+                <h3 id="lblPromoFreeTitle" style="color: #64ffda; margin-top: 0; margin-bottom: 0.5rem; font-family: 'Outfit'; display: flex; align-items: center; gap: 8px;">
+                    <i data-lucide="zap" style="width: 20px;"></i> Free Trial
+                </h3>
+                <p id="lblPromoFreeDesc" style="color: #8892b0; font-size: 0.9rem; line-height: 1.5; margin-bottom: 1.5rem;">
+                    Get started with 1GB of high-speed data. Renewable every 24 hours if exhausted.
+                </p>
+            </div>
+            <button id="btnTrial" onclick="requestTrial()" style="background: #64ffda; color: #0a192f; border: none; padding: 0.8rem 1.5rem; border-radius: 6px; font-weight: 700; cursor: pointer; transition: all 0.3s ease; width: fit-content;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 5px 15px rgba(100, 255, 218, 0.3)'" onmouseout="this.style.transform='none'; this.style.boxShadow='none'">
+                <span id="txtTrial">Get Trial Link</span>
+            </button>
+        </div>
+
+        <!-- Premium Teaser Card -->
+        <div style="background: rgba(230, 241, 255, 0.03); border: 1px solid rgba(230, 241, 255, 0.1); border-radius: 12px; padding: 1.5rem; position: relative; overflow: hidden;">
+            <div style="position: absolute; top: -10px; right: -10px; background: linear-gradient(45deg, #64ffda, #48bb78); color: #0a192f; font-size: 0.7rem; font-weight: 800; padding: 20px 40px 5px 40px; transform: rotate(45deg); text-transform: uppercase; letter-spacing: 1px;">
+                Coming Soon
+            </div>
+            <h3 id="lblPromoPremiumTitle" style="color: #e6f1ff; margin-top: 0; margin-bottom: 0.5rem; font-family: 'Outfit';">
+                Premium Performance
+            </h3>
+            <ul style="color: #8892b0; font-size: 0.85rem; padding-left: 1.2rem; margin-bottom: 0; line-height: 1.6;">
+                <li id="liPrem1">Unlimited high-speed data 24/7</li>
+                <li id="liPrem2">Dedicated unblocked IP addresses</li>
+                <li id="liPrem3">Multi-device support (iOS, Android, PC)</li>
+                <li id="liPrem4">Priority support & advanced protocols</li>
+            </ul>
         </div>
     </div>
 
@@ -236,7 +441,7 @@
 <script>
 const translations = {
     en: {
-        title: "FreeNet Monitor",
+        title: "FreeNet Russian VPN",
         refreshDirect: "Refresh Direct",
         testFreenet: "Test with FreeNet",
         globalStatus: "Global Connectivity",
@@ -250,11 +455,30 @@ const translations = {
         online: "Online",
         offline: "Blocked",
         lang: "RU",
+        searchTitle: "Quick Host Check",
+        searchPlaceholder: "Enter hostname (e.g., example.com)...",
+        searchBtn: "Check Now",
+        resDirect: "Direct Access:",
+        resVPN: "FreeNet Access:",
+        subscribe: "GET SUBSCRIPTION",
+        trial: "GET FREE TRIAL",
+        modalTitle: "Trial Created!",
+        modalSub: "Your 10GB trial subscription is ready.",
+        btnCopy: "Copy Link",
+        btnCopied: "Copied!",
+        limitText: "Limit: 10GB per user. Accounts expire after data usage.",
+        promoFreeTitle: "Free Trial",
+        promoFreeDesc: "Get started with 10GB of high-speed data. Renewable every 24 hours if exhausted.",
+        promoPremiumTitle: "Premium Performance",
+        prem1: "Unlimited high-speed data 24/7",
+        prem2: "Dedicated unblocked IP addresses",
+        prem3: "Multi-device support (iOS, Android, PC)",
+        prem4: "Priority support & advanced protocols",
         footerLegal: "Terms & Privacy",
         footerSupport: 'Support: <a href="mailto:support@freenet.monster" style="color: #64ffda; text-decoration: none;">support@freenet.monster</a>'
     },
     ru: {
-        title: "FreeNet Monitor",
+        title: "FreeNet Russian VPN",
         refreshDirect: "Обновить (Прямое)",
         testFreenet: "Тест через FreeNet",
         globalStatus: "Состояние подключения",
@@ -268,6 +492,25 @@ const translations = {
         online: "Доступен",
         offline: "Заблокирован",
         lang: "EN",
+        searchTitle: "Быстрая проверка",
+        searchPlaceholder: "Введите адрес (например, google.com)...",
+        searchBtn: "Проверить",
+        resDirect: "Прямой доступ:",
+        resVPN: "Через FreeNet:",
+        subscribe: "ПОДПИСКА VPN",
+        trial: "ПРОБНЫЙ ПЕРИОД",
+        modalTitle: "Доступ создан!",
+        modalSub: "Ваша подписка на 10ГБ готова.",
+        btnCopy: "Копировать",
+        btnCopied: "Скопировано!",
+        limitText: "Лимит: 10ГБ на пользователя. Аккаунт отключится после исчерпания трафика.",
+        promoFreeTitle: "Бесплатный период",
+        promoFreeDesc: "Начните с 10 ГБ высокоскоростных данных. Обновляется каждые 24 часа.",
+        promoPremiumTitle: "Премиум доступ",
+        prem1: "Безлимитный трафик 24/7",
+        prem2: "Выделенные неблокируемые IP",
+        prem3: "Поддержка всех устройств (iOS, Android, ПК)",
+        prem4: "Приоритетная поддержка и протоколы",
         footerLegal: "Условия и Конфиденциальность",
         footerSupport: 'Поддержка: <a href="mailto:support@freenet.monster" style="color: #64ffda; text-decoration: none;">support@freenet.monster</a>'
     }
@@ -276,44 +519,133 @@ const translations = {
 let currentLang = "en";
 
 const siteCategories = {
-    "Core Services": [
-        { name: "FreeNet", url: "https://freenet.monster", domain: "freenet.monster", icon: "shield" }
-    ],
-    "Social & Media": [
-        { name: "YouTube", url: "https://www.youtube.com", domain: "youtube.com" },
-        { name: "Instagram", url: "https://www.instagram.com", domain: "instagram.com" },
-        { name: "Facebook", url: "https://www.facebook.com", domain: "facebook.com" },
-        { name: "Twitter / X", url: "https://twitter.com", domain: "twitter.com" },
-        { name: "Reddit", url: "https://www.reddit.com", domain: "reddit.com" },
-        { name: "Pinterest", url: "https://www.pinterest.com", domain: "pinterest.com" }
-    ],
-    "Communication": [
-        { name: "Discord", url: "https://discord.com", domain: "discord.com" },
-        { name: "Telegram", url: "https://t.me", domain: "t.me" },
-        { name: "WhatsApp", url: "https://www.whatsapp.com", domain: "whatsapp.com", icon: "message-circle" }
-    ],
-    "Entertainment": [
-        { name: "Netflix", url: "https://www.netflix.com", domain: "netflix.com" },
-        { name: "Spotify", url: "https://www.spotify.com", domain: "spotify.com" },
-        { name: "Twitch", url: "https://www.twitch.tv", domain: "twitch.tv" },
-        { name: "TikTok", url: "https://www.tiktok.com", domain: "tiktok.com" }
-    ],
-    "Global Services": [
-        { name: "Google", url: "https://www.google.com", domain: "google.com" },
-        { name: "ChatGPT", url: "https://chat.openai.com", domain: "openai.com" },
-        { name: "Wikipedia", url: "https://www.wikipedia.org", domain: "wikipedia.org" },
-        { name: "AliExpress", url: "https://www.aliexpress.com", domain: "aliexpress.com" }
-    ],
-    "Adult Content": [
-        { name: "Pornhub", url: "https://www.pornhub.com", domain: "pornhub.com", icon: "heart" },
-        { name: "XVideos", url: "https://www.xvideos.com", domain: "xvideos.com", icon: "heart" },
-        { name: "xHamster", url: "https://www.xhamster.com", domain: "xhamster.com", icon: "heart" },
-        { name: "YouPorn", url: "https://www.youporn.com", domain: "youporn.com", icon: "heart" }
+    "Sites": [
+        { name: "Youtube", url: "https://youtube.com", icon: "tv" },
+        { name: "Telegram", url: "https://t.me", icon: "users" },
+        { name: "Instagram", url: "https://instagram.com", icon: "users" },
+        { name: "Facebook", url: "https://facebook.com", icon: "users" },
+        { name: "Whatsapp", url: "https://whatsapp.com", icon: "globe" },
+        { name: "Google", url: "https://google.com", icon: "search" },
+        { name: "Linkedin", url: "https://linkedin.com", icon: "users" },
+        { name: "Netflix", url: "https://netflix.com", icon: "tv" },
+        { name: "Aliexpress", url: "https://aliexpress.com", icon: "shopping-cart" },
+        { name: "Bbc", url: "https://bbc.com", icon: "file-text" },
+        { name: "Foxnews", url: "https://foxnews.com", icon: "file-text" },
+        { name: "Chatgpt", url: "https://chatgpt.com", icon: "cpu" },
+        { name: "Xvideos", url: "https://xvideos.com", icon: "alert-triangle" },
+        { name: "Pornhub", url: "https://pornhub.com", icon: "alert-triangle" },
+        { name: "Xnxx", url: "https://xnxx.com", icon: "alert-triangle" },
+        { name: "Youport", url: "https://www.youporn.com", icon: "heart" }
     ]
 };
 
 const allSites = Object.values(siteCategories).flat();
-let checking = false;
+let checkingFreenet = false;
+let checkingDirect = false;
+let autoRefreshEnabled = true;
+let autoCheckTimer = null;
+let currentGraphUrl = null;
+let currentGraphName = null;
+
+let latencyChart = null;
+const latencyHistory = {
+    labels: [],
+    direct: [],
+    directStatus: [],
+    freenet: [],
+    freenetStatus: []
+};
+
+function initLatencyChart() {
+    const ctx = document.getElementById('latencyChart').getContext('2d');
+    latencyChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: latencyHistory.labels,
+            datasets: [
+                {
+                    label: 'Direct Access (ms)',
+                    data: latencyHistory.direct,
+                    borderColor: '#ff4d4d',
+                    backgroundColor: 'rgba(255, 77, 77, 0.1)',
+                    borderWidth: 2,
+                    tension: 0.3,
+                    fill: false,
+                    pointBackgroundColor: '#ff4d4d',
+                    pointStyle: (ctx) => (latencyHistory.directStatus[ctx.dataIndex] ? 'crossRot' : 'circle'),
+                    pointRadius: (ctx) => (latencyHistory.directStatus[ctx.dataIndex] ? 8 : 4),
+                    pointHoverRadius: (ctx) => (latencyHistory.directStatus[ctx.dataIndex] ? 10 : 6),
+                    segment: {
+                        borderColor: ctx => latencyHistory.directStatus[ctx.p1DataIndex] || latencyHistory.directStatus[ctx.p0DataIndex] ? 'rgba(255, 77, 77, 0.5)' : undefined,
+                        borderDash: ctx => latencyHistory.directStatus[ctx.p1DataIndex] || latencyHistory.directStatus[ctx.p0DataIndex] ? [5, 5] : undefined,
+                    }
+                },
+                {
+                    label: 'FreeNet Access (ms)',
+                    data: latencyHistory.freenet,
+                    borderColor: '#64ffda',
+                    backgroundColor: 'rgba(100, 255, 218, 0.1)',
+                    borderWidth: 3,
+                    tension: 0.3,
+                    fill: true,
+                    pointBackgroundColor: '#64ffda',
+                    pointStyle: (ctx) => (latencyHistory.freenetStatus[ctx.dataIndex] ? 'crossRot' : 'circle'),
+                    pointRadius: (ctx) => (latencyHistory.freenetStatus[ctx.dataIndex] ? 8 : 4),
+                    pointHoverRadius: (ctx) => (latencyHistory.freenetStatus[ctx.dataIndex] ? 10 : 6),
+                    segment: {
+                        borderDash: ctx => latencyHistory.freenetStatus[ctx.p1DataIndex] || latencyHistory.freenetStatus[ctx.p0DataIndex] ? [5, 5] : undefined,
+                    }
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            scales: {
+                x: {
+                    grid: { color: 'rgba(255,255,255,0.05)' },
+                    ticks: { color: '#8892b0', font: { family: 'JetBrains Mono', size: 10 } }
+                },
+                y: {
+                    grid: { color: 'rgba(255,255,255,0.05)' },
+                    ticks: { color: '#8892b0', font: { family: 'JetBrains Mono', size: 10 } },
+                    beginAtZero: true,
+                    title: { display: true, text: 'Latency (ms)', color: '#8892b0', font: { family: 'Outfit' } }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false,
+                    position: 'top',
+                    labels: { color: '#e6f1ff', font: { family: 'Outfit', size: 12 }, usePointStyle: true }
+                },
+                tooltip: {
+                    backgroundColor: '#112240',
+                    titleColor: '#64ffda',
+                    bodyColor: '#e6f1ff',
+                    borderColor: '#233554',
+                    borderWidth: 1,
+                    padding: 12,
+                    titleFont: { family: 'Outfit', weight: 'bold', size: 14 },
+                    bodyFont: { family: 'JetBrains Mono' },
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            const isFreenet = label.includes('FreeNet');
+                            const isBlocked = isFreenet ? latencyHistory.freenetStatus[context.dataIndex] : latencyHistory.directStatus[context.dataIndex];
+                            if (label) label += ': ';
+                            if (isBlocked) {
+                                return label + '❌ BLOCKED';
+                            }
+                            return label + context.raw + 'ms';
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
 
 function toggleLanguage() {
     currentLang = currentLang === "en" ? "ru" : "en";
@@ -327,10 +659,66 @@ function toggleLanguage() {
     document.getElementById("lblAccessible").textContent = t.directlyAccessible;
     document.getElementById("lblFreenetReady").textContent = t.freenetWorking;
     
+    // Search elements
+    document.getElementById("lblSearchTitle").innerHTML = '<i data-lucide="search" style="width: 18px; margin-top: -2px"></i> ' + t.searchTitle;
+    document.getElementById("customUrl").placeholder = t.searchPlaceholder;
+    document.getElementById("btnCustom").textContent = t.searchBtn;
+    document.getElementById("lblResDirect").textContent = t.resDirect;
+    document.getElementById("lblResVPN").textContent = t.resVPN;
+    
+    // Promo
+    document.getElementById("lblPromoFreeTitle").innerHTML = '<i data-lucide="zap" style="width: 20px;"></i> ' + t.promoFreeTitle;
+    document.getElementById("lblPromoFreeDesc").textContent = t.promoFreeDesc;
+    document.getElementById("lblPromoPremiumTitle").textContent = t.promoPremiumTitle;
+    document.getElementById("liPrem1").textContent = t.prem1;
+    document.getElementById("liPrem2").textContent = t.prem2;
+    document.getElementById("liPrem3").textContent = t.prem3;
+    document.getElementById("liPrem4").textContent = t.prem4;
+    
+    document.getElementById('txtSubscribe').textContent = t.subscribe;
+    const qrHint = document.getElementById("qrHint");
+    if (qrHint) qrHint.textContent = currentLang === "ru" ? "Сканируйте или сделайте скриншот" : "Scan or Screenshot to Import";
+
+    const cdVal = document.getElementById("customDirectVal");
+    if (cvVal.getAttribute("data-status")) updateBadgeText(cvVal, cvVal.getAttribute("data-status"), t);
+    
+    // Updated Trial Modal text
+    const mTitle = document.getElementById("modalTitle");
+    const mSub = document.getElementById("modalSub");
+    const bCopy = document.getElementById("btnCopy");
+    const lText = document.getElementById("limitText");
+    const hTitle = document.getElementById("howToUseTitle");
+    const hStep1 = document.getElementById("howToUseStep1");
+    const hStep2 = document.getElementById("howToUseStep2");
+    const hStep3 = document.getElementById("howToUseStep3");
+    const hStep4 = document.getElementById("howToUseStep4");
+
+    if (mTitle) mTitle.textContent = t.modalTitle;
+    if (mSub) mSub.textContent = t.modalSub;
+    if (bCopy) bCopy.textContent = t.btnCopy;
+    if (lText) lText.textContent = t.limitText;
+    if (hTitle) hTitle.textContent = t.howToUseTitle;
+    if (hStep1) hStep1.textContent = t.howToUseStep1;
+    if (hStep2) hStep2.textContent = t.howToUseStep2;
+    if (hStep3) hStep3.textContent = t.howToUseStep3;
+    if (hStep4) hStep4.textContent = t.howToUseStep4;
+    
     const fSupport = document.getElementById("footerSupport");
     if (fLegal) fLegal.textContent = t.footerLegal;
     if (fSupport) fSupport.innerHTML = t.footerSupport;
     
+    // Update promo texts
+    document.getElementById("lblPromoFreeTitle").innerHTML = '<i data-lucide="zap" style="width: 20px;"></i> ' + t.promoFreeTitle;
+    document.getElementById("lblPromoFreeDesc").textContent = t.promoFreeDesc;
+    document.getElementById("lblPromoPremiumTitle").textContent = t.promoPremiumTitle;
+    document.getElementById("liPrem1").textContent = t.prem1;
+    document.getElementById("liPrem2").textContent = t.prem2;
+    document.getElementById("liPrem3").textContent = t.prem3;
+    document.getElementById("liPrem4").textContent = t.prem4;
+    
+    const txtTrial = document.getElementById('txtTrial');
+    if (txtTrial) txtTrial.textContent = t.trial;
+
     allSites.forEach(s => {
         const id = s.name.replace(/[^a-z0-9]/gi, "_");
         const db = document.getElementById(id + "_direct_val");
@@ -353,6 +741,7 @@ function toggleLanguage() {
             else if (status !== null) updateBadgeText(vb, status, t);
         }
     });
+    lucide.createIcons();
 }
 
 function updateBadgeText(el, status, t) {
@@ -364,6 +753,16 @@ function updateBadgeText(el, status, t) {
         el.className = "badge-status offline";
     } else {
         el.textContent = "—";
+        el.className = "badge-status";
+    }
+}
+
+function getFavicon(site) {
+    if (site.name === "WhatsApp") return "https://static.whatsapp.net/rsrc.php/v3/yP/r/r_oBsbi9V90.png";
+    try {
+        return "https://www.google.com/s2/favicons?sz=64&domain=" + new URL(site.url).hostname;
+    } catch (e) {
+        return "";
     }
 }
 
@@ -373,49 +772,50 @@ function buildGrid() {
     const t = translations[currentLang];
 
     for (const [cat, sites] of Object.entries(siteCategories)) {
-        const title = document.createElement("h2");
-        title.className = "category-title";
-        title.textContent = cat;
-        container.appendChild(title);
-
         const grid = document.createElement("div");
         grid.className = "grid";
         
         sites.forEach(site => {
             const id = site.name.replace(/[^a-z0-9]/gi, "_");
+            const faviconUrl = getFavicon(site);
             const card = document.createElement("div");
             card.className = "card";
-            
-            const iconUrl = "https://www.google.com/s2/favicons?sz=64&domain=" + site.domain;
-            
+            card.style.cursor = "pointer";
+            card.onclick = () => { startGraphForSite(site.url, site.name); };
             card.innerHTML = 
                 "<div class=\"site-info\">" +
-                    "<img src=\"" + iconUrl + "\" class=\"site-icon-img\" alt=\"" + site.name + "\">" +
+                    "<img src=\"" + faviconUrl + "\" class=\"site-icon\" onerror=\"this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2224%22 height=%2224%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%2364ffda%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><circle cx=%2212%22 cy=%2212%22 r=%2210%22></circle><line x1=%222%22 y1=%2212%22 x2=%2222%22 y2=%2212%22></line><path d=%22M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z%22></path></svg>'\">" +
                     "<span class=\"site-name\">" + site.name + "</span>" +
                 "</div>" +
                 "<div class=\"status-badges\">" +
-                    "<div class=\"badge\" id=\"" + id + "_direct_badge\">" +
-                        "<span id=\"" + id + "_direct_label\">" + t.direct + ":</span>" +
-                        "<span id=\"" + id + "_direct_val\" class=\"badge-status\">—</span>" +
-                    "</div>" +
                     "<div class=\"badge\" id=\"" + id + "_vpn_badge\">" +
                         "<span id=\"" + id + "_vpn_label\">" + t.freenet + ":</span>" +
                         "<span id=\"" + id + "_vpn_val\" class=\"badge-status\">—</span>" +
+                    "</div>" +
+                    "<div class=\"badge\" id=\"" + id + "_direct_badge\">" +
+                        "<span id=\"" + id + "_direct_label\">" + t.direct + ":</span>" +
+                        "<span id=\"" + id + "_direct_val\" class=\"badge-status\">—</span>" +
                     "</div>" +
                 "</div>";
             grid.appendChild(card);
         });
         container.appendChild(grid);
     }
+    if (typeof lucide !== 'undefined') lucide.createIcons();
 }
 
 async function fetchWithTimeout(resource, options = {}) {
     const { timeout = 15000 } = options;
     const controller = new AbortController();
     const id = setTimeout(() => controller.abort(), timeout);
-    const response = await fetch(resource, { ...options, signal: controller.signal });
-    clearTimeout(id);
-    return response;
+    try {
+        const response = await fetch(resource, { ...options, signal: controller.signal });
+        clearTimeout(id);
+        return response;
+    } catch (e) {
+        clearTimeout(id);
+        throw e;
+    }
 }
 
 async function checkSite(site, useVpn) {
@@ -427,49 +827,183 @@ async function checkSite(site, useVpn) {
     valEl.textContent = t.checking;
     valEl.className = "badge-status checking";
 
-    try {
-        const res = await fetchWithTimeout("/api/check?url=" + encodeURIComponent(site.url) + "&use_vpn=" + useVpn);
-        const data = await res.json();
-        const status = data.status === "down" ? "0" : "1";
-        valEl.setAttribute("data-status", status);
-        updateBadgeText(valEl, status, t);
-    } catch (e) {
-        valEl.setAttribute("data-status", "0");
-        updateBadgeText(valEl, "0", t);
+    let finalStatus = "0";
+    const maxAttempts = 3;
+
+    for (let i = 0; i < maxAttempts; i++) {
+        try {
+            const res = await fetchWithTimeout("/api/check?url=" + encodeURIComponent(site.url) + "&use_vpn=" + useVpn);
+            const data = await res.json();
+            const status = data.status === "down" ? "0" : "1";
+            finalStatus = status;
+            if (status === "1") break;
+        } catch (e) {
+            finalStatus = "0";
+        }
+        // If it was the last attempt, don't wait obviously
+        if (i < maxAttempts - 1 && finalStatus === "0") {
+            await new Promise(r => setTimeout(r, 500));
+        }
     }
+
+    valEl.setAttribute("data-status", finalStatus);
+    updateBadgeText(valEl, finalStatus, t);
     updateStats();
+}
+async function startGraphForSite(url, name, isAuto = false) {
+    if (!url) return;
+    
+    if (autoCheckTimer) clearTimeout(autoCheckTimer);
+
+    if (!isAuto) {
+        currentGraphUrl = url;
+        currentGraphName = name;
+        latencyHistory.labels = [];
+        latencyHistory.direct = [];
+        latencyHistory.directStatus = [];
+        latencyHistory.freenet = [];
+        latencyHistory.freenetStatus = [];
+        if (latencyChart) {
+            latencyChart.destroy();
+            latencyChart = null;
+        }
+        document.getElementById('directPctBig').textContent = '--%';
+        document.getElementById('freenetPctBig').textContent = '--%';
+        
+        const titleEl = document.getElementById('chartTitle');
+        if(titleEl) titleEl.textContent = `Monitoring: ${name}`;
+        
+        const chartCont = document.getElementById('chartContainer');
+        if(chartCont) chartCont.style.display = 'block';
+        
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    
+    try {
+        const startTotal = Date.now();
+        await Promise.all([
+            (async () => {
+                const s = Date.now();
+                try {
+                    const resV = await fetchWithTimeout("/api/check?url=" + encodeURIComponent(url) + "&use_vpn=true");
+                    const dataV = await resV.json();
+                    const lat = Date.now() - s;
+                    const statusV = dataV.status === "down" ? "0" : "1";
+                    latencyHistory.freenet.push(lat);
+                    latencyHistory.freenetStatus.push(statusV === "0");
+                } catch (e) {
+                    latencyHistory.freenet.push(3000); 
+                    latencyHistory.freenetStatus.push(true);
+                }
+            })(),
+            (async () => {
+                const s = Date.now();
+                try {
+                    const resD = await fetchWithTimeout("/api/check?url=" + encodeURIComponent(url) + "&use_vpn=false");
+                    const dataD = await resD.json();
+                    const lat = Date.now() - s;
+                    const statusD = dataD.status === "down" ? "0" : "1";
+                    latencyHistory.direct.push(lat);
+                    latencyHistory.directStatus.push(statusD === "0");
+                } catch (e) {
+                    latencyHistory.direct.push(3000);
+                    latencyHistory.directStatus.push(true);
+                }
+            })()
+        ]);
+
+        const host = new URL(url).hostname;
+        latencyHistory.labels.push(new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'}));
+        
+        const MAX_SAMPLES = 20;
+        if (latencyHistory.labels.length > MAX_SAMPLES) {
+            latencyHistory.labels.shift();
+            latencyHistory.direct.shift();
+            latencyHistory.directStatus.shift();
+            latencyHistory.freenet.shift();
+            latencyHistory.freenetStatus.shift();
+        }
+        
+        if (!latencyChart) {
+            initLatencyChart();
+        }
+
+        const totalReqs = latencyHistory.labels.length;
+        if (totalReqs > 0) {
+            const dirFails = latencyHistory.directStatus.filter(s => s).length;
+            const freeFails = latencyHistory.freenetStatus.filter(s => s).length;
+            const dirPct = Math.round(((totalReqs - dirFails) / totalReqs) * 100);
+            const freePct = Math.round(((totalReqs - freeFails) / totalReqs) * 100);
+            document.getElementById('directPctBig').textContent = dirPct + '%';
+            document.getElementById('freenetPctBig').textContent = freePct + '%';
+            latencyChart.data.datasets[0].label = 'Direct Access';
+            latencyChart.data.datasets[1].label = 'FreeNet Access';
+        }
+
+        latencyChart.update();
+
+        if (autoRefreshEnabled) {
+            autoCheckTimer = setTimeout(() => startGraphForSite(currentGraphUrl, currentGraphName, true), 3000);
+        }
+    } catch (e) {
+        console.error("Custom check fail:", e);
+        if (autoRefreshEnabled && !autoCheckTimer) {
+            autoCheckTimer = setTimeout(() => startGraphForSite(currentGraphUrl, currentGraphName, true), 3000);
+        }
+    }
 }
 
 function updateStats() {
-    const total = allSites.length;
-    const directOnline = document.querySelectorAll("[id$=\"_direct_val\"][data-status=\"1\"]").length;
-    const vpnOnline = document.querySelectorAll("[id$=\"_vpn_val\"][data-status=\"1\"]").length;
-    
-    document.getElementById("countDirect").textContent = directOnline + "/" + total;
-    document.getElementById("countVPN").textContent = vpnOnline + "/" + total;
+    // Widgets removed, explicitly doing nothing
 }
 
 async function startChecks(mode) {
-    if (checking) return;
-    checking = true;
+    const isVpn = mode === "freenet";
+    if (isVpn && checkingFreenet) return;
+    if (!isVpn && checkingDirect) return;
     
-    document.getElementById("btnDirect").disabled = true;
-    document.getElementById("btnVPN").disabled = true;
-    document.getElementById("statusText").textContent = translations[currentLang].scanning;
+    if (isVpn) checkingFreenet = true; else checkingDirect = true;
+    
+    const btn = isVpn ? document.getElementById("btnVPN") : document.getElementById("btnDirect");
+    if(btn) btn.disabled = true;
+    const statusTextEl = document.getElementById("statusText");
+    if (statusTextEl) statusTextEl.textContent = translations[currentLang].scanning;
     
     const progress = document.getElementById("progressBar");
     progress.style.width = "10%";
 
-    await Promise.all(allSites.map(s => checkSite(s, mode === "freenet")));
+    // Run sites with a concurrency limit to prevent browser connection queue timeouts
+    const concurrencyLimit = 3;
+    let activePromises = [];
+    
+    for (let i = 0; i < allSites.length; i++) {
+        const p = checkSite(allSites[i], isVpn).then(() => {
+            const currentProgress = parseFloat(progress.style.width);
+            if (currentProgress < 90) progress.style.width = (currentProgress + (80 / allSites.length)) + "%";
+            activePromises.splice(activePromises.indexOf(p), 1);
+        });
+        activePromises.push(p);
+        
+        if (activePromises.length >= concurrencyLimit) {
+            await Promise.race(activePromises);
+        }
+    }
+    await Promise.all(activePromises);
 
     progress.style.width = "100%";
-    setTimeout(() => progress.style.width = "0%", 1000);
+    setTimeout(() => {
+        if (!checkingFreenet && !checkingDirect) progress.style.width = "0%";
+    }, 1000);
 
-    document.getElementById("statusText").textContent = translations[currentLang].standingBy;
-    document.getElementById("pageTitle").textContent = getTitleWithDate(translations[currentLang].title);
-    document.getElementById("btnDirect").disabled = false;
-    document.getElementById("btnVPN").disabled = false;
-    checking = false;
+    if (isVpn) checkingFreenet = false; else checkingDirect = false;
+    
+    if (!checkingFreenet && !checkingDirect) {
+        const finalStatus = document.getElementById("statusText");
+        if (finalStatus) finalStatus.textContent = translations[currentLang].standingBy;
+        const pageTitle = document.getElementById("pageTitle");
+        if (pageTitle) pageTitle.textContent = getTitleWithDate(translations[currentLang].title);
+    }
+    if (btn) btn.disabled = false;
 }
 
 function getTitleWithDate(base) {
@@ -478,13 +1012,65 @@ function getTitleWithDate(base) {
     return base + ' (' + now.toLocaleDateString('en-GB', opts) + ')';
 }
 
-document.getElementById("langToggle").addEventListener("click", toggleLanguage);
+    const langBtn = document.getElementById("langToggle");
+    if(langBtn) langBtn.addEventListener("click", toggleLanguage);
 
 buildGrid();
+
+// Initial run: PER USER REQUEST: RUN SIMULTANEOUSLY
 (async () => {
+    // Fire both and let them run in parallel
     startChecks("freenet");
     startChecks("direct");
 })();
+async function requestTrial() {
+    const btn = document.getElementById('btnTrial');
+    const originalText = document.getElementById('txtTrial').textContent;
+    
+    btn.disabled = true;
+    document.getElementById('txtTrial').textContent = "...";
+    
+    try {
+        const resp = await fetch('/api/trial');
+        const data = await resp.json();
+        
+        if (data.subscription_url) {
+            // Use the first direct proxy link (vless://) for the QR code as requested for better app compatibility (like V2Box)
+            const qrContent = (data.links && data.links.length > 0) ? data.links[0] : data.subscription_url;
+            const encodedUrl = encodeURIComponent(qrContent);
+            document.getElementById('trialQR').src = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodedUrl}&margin=5&bgcolor=ffffff`;
+            
+            document.getElementById('trialLink').textContent = data.subscription_url;
+            document.getElementById('trialModal').style.display = 'flex';
+        } else {
+            alert(data.error || "Failed to create trial.");
+        }
+    } catch (e) {
+        alert("Server error. Please try again later.");
+    } finally {
+        btn.disabled = false;
+        document.getElementById('txtTrial').textContent = originalText;
+    }
+}
+
+function closeTrialModal() {
+    document.getElementById('trialModal').style.display = 'none';
+}
+
+function copyTrialLink() {
+    const link = document.getElementById('trialLink').textContent;
+    navigator.clipboard.writeText(link).then(() => {
+        const btn = document.getElementById('btnCopy');
+        const originalText = btn.textContent;
+        const t = translations[currentLang];
+        btn.textContent = t.btnCopied;
+        btn.style.background = "#48bb78";
+        setTimeout(() => {
+            btn.textContent = t.btnCopy;
+            btn.style.background = "#64ffda";
+        }, 2000);
+    });
+}
 </script>
 </body>
 </html>
