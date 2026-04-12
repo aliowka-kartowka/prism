@@ -185,6 +185,7 @@
             font-size: 0.8rem;
         }
     </style>
+    <meta name="lava-verify" content="adf89e0b6ef39bbb" />
 </head>
 <body>
 
@@ -209,7 +210,7 @@
             <div class="stat-value" id="statusText">Standing by...</div>
         </div>
         <div class="stat-card">
-            <div class="stat-label" id="lblAccessible">Directly Accessible From Moscow</div>
+            <div class="stat-label" id="lblAccessible">Directly Accessible From Russia</div>
             <div class="stat-value error" id="countDirect">0/0</div>
         </div>
         <div class="stat-card" style="border-left-color: var(--success)">
@@ -220,22 +221,26 @@
 
     <div id="monitorGrid"></div>
 
-        <div style="margin-bottom: 5px; font-size: 0.75rem;">
-            <a href="/legal.html" id="footerLegal" style="color: #64ffda; text-decoration: none; margin-right: 15px;">Terms & Privacy</a>
-            <span id="footerSupport">Support: support@freenet.monster</span>
+    <footer class="footer" style="display: flex; flex-direction: column; align-items: center; justify-content: center; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 2rem;">
+        <div style="margin-bottom: 12px; font-size: 0.85rem; color: #8892b0; font-family: 'Inter', sans-serif; display: flex; justify-content: center; gap: 20px; align-items: center; flex-wrap: wrap;">
+            <a href="/legal.html" id="footerLegal" style="color: #64ffda; text-decoration: none;">Terms & Privacy</a>
+            <span style="opacity: 0.1;">|</span>
+            <span id="footerSupport">Support: <a href="mailto:support@freenet.monster" style="color: #64ffda; text-decoration: none;">support@freenet.monster</a></span>
         </div>
-        &copy; 2026 FreeNet Monster Infrastructure
+        <div style="font-size: 0.8rem; opacity: 0.6; font-family: 'Inter', sans-serif;">
+            &copy; 2026 FreeNet Monster Infrastructure
+        </div>
     </footer>
 </div>
 
 <script>
 const translations = {
     en: {
-        title: "FreeNet Russian VPN",
+        title: "FreeNet Monitor",
         refreshDirect: "Refresh Direct",
         testFreenet: "Test with FreeNet",
         globalStatus: "Global Connectivity",
-        directlyAccessible: "Directly Accessible From Moscow",
+        directlyAccessible: "Directly Accessible From Russia",
         freenetWorking: "FreeNet Accessible",
         standingBy: "Standing by...",
         scanning: "Scanning...",
@@ -246,14 +251,14 @@ const translations = {
         offline: "Blocked",
         lang: "RU",
         footerLegal: "Terms & Privacy",
-        footerSupport: "Support: support@freenet.monster"
+        footerSupport: 'Support: <a href="mailto:support@freenet.monster" style="color: #64ffda; text-decoration: none;">support@freenet.monster</a>'
     },
     ru: {
-        title: "FreeNet Russian VPN",
+        title: "FreeNet Monitor",
         refreshDirect: "Обновить (Прямое)",
         testFreenet: "Тест через FreeNet",
         globalStatus: "Состояние подключения",
-        directlyAccessible: "Доступно из Москвы",
+        directlyAccessible: "Доступно из России",
         freenetWorking: "Доступно через FreeNet",
         standingBy: "Ожидание...",
         scanning: "Сканирование...",
@@ -264,13 +269,16 @@ const translations = {
         offline: "Заблокирован",
         lang: "EN",
         footerLegal: "Условия и Конфиденциальность",
-        footerSupport: "Поддержка: support@freenet.monster"
+        footerSupport: 'Поддержка: <a href="mailto:support@freenet.monster" style="color: #64ffda; text-decoration: none;">support@freenet.monster</a>'
     }
 };
 
 let currentLang = "en";
 
 const siteCategories = {
+    "Core Services": [
+        { name: "FreeNet", url: "https://freenet.monster", domain: "freenet.monster", icon: "shield" }
+    ],
     "Social & Media": [
         { name: "YouTube", url: "https://www.youtube.com", domain: "youtube.com" },
         { name: "Instagram", url: "https://www.instagram.com", domain: "instagram.com" },
@@ -282,7 +290,7 @@ const siteCategories = {
     "Communication": [
         { name: "Discord", url: "https://discord.com", domain: "discord.com" },
         { name: "Telegram", url: "https://t.me", domain: "t.me" },
-        { name: "WhatsApp", url: "https://web.whatsapp.com", domain: "whatsapp.com" }
+        { name: "WhatsApp", url: "https://www.whatsapp.com", domain: "whatsapp.com", icon: "message-circle" }
     ],
     "Entertainment": [
         { name: "Netflix", url: "https://www.netflix.com", domain: "netflix.com" },
@@ -295,6 +303,12 @@ const siteCategories = {
         { name: "ChatGPT", url: "https://chat.openai.com", domain: "openai.com" },
         { name: "Wikipedia", url: "https://www.wikipedia.org", domain: "wikipedia.org" },
         { name: "AliExpress", url: "https://www.aliexpress.com", domain: "aliexpress.com" }
+    ],
+    "Adult Content": [
+        { name: "Pornhub", url: "https://www.pornhub.com", domain: "pornhub.com", icon: "heart" },
+        { name: "XVideos", url: "https://www.xvideos.com", domain: "xvideos.com", icon: "heart" },
+        { name: "xHamster", url: "https://www.xhamster.com", domain: "xhamster.com", icon: "heart" },
+        { name: "YouPorn", url: "https://www.youporn.com", domain: "youporn.com", icon: "heart" }
     ]
 };
 
@@ -313,10 +327,9 @@ function toggleLanguage() {
     document.getElementById("lblAccessible").textContent = t.directlyAccessible;
     document.getElementById("lblFreenetReady").textContent = t.freenetWorking;
     
-    const fLegal = document.getElementById("footerLegal");
     const fSupport = document.getElementById("footerSupport");
     if (fLegal) fLegal.textContent = t.footerLegal;
-    if (fSupport) fSupport.textContent = t.footerSupport;
+    if (fSupport) fSupport.innerHTML = t.footerSupport;
     
     allSites.forEach(s => {
         const id = s.name.replace(/[^a-z0-9]/gi, "_");
@@ -397,7 +410,7 @@ function buildGrid() {
 }
 
 async function fetchWithTimeout(resource, options = {}) {
-    const { timeout = 10000 } = options;
+    const { timeout = 15000 } = options;
     const controller = new AbortController();
     const id = setTimeout(() => controller.abort(), timeout);
     const response = await fetch(resource, { ...options, signal: controller.signal });
@@ -469,8 +482,8 @@ document.getElementById("langToggle").addEventListener("click", toggleLanguage);
 
 buildGrid();
 (async () => {
-    await startChecks("direct");
-    await startChecks("freenet");
+    startChecks("freenet");
+    startChecks("direct");
 })();
 </script>
 </body>

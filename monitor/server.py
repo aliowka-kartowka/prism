@@ -14,6 +14,12 @@ import string
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
+# Create a global Session for efficient connection pooling
+session = requests.Session()
+adapter = requests.adapters.HTTPAdapter(pool_connections=100, pool_maxsize=100)
+session.mount('http://', adapter)
+session.mount('https://', adapter)
+
 # Marzban Configuration
 MARZBAN_URL = os.getenv('MARZBAN_URL', 'http://178.104.135.156:8080')
 ADMIN_USER = os.getenv('FREENET_ADMIN_USER')
@@ -31,6 +37,7 @@ STATIC_DIR = os.path.dirname(os.path.abspath(__file__))
 XRAY_SOCKS_PROXY = 'socks5h://127.0.0.1:1081'
 
 ALLOWED_DOMAINS = {
+    'freenet.monster', 'www.freenet.monster',
     'www.youtube.com', 'www.instagram.com', 'www.facebook.com', 'x.com',
     'discord.com', 't.me', 'www.whatsapp.com', 'www.netflix.com', 'www.spotify.com',
     'www.twitch.tv', 'www.tiktok.com', 'www.google.com', 'www.wikipedia.org',
@@ -60,12 +67,12 @@ def check_url(url, use_vpn=False):
     if use_vpn:
         proxies = {'http': XRAY_SOCKS_PROXY, 'https': XRAY_SOCKS_PROXY}
     try:
-        # Avoid downloading entire payloads initially
-        resp = requests.head(url, proxies=proxies, timeout=3.5, verify=False, allow_redirects=True, headers={'User-Agent': 'Mozilla/5.0'})
+        # Avoid downloading entire payloads initially. Use the global session for pooling.
+        resp = session.head(url, proxies=proxies, timeout=3.5, verify=False, allow_redirects=True, headers={'User-Agent': 'Mozilla/5.0'})
         
-        # If the server rejects HEAD requests (e.g., Yahoo returns 404/405 for HEAD), fallback to an aborted GET request
+        # If the server rejects HEAD requests, fallback to an aborted GET request
         if resp.status_code >= 400:
-            resp = requests.get(url, proxies=proxies, timeout=3.5, verify=False, allow_redirects=True, stream=True, headers={'User-Agent': 'Mozilla/5.0'})
+            resp = session.get(url, proxies=proxies, timeout=3.5, verify=False, allow_redirects=True, stream=True, headers={'User-Agent': 'Mozilla/5.0'})
             resp.close() # Close connection immediately after receiving headers
             
         return resp.status_code < 400
@@ -77,7 +84,7 @@ def get_marzban_token():
     url = f"{MARZBAN_URL}/api/admin/token"
     data = {'username': ADMIN_USER, 'password': ADMIN_PASS}
     try:
-        response = requests.post(url, data=data, timeout=10)
+        response = session.post(url, data=data, timeout=10)
         if response.status_code == 200:
             return response.json()['access_token']
         else:
@@ -97,16 +104,46 @@ def create_marzban_trial(username):
     # First check if user already exists
     try:
         get_url = f"{MARZBAN_URL}/api/user/{username}"
-        get_response = requests.get(get_url, headers=headers, timeout=5)
+        get_response = session.get(get_url, headers=headers, timeout=5)
         if get_response.status_code == 200:
             user = get_response.json()
+            
+            # Check if user needs renewal (expired or exhausted data)
+            # data_limit is compared against used_traffic
+            status = user.get('status', 'active')
+            used = user.get('used_traffic', 0)
+            limit = user.get('data_limit', 0)
+            
+            if status != 'active' or (limit > 0 and used >= limit):
+                logger.info(f"Renewing trial for user {username}")
+                # Reset used_traffic and extend expiration
+                renewal_data = {
+                    "data_limit": 10737418240, # 10GB
+                    "expire": int(time.time() + 86400) # +24h
+                }
+                # Marzban PUT /api/user/{username} to update
+                put_url = f"{MARZBAN_URL}/api/user/{username}"
+                put_res = session.put(put_url, headers=headers, json=renewal_data, timeout=10)
+                if put_res.status_code == 200:
+                    user = put_res.json()
+                    # After update, we might need to reset traffic if Marzban doesn't do it via payload 
+                    # Actually some Marzban versions need a separate reset call or just setting data_limit
+                    # We'll try to explicitly reset used_traffic if possible, but usually PUT does it if passed
+                    # Wait! Marzban's PUT /api/user/{username} doesn't usually take used_traffic to reset.
+                    # There is often a POST /api/user/{username}/reset_usage
+                    session.post(f"{put_url}/reset_usage", headers=headers, timeout=5)
+                    # Re-fetch to get clean state
+                    get_response = session.get(get_url, headers=headers, timeout=5)
+                    if get_response.status_code == 200:
+                        user = get_response.json()
+
             return map_user_links(user)
     except Exception as e:
-        logger.error(f"Error checking existing user: {e}")
+        logger.error(f"Error checking/renewing existing user: {e}")
     
     # User doesn't exist (e.g. 404), so create it
-    # 1GB in bytes
-    DATA_LIMIT = 1073741824 
+    # 10GB in bytes
+    DATA_LIMIT = 10737418240 
     
     user_data = {
         "username": username,
@@ -117,7 +154,7 @@ def create_marzban_trial(username):
     }
     
     try:
-        response = requests.post(url, headers=headers, json=user_data, timeout=10)
+        response = session.post(url, headers=headers, json=user_data, timeout=10)
         if response.status_code in (200, 201):
             user = response.json()
             return map_user_links(user)

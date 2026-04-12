@@ -232,6 +232,7 @@
             .header { flex-direction: column; gap: 1rem; text-align: center; }
         }
     </style>
+    <meta name="lava-verify" content="adf89e0b6ef39bbb" />
 </head>
 <body>
 
@@ -248,45 +249,8 @@
         </div>
 
         <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px;">
-            <div style="display: flex; gap: 10px;">
-                <button id="btnTrial" onclick="requestTrial()" style="
-                    background: transparent;
-                    border: 1px solid #64ffda;
-                    color: #64ffda;
-                    font-weight: 600;
-                    padding: 0.8rem 1.5rem;
-                    border-radius: 8px;
-                    cursor: pointer;
-                    transition: all 0.3s ease;
-                    font-family: var(--font-mono);
-                    font-size: 0.85rem;
-                ">
-                    <span id="txtTrial">GET FREE TRIAL</span>
-                </button>
-                <a href="https://t.me/FreeNetMonsterBot" target="_blank" style="text-decoration: none;">
-                    <button id="btnSubscribe" style="
-                        background: linear-gradient(135deg, #64ffda 0%, #48bb78 100%);
-                        color: #0a192f;
-                        font-weight: 700;
-                        border: none;
-                        padding: 0.8rem 1.5rem;
-                        border-radius: 8px;
-                        display: flex;
-                        align-items: center;
-                        gap: 10px;
-                        box-shadow: 0 4px 15px rgba(100, 255, 218, 0.3);
-                        animation: pulse 2s infinite;
-                        letter-spacing: 0.5px;
-                        cursor: pointer;
-                    ">
-                        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
-                        <span id="txtSubscribe">GET SUBSCRIPTION</span>
-                    </button>
-                </a>
-            </div>
             <div style="display: flex; justify-content: flex-end; align-items: center; gap: 15px;">
-                <span style="font-size: 0.7rem; color: #8892b0; font-family: var(--font-mono);">via @FreeNetMonsterBot</span>
-                <button id="langToggle" style="
+                <button id="langToggle" onclick="toggleLanguage()" style="
                     background: rgba(100, 255, 218, 0.1);
                     border: 1px solid #64ffda;
                     color: #64ffda;
@@ -317,15 +281,16 @@
     ">
         <div style="
             background: #112240;
-            padding: 2.5rem;
+            padding: 1.5rem;
             border-radius: 16px;
-            max-width: 600px;
+            max-width: 400px;
             width: 90%;
+            max-height: 85vh;
+            overflow-y: auto;
             border: 1px solid #233554;
             box-shadow: 0 20px 40px rgba(0,0,0,0.4);
             text-align: center;
             position: relative;
-            overflow: hidden;
         ">
             <button onclick="closeTrialModal()" style="
                 position: absolute;
@@ -346,8 +311,8 @@
             <p id="modalSub" style="color: #8892b0; font-size: 0.9rem; margin-bottom: 1.5rem;">Your 1GB trial subscription is ready.</p>
             
             <!-- QR code fits to sides by using negative margin to offset modal padding -->
-            <div id="qrcodeCont" style="background: white; padding: 20px; width: calc(100% + 5rem); margin-left: -2.5rem; margin-right: -2.5rem; box-sizing: border-box; display: flex; justify-content: center; margin-bottom: 1.5rem; box-shadow: inset 0 0 10px rgba(0,0,0,0.1);">
-                <img id="trialQR" src="" alt="QR Code" style="width: 100%; max-width: 450px; height: auto; aspect-ratio: 1/1; display: block;">
+            <div id="qrcodeCont" style="background: white; padding: 15px; width: calc(100% + 3rem); margin-left: -1.5rem; margin-right: -1.5rem; box-sizing: border-box; display: flex; justify-content: center; margin-bottom: 1.5rem; box-shadow: inset 0 0 10px rgba(0,0,0,0.1);">
+                <img id="trialQR" src="" alt="QR Code" style="max-width: 240px; width: 100%; height: auto; display: block;">
             </div>
             
             <div style="
@@ -425,14 +390,51 @@
         @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
     </style>
 
+    <!-- Promo Section -->
+    <div id="promoSection" style="margin-bottom: 2.5rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+        <!-- Free Trial Card -->
+        <div style="background: rgba(100, 255, 218, 0.05); border: 1px solid rgba(100, 255, 218, 0.2); border-radius: 12px; padding: 1.5rem; display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+                <h3 id="lblPromoFreeTitle" style="color: #64ffda; margin-top: 0; margin-bottom: 0.5rem; font-family: 'Outfit'; display: flex; align-items: center; gap: 8px;">
+                    <i data-lucide="zap" style="width: 20px;"></i> Free Trial
+                </h3>
+                <p id="lblPromoFreeDesc" style="color: #8892b0; font-size: 0.9rem; line-height: 1.5; margin-bottom: 1.5rem;">
+                    Get started with 1GB of high-speed data. Renewable every 24 hours if exhausted.
+                </p>
+            </div>
+            <button id="btnTrial" onclick="requestTrial()" style="background: #64ffda; color: #0a192f; border: none; padding: 0.8rem 1.5rem; border-radius: 6px; font-weight: 700; cursor: pointer; transition: all 0.3s ease; width: fit-content;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 5px 15px rgba(100, 255, 218, 0.3)'" onmouseout="this.style.transform='none'; this.style.boxShadow='none'">
+                <span id="txtTrial">Get Trial Link</span>
+            </button>
+        </div>
+
+        <!-- Premium Teaser Card -->
+        <div style="background: rgba(230, 241, 255, 0.03); border: 1px solid rgba(230, 241, 255, 0.1); border-radius: 12px; padding: 1.5rem; position: relative; overflow: hidden;">
+            <div style="position: absolute; top: -10px; right: -10px; background: linear-gradient(45deg, #64ffda, #48bb78); color: #0a192f; font-size: 0.7rem; font-weight: 800; padding: 20px 40px 5px 40px; transform: rotate(45deg); text-transform: uppercase; letter-spacing: 1px;">
+                Coming Soon
+            </div>
+            <h3 id="lblPromoPremiumTitle" style="color: #e6f1ff; margin-top: 0; margin-bottom: 0.5rem; font-family: 'Outfit';">
+                Premium Performance
+            </h3>
+            <ul style="color: #8892b0; font-size: 0.85rem; padding-left: 1.2rem; margin-bottom: 0; line-height: 1.6;">
+                <li id="liPrem1">Unlimited high-speed data 24/7</li>
+                <li id="liPrem2">Dedicated unblocked IP addresses</li>
+                <li id="liPrem3">Multi-device support (iOS, Android, PC)</li>
+                <li id="liPrem4">Priority support & advanced protocols</li>
+            </ul>
+        </div>
+    </div>
+
     <div id="monitorGrid"></div>
 
-
-        <div style="margin-bottom: 10px; font-size: 0.8rem; color: #8892b0; font-family: 'Inter', sans-serif;">
-            <a href="/legal.html" id="footerLegal" style="color: #64ffda; text-decoration: none; margin-right: 15px;">Terms & Privacy</a>
-            <span id="footerSupport">Support: support@freenet.monster</span>
+    <footer class="footer" style="display: flex; flex-direction: column; align-items: center; justify-content: center; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 2rem;">
+        <div style="margin-bottom: 12px; font-size: 0.85rem; color: #8892b0; font-family: 'Inter', sans-serif; display: flex; justify-content: center; gap: 20px; align-items: center; flex-wrap: wrap;">
+            <a href="/legal.html" id="footerLegal" style="color: #64ffda; text-decoration: none;">Terms & Privacy</a>
+            <span style="opacity: 0.1;">|</span>
+            <span id="footerSupport">Support: <a href="mailto:support@freenet.monster" style="color: #64ffda; text-decoration: none;">support@freenet.monster</a></span>
         </div>
-        &copy; 2026 FreeNet Monster Infrastructure
+        <div style="font-size: 0.8rem; opacity: 0.6; font-family: 'Inter', sans-serif;">
+            &copy; 2026 FreeNet Monster Infrastructure
+        </div>
     </footer>
 </div>
 
@@ -461,17 +463,19 @@ const translations = {
         subscribe: "GET SUBSCRIPTION",
         trial: "GET FREE TRIAL",
         modalTitle: "Trial Created!",
-        modalSub: "Your 1GB trial subscription is ready.",
+        modalSub: "Your 10GB trial subscription is ready.",
         btnCopy: "Copy Link",
         btnCopied: "Copied!",
-        limitText: "Limit: 1GB per user. Accounts expire after data usage.",
-        howToUseTitle: "How to use:",
-        howToUseStep1: "1. Copy the link above.",
-        howToUseStep2: "2. Install a VPN client (v2rayNG, Streisand, or Shadowrocket).",
-        howToUseStep3: "3. Add the link as a 'Subscription' or 'Import from Clipboard'.",
-        howToUseStep4: "4. Update the server list and connect.",
+        limitText: "Limit: 10GB per user. Accounts expire after data usage.",
+        promoFreeTitle: "Free Trial",
+        promoFreeDesc: "Get started with 10GB of high-speed data. Renewable every 24 hours if exhausted.",
+        promoPremiumTitle: "Premium Performance",
+        prem1: "Unlimited high-speed data 24/7",
+        prem2: "Dedicated unblocked IP addresses",
+        prem3: "Multi-device support (iOS, Android, PC)",
+        prem4: "Priority support & advanced protocols",
         footerLegal: "Terms & Privacy",
-        footerSupport: "Support: support@freenet.monster"
+        footerSupport: 'Support: <a href="mailto:support@freenet.monster" style="color: #64ffda; text-decoration: none;">support@freenet.monster</a>'
     },
     ru: {
         title: "FreeNet Russian VPN",
@@ -496,17 +500,19 @@ const translations = {
         subscribe: "ПОДПИСКА VPN",
         trial: "ПРОБНЫЙ ПЕРИОД",
         modalTitle: "Доступ создан!",
-        modalSub: "Ваша подписка на 1ГБ готова.",
+        modalSub: "Ваша подписка на 10ГБ готова.",
         btnCopy: "Копировать",
         btnCopied: "Скопировано!",
-        limitText: "Лимит: 1ГБ на пользователя. Аккаунт отключится после исчерпания трафика.",
-        howToUseTitle: "Как использовать:",
-        howToUseStep1: "1. Скопируйте ссылку выше.",
-        howToUseStep2: "2. Установите VPN-клиент (v2rayNG, Streisand или Shadowrocket).",
-        howToUseStep3: "3. Добавьте ссылку как «Подписку» или «Импорт из буфера обмена».",
-        howToUseStep4: "4. Обновите список серверов и подключитесь.",
+        limitText: "Лимит: 10ГБ на пользователя. Аккаунт отключится после исчерпания трафика.",
+        promoFreeTitle: "Бесплатный период",
+        promoFreeDesc: "Начните с 10 ГБ высокоскоростных данных. Обновляется каждые 24 часа.",
+        promoPremiumTitle: "Премиум доступ",
+        prem1: "Безлимитный трафик 24/7",
+        prem2: "Выделенные неблокируемые IP",
+        prem3: "Поддержка всех устройств (iOS, Android, ПК)",
+        prem4: "Приоритетная поддержка и протоколы",
         footerLegal: "Условия и Конфиденциальность",
-        footerSupport: "Поддержка: support@freenet.monster"
+        footerSupport: 'Поддержка: <a href="mailto:support@freenet.monster" style="color: #64ffda; text-decoration: none;">support@freenet.monster</a>'
     }
 };
 
@@ -659,6 +665,16 @@ function toggleLanguage() {
     document.getElementById("btnCustom").textContent = t.searchBtn;
     document.getElementById("lblResDirect").textContent = t.resDirect;
     document.getElementById("lblResVPN").textContent = t.resVPN;
+    
+    // Promo
+    document.getElementById("lblPromoFreeTitle").innerHTML = '<i data-lucide="zap" style="width: 20px;"></i> ' + t.promoFreeTitle;
+    document.getElementById("lblPromoFreeDesc").textContent = t.promoFreeDesc;
+    document.getElementById("lblPromoPremiumTitle").textContent = t.promoPremiumTitle;
+    document.getElementById("liPrem1").textContent = t.prem1;
+    document.getElementById("liPrem2").textContent = t.prem2;
+    document.getElementById("liPrem3").textContent = t.prem3;
+    document.getElementById("liPrem4").textContent = t.prem4;
+    
     document.getElementById('txtSubscribe').textContent = t.subscribe;
     const qrHint = document.getElementById("qrHint");
     if (qrHint) qrHint.textContent = currentLang === "ru" ? "Сканируйте или сделайте скриншот" : "Scan or Screenshot to Import";
@@ -687,10 +703,18 @@ function toggleLanguage() {
     if (hStep3) hStep3.textContent = t.howToUseStep3;
     if (hStep4) hStep4.textContent = t.howToUseStep4;
     
-    const fLegal = document.getElementById("footerLegal");
     const fSupport = document.getElementById("footerSupport");
     if (fLegal) fLegal.textContent = t.footerLegal;
-    if (fSupport) fSupport.textContent = t.footerSupport;
+    if (fSupport) fSupport.innerHTML = t.footerSupport;
+    
+    // Update promo texts
+    document.getElementById("lblPromoFreeTitle").innerHTML = '<i data-lucide="zap" style="width: 20px;"></i> ' + t.promoFreeTitle;
+    document.getElementById("lblPromoFreeDesc").textContent = t.promoFreeDesc;
+    document.getElementById("lblPromoPremiumTitle").textContent = t.promoPremiumTitle;
+    document.getElementById("liPrem1").textContent = t.prem1;
+    document.getElementById("liPrem2").textContent = t.prem2;
+    document.getElementById("liPrem3").textContent = t.prem3;
+    document.getElementById("liPrem4").textContent = t.prem4;
     
     const txtTrial = document.getElementById('txtTrial');
     if (txtTrial) txtTrial.textContent = t.trial;
@@ -781,7 +805,7 @@ function buildGrid() {
 }
 
 async function fetchWithTimeout(resource, options = {}) {
-    const { timeout = 3000 } = options;
+    const { timeout = 15000 } = options;
     const controller = new AbortController();
     const id = setTimeout(() => controller.abort(), timeout);
     try {
