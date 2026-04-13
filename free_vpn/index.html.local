@@ -535,7 +535,7 @@ const siteCategories = {
         { name: "Xvideos", url: "https://xvideos.com", icon: "alert-triangle" },
         { name: "Pornhub", url: "https://pornhub.com", icon: "alert-triangle" },
         { name: "Xnxx", url: "https://xnxx.com", icon: "alert-triangle" },
-        { name: "Youport", url: "https://www.youporn.com", icon: "heart" }
+        { name: "Youporn", url: "https://www.youporn.com", icon: "heart" }
     ]
 };
 
