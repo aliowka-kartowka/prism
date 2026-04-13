@@ -21,6 +21,7 @@ bot = telebot.TeleBot(BOT_TOKEN)
 
 def get_token():
     url = f"{MARZBAN_URL}/api/admin/token"
+    # Note: Marzban uses form-data or JSON depending on version, usually form-data for login
     data = {
         'username': ADMIN_USER,
         'password': ADMIN_PASS
@@ -73,7 +74,7 @@ def map_user_links(user):
     user['links'] = new_links
     return user
 
-def create_user(username):
+def create_user(username, data_limit=10737418240, expire_days=1):
     token = get_token()
     if not token:
         return {"error": "Authentication failed"}
@@ -88,19 +89,45 @@ def create_user(username):
     try:
         check_resp = requests.get(user_url, headers=headers, timeout=10)
         if check_resp.status_code == 200:
-            return map_user_links(check_resp.json())
-    except:
-        pass
+            user = check_resp.json()
+            
+            # Automatic Renewal: If user is expired or nearly expired, refresh them
+            # Also reset data usage if it's exhausted
+            now = int(time.time())
+            needs_update = False
+            update_data = {}
+            
+            if user.get('expire') and (user['expire'] < now + 3600): # Expired or expiring in 1h
+                update_data['expire'] = now + (expire_days * 86400)
+                update_data['data_limit'] = 10737418240 # Ensure 10GB on renewal
+                update_data['status'] = 'active'
+                needs_update = True
+                
+            if user.get('used_traffic', 0) >= user.get('data_limit', 0):
+                # Reset usage by setting to 0? Marzban PUT /user doesn't reset usage directly,
+                # but we can increase the limit or recreate. 
+                # Actually, most agents prefer resetting via 'reset' endpoint.
+                try:
+                    requests.post(f"{MARZBAN_URL}/api/user/{username}/reset", headers=headers, timeout=10)
+                except: pass
+                needs_update = True
+
+            if needs_update:
+                requests.put(user_url, headers=headers, json=update_data, timeout=10)
+                # Fetch fresh data after update
+                check_resp = requests.get(user_url, headers=headers, timeout=10)
+                user = check_resp.json()
+                
+            return map_user_links(user)
+    except Exception as e:
+        print(f"Check user error: {e}")
     
     # Create new user if not exists
     url = f"{MARZBAN_URL}/api/user"
-    # 1GB in bytes
-    DATA_LIMIT = 1073741824 
-    
     user_data = {
         "username": username,
-        "data_limit": DATA_LIMIT,
-        "expire": int(time.time() + 86400), # 1 day
+        "data_limit": data_limit,
+        "expire": int(time.time() + (expire_days * 86400)),
         "proxies": {"vless": {}},
         "inbounds": {"vless": ["VLESS REALITY"]}
     }
@@ -119,7 +146,6 @@ def get_detailed_stats():
         return None
     
     headers = {'Authorization': f'Bearer {token}'}
-    
     try:
         users_resp = requests.get(f"{MARZBAN_URL}/api/users", headers=headers, timeout=15)
         if users_resp.status_code != 200:
@@ -156,17 +182,38 @@ def get_detailed_stats():
 
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
-    tg_username = message.from_user.username
-    if not tg_username:
-        # Fallback to user ID if no username
-        tg_username = f"tg_{message.from_user.id}"
-
-    bot.reply_to(message, f"Welcome to FreeNet Monster! 🚀\n\nI am setting up your secure private connection (Username: {tg_username})...")
+    # Prefix with 'trial_' for better organization in Marzban
+    raw_username = message.from_user.username or f"{message.from_user.id}"
+    tg_username = f"trial_{raw_username}"
+    
+    # Check if this is a trial request from monitor (deep link)
+    is_monitor = "monitor" in message.text
+    
+    welcome_text = (
+        f"Welcome to FreeNet Monster! 🚀\n\n"
+        f"I am setting up your secure private connection for account: **{tg_username}**..."
+    )
+    bot.reply_to(message, welcome_text, parse_mode='Markdown')
     
     user = create_user(tg_username)
     if user and 'subscription_url' in user:
         sub_url = user['subscription_url']
-        bot.send_message(message.chat.id, f"✅ Your account is ready!\n\nYour Subscription Link:\n`{sub_url}`\n\n1. Install **v2rayNG** (Android) or **V2BOX** (iOS).\n2. Import this link.\n3. Enjoy freedom! 🌍", parse_mode='Markdown')
+        # Use first config link for QR if available
+        qr_content = user['links'][0] if (user.get('links') and len(user['links']) > 0) else sub_url
+        qr_url = f"https://api.qrserver.com/v1/create-qr-code/?size=400x400&data={qr_content}&margin=10&bgcolor=ffffff"
+        
+        caption = (
+            f"✅ **Your account is ready!**\n\n"
+            f"Your Subscription Link:\n`{sub_url}`\n\n"
+            f"1. **Scan the QR code above** or copy the link.\n"
+            f"2. Import into **v2rayNG** (Android) or **V2BOX** (iOS).\n"
+            f"3. Connect and enjoy freedom! 🌍"
+        )
+        
+        try:
+            bot.send_photo(message.chat.id, qr_url, caption=caption, parse_mode='Markdown')
+        except Exception:
+            bot.send_message(message.chat.id, caption, parse_mode='Markdown')
     else:
         error_msg = user.get('error', 'Unknown error') if isinstance(user, dict) else 'Unknown error'
         bot.send_message(message.chat.id, f"❌ Connection error: {error_msg}. Please try again in 1 minute.")
@@ -174,87 +221,22 @@ def send_welcome(message):
 @bot.message_handler(commands=['status'])
 def send_status(message):
     stats = get_detailed_stats()
-    
     if stats:
-        resp = "🛡 **FreeNet Monster Status**\n\n"
-        resp += f"👥 Total Users: `{stats['total']}`\n"
-        resp += f"✅ Active Accounts: `{stats['active']}`\n"
-        resp += f"🔥 Currently Connected: `{stats['online']}`\n"
-        resp += "\nAll nodes are running smoothly. ✅"
+        resp = (
+            "🛡 **FreeNet Monster Status**\n\n"
+            f"👥 Total Users: `{stats['total']}`\n"
+            f"✅ Active Accounts: `{stats['active']}`\n"
+            f"🔥 Online Now: `{stats['online']}`\n\n"
+            "All nodes are running smoothly. ✅"
+        )
         bot.send_message(message.chat.id, resp, parse_mode='Markdown')
     else:
         bot.send_message(message.chat.id, "❌ Failed to retrieve live statistics.")
 
 if __name__ == '__main__':
-    print('FreeNet Takeover Bot is starting...')
-    bot.set_my_commands([telebot.types.BotCommand("start", "Start the bot"), telebot.types.BotCommand("status", "Check system status")])
-    bot.infinity_polling()
-    markup.add(telebot.types.InlineKeyboardButton("💎 Premium (200GB, 1 Month) - 2$", callback_data="buy_premium"))
-    bot.reply_to(message, "Welcome to FreeNet Monster! 🚀\nPlease choose your connection type:", reply_markup=markup)
-
-@bot.callback_query_handler(func=lambda call: True)
-def handle_query(call):
-    tg_username = call.from_user.username or f"tg_{call.from_user.id}"
-
-    if call.data == "get_trial":
-        bot.answer_callback_query(call.id, "Processing your trial...")
-        bot.send_message(call.message.chat.id, f"⌛ Setting up your secure connection for {tg_username}...")
-        
-        user = ensure_user(tg_username, data_limit=1073741824, expire_days=1)
-        if user and 'subscription_url' in user:
-            sub_url = user['subscription_url']
-            qr_buf = generate_qr(sub_url)
-            caption = f"✅ **Your Free Trial is ready!**\n\nSubscription Link:\n`{sub_url}`\n\n1. Scan the QR code or copy the link above.\n2. Import into **v2rayNG** or **V2BOX**.\n3. Enjoy freedom! 🌍"
-            bot.send_photo(call.message.chat.id, qr_buf, caption=caption, parse_mode='Markdown')
-        else:
-            bot.send_message(call.message.chat.id, "❌ Connection error. Please try again later.")
-            
-    elif call.data == "buy_premium":
-        bot.answer_callback_query(call.id, "Preparing invoice...")
-        invoice = create_crypto_invoice(2.0, tg_username)
-        if invoice:
-            invoices = load_invoices()
-            invoices[str(call.from_user.id)] = invoice['invoice_id']
-            save_invoices(invoices)
-            
-            markup = telebot.types.InlineKeyboardMarkup()
-            markup.add(telebot.types.InlineKeyboardButton("💳 Pay with Crypto", url=invoice['bot_invoice_url']))
-            markup.add(telebot.types.InlineKeyboardButton("✅ I Have Paid", callback_data="check_payment"))
-            bot.send_message(call.message.chat.id, "💎 **FreeNet Premium**\n\n- Limit: **200 GB**\n- Duration: **1 Month**\n- Price: **2 $**\n\nPlease pay using the button below:", reply_markup=markup, parse_mode='Markdown')
-        else:
-            bot.send_message(call.message.chat.id, "❌ Payment error. Please contact @aliowka.")
-
-    elif call.data == "check_payment":
-        invoices = load_invoices()
-        invoice_id = invoices.get(str(call.from_user.id))
-        if not invoice_id:
-            bot.answer_callback_query(call.id, "No active invoice.")
-            return
-
-        bot.answer_callback_query(call.id, "Checking...")
-        if check_crypto_invoice(invoice_id):
-            bot.send_message(call.message.chat.id, "🎉 **Payment Confirmed!**")
-            user = ensure_user(tg_username, data_limit=214748364800, expire_days=30)
-            if user and 'subscription_url' in user:
-                sub_url = user['subscription_url']
-                qr_buf = generate_qr(sub_url)
-                caption = f"🚀 **SUCCESS!** Your account is now **Premium**.\n\nNew Subscription Link:\n`{sub_url}`\n\nLimit: 200GB | Valid: 30 Days."
-                bot.send_photo(call.message.chat.id, qr_buf, caption=caption, parse_mode='Markdown')
-                del invoices[str(call.from_user.id)]
-                save_invoices(invoices)
-            else:
-                bot.send_message(call.message.chat.id, "❌ Update error. Contact @aliowka.")
-        else:
-            bot.send_message(call.message.chat.id, "⌛ Payment not detected yet.")
-
-@bot.message_handler(commands=['status'])
-def send_status(message):
-    stats = get_detailed_stats()
-    if stats:
-        resp = f"🛡 **FreeNet Monster Status**\n\n👥 Total Users: `{stats['total']}`\n✅ Active: `{stats['active']}`\n🔥 Online: `{stats['online']}`"
-        bot.send_message(message.chat.id, resp, parse_mode='Markdown')
-
-if __name__ == '__main__':
-    print('FreeNet Takeover Bot is starting...')
-    bot.set_my_commands([telebot.types.BotCommand("start", "Start the bot"), telebot.types.BotCommand("status", "Check system status")])
+    print('FreeNet Bot is starting...')
+    bot.set_my_commands([
+        telebot.types.BotCommand("start", "Initialize connection"),
+        telebot.types.BotCommand("status", "System stats")
+    ])
     bot.infinity_polling()

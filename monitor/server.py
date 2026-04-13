@@ -32,6 +32,49 @@ TRIAL_LIMITS = {}
 TRIAL_LOCK = threading.Lock()
 TRIAL_DURATION = 86400 # 24 hours
 BOT_TOKEN = "8516762550:AAGHstL8XhUutL910W5kol3pfypmaNEsb6w"
+FREENET_ADMIN_ID = 1131496447
+
+# --- RKN Block Alert Background Thread ---
+def send_telegram_alert(message):
+    url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
+    payload = {"chat_id": FREENET_ADMIN_ID, "text": message, "parse_mode": "Markdown"}
+    try:
+        session.post(url, json=payload, timeout=10)
+    except Exception as e:
+        logger.error(f"Failed to send TG alert: {e}")
+
+class RKNMonitorThread(threading.Thread):
+    def __init__(self, admin_id):
+        super().__init__(daemon=True)
+        self.target = "https://freenet.monster"
+        self.admin_id = admin_id
+    
+    def run(self):
+        logger.info("RKN Monitor Thread started...")
+        last_status = True # Start assuming it's UP
+        while True:
+            try:
+                # Check from Russia (Direct)
+                is_up = check_url(self.target, use_vpn=False)
+                if is_up != last_status:
+                    if not is_up:
+                        msg = "🔴 **ALERT: freenet.monster BLOCKED in Russia!**\n\nThe Moscow monitoring node can no longer reach the main site directly. Please activate mirror domains."
+                        url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
+                        payload = {"chat_id": self.admin_id, "text": msg, "parse_mode": "Markdown"}
+                        session.post(url, json=payload, timeout=10)
+                        logger.warning("RKN BLOCK DETECTED!")
+                    else:
+                        msg = "🟢 **RECOVERY: freenet.monster RESTORED!**\n\nThe main site is accessible again from Russia."
+                        url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
+                        payload = {"chat_id": self.admin_id, "text": msg, "parse_mode": "Markdown"}
+                        session.post(url, json=payload, timeout=10)
+                        logger.info("RKN BLOCK CLEARED.")
+                    last_status = is_up
+            except Exception as e:
+                logger.error(f"Error in RKN Monitor: {e}")
+            
+            time.sleep(600) # Check every 10 minutes
+# ------------------------------------------
 
 try: import urllib3
 except ImportError: from requests.packages import urllib3
@@ -418,6 +461,10 @@ class Handler(BaseHTTPRequestHandler):
             self.end_headers()
 
 if __name__ == '__main__':
+    # Start RKN Monitor
+    rkn_thread = RKNMonitorThread(admin_id=1131496447)
+    rkn_thread.start()
+
     server = ThreadingHTTPServer(('0.0.0.0', 8090), Handler)
     print('Russia Multi-Threaded Monitor running on port 8090...')
     server.serve_forever()

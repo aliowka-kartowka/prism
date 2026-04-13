@@ -9,6 +9,11 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Telegram WebApp SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script>
+        window.Telegram.WebApp.ready();
+    </script>
     <link rel="icon" type="image/png" href="assets/icon/app_icon.png">
     <style>
         :root {
@@ -248,20 +253,53 @@
             </div>
         </div>
 
-        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px;">
-            <div style="display: flex; justify-content: flex-end; align-items: center; gap: 15px;">
-                <button id="langToggle" onclick="toggleLanguage()" style="
-                    background: rgba(100, 255, 218, 0.1);
-                    border: 1px solid #64ffda;
-                    color: #64ffda;
-                    padding: 4px 10px;
-                    border-radius: 4px;
-                    cursor: pointer;
-                    font-size: 0.75rem;
-                    font-family: var(--font-mono);
-                    font-weight: 600;
-                ">RU</button>
+        <div style="display: flex; align-items: center; gap: 20px;">
+            <!-- Small Free Trial Header Section -->
+            <div style="
+                background: rgba(100, 255, 218, 0.05);
+                border: 1px solid rgba(100, 255, 218, 0.2);
+                border-radius: 8px;
+                padding: 8px 12px;
+                display: flex;
+                align-items: center;
+                gap: 15px;
+            ">
+                <div style="display: flex; flex-direction: column; gap: 2px;">
+                    <h3 id="lblPromoFreeTitle" style="color: #64ffda; margin: 0; font-family: 'Outfit'; font-size: 0.85rem; display: flex; align-items: center; gap: 5px;">
+                        <i data-lucide="zap" style="width: 14px;"></i> Free Trial
+                    </h3>
+                    <p id="lblPromoFreeDesc" style="color: #8892b0; font-size: 0.7rem; margin: 0; white-space: nowrap;">
+                        10GB / 24h
+                    </p>
+                </div>
+                <div id="tg-login-button-container">
+                    <a href="https://t.me/FreeNetMonsterBot?start=monitor" target="_blank" style="text-decoration: none;">
+                        <button id="btnTgLogin" style="
+                            background: #0088cc;
+                            color: white;
+                            border: none;
+                            padding: 6px 15px;
+                            border-radius: 6px;
+                            cursor: pointer;
+                            font-size: 0.85rem;
+                            font-family: 'Outfit', sans-serif;
+                            font-weight: 600;
+                            display: flex;
+                            align-items: center;
+                            gap: 8px;
+                            transition: all 0.3s ease;
+                            white-space: nowrap;
+                        " onmouseover="this.style.background='#0099e6'" onmouseout="this.style.background='#0088cc'">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69.01-.03.01-.14-.07-.2-.08-.06-.19-.04-.27-.02-.11.02-1.93 1.23-5.46 3.62-.51.35-.98.53-1.4.52-.46-.01-1.35-.26-2.01-.48-.81-.27-1.45-.42-1.39-.88.03-.24.37-.48 1.02-.73 4-1.74 6.67-2.89 8.01-3.45 3.81-1.59 4.6-.17 4.14 1.83z"/>
+                            </svg>
+                            <span id="txtTgLogin">Log In</span>
+                        </button>
+                    </a>
+                </div>
             </div>
+
+
         </div>
     </header>
 
@@ -390,30 +428,7 @@
         @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
     </style>
 
-    <!-- Promo Section -->
-    <div id="promoSection" style="margin-bottom: 2.5rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
-        <!-- Free Trial Card -->
-        <div style="background: rgba(100, 255, 218, 0.05); border: 1px solid rgba(100, 255, 218, 0.2); border-radius: 12px; padding: 1.5rem; display: flex; flex-direction: column; justify-content: space-between;">
-            <div>
-                <h3 id="lblPromoFreeTitle" style="color: #64ffda; margin-top: 0; margin-bottom: 0.5rem; font-family: 'Outfit'; display: flex; align-items: center; gap: 8px;">
-                    <i data-lucide="zap" style="width: 20px;"></i> Free Trial
-                </h3>
-                <p id="lblPromoFreeDesc" style="color: #8892b0; font-size: 0.9rem; line-height: 1.5; margin-bottom: 1.5rem;">
-                    Get started with 10GB of high-speed data. Renewable every 24 hours if exhausted.
-                </p>
-            </div>
-                <!-- Telegram Login Widget -->
-                <div id="tg-login-container" style="margin-top: 1.5rem;">
-                    <script async src="https://telegram.org/js/telegram-widget.js?22" 
-                        data-telegram-login="FreeNetMonsterBot" 
-                        data-size="large" 
-                        data-onauth="onTelegramAuth(user)" 
-                        data-request-access="write"></script>
-                </div>
-            </div>
-        </div>
 
-    </div>
     
 
     <div id="monitorGrid"></div>
@@ -462,7 +477,8 @@ const translations = {
         promoFreeTitle: "Free Trial",
         promoFreeDesc: "Get started with 10GB of high-speed data. Renewable every 24 hours if exhausted.",
         footerLegal: "Terms & Privacy",
-        footerSupport: 'Support: <a href="mailto:support@freenet.monster" style="color: #64ffda; text-decoration: none;">support@freenet.monster</a>'
+        footerSupport: 'Support: <a href="mailto:support@freenet.monster" style="color: #64ffda; text-decoration: none;">support@freenet.monster</a>',
+        tgLogin: "Log In"
     },
     ru: {
         title: "FreeNet Russian VPN",
@@ -499,7 +515,8 @@ const translations = {
         prem3: "Поддержка всех устройств (iOS, Android, ПК)",
         prem4: "Приоритетная поддержка и протоколы",
         footerLegal: "Условия и Конфиденциальность",
-        footerSupport: 'Поддержка: <a href="mailto:support@freenet.monster" style="color: #64ffda; text-decoration: none;">support@freenet.monster</a>'
+        footerSupport: 'Поддержка: <a href="mailto:support@freenet.monster" style="color: #64ffda; text-decoration: none;">support@freenet.monster</a>',
+        tgLogin: "Войти"
     }
 };
 
@@ -655,7 +672,7 @@ function toggleLanguage() {
     document.getElementById("lblResVPN").textContent = t.resVPN;
     
     // Promo
-    document.getElementById("lblPromoFreeTitle").innerHTML = '<i data-lucide="zap" style="width: 20px;"></i> ' + t.promoFreeTitle;
+    document.getElementById("lblPromoFreeTitle").innerHTML = '<i data-lucide="zap" style="width: 14px;"></i> ' + t.promoFreeTitle;
     document.getElementById("lblPromoFreeDesc").textContent = t.promoFreeDesc;
     
     document.getElementById('txtSubscribe').textContent = t.subscribe;
@@ -691,11 +708,14 @@ function toggleLanguage() {
     if (fSupport) fSupport.innerHTML = t.footerSupport;
     
     // Update promo texts
-    document.getElementById("lblPromoFreeTitle").innerHTML = '<i data-lucide="zap" style="width: 20px;"></i> ' + t.promoFreeTitle;
+    document.getElementById("lblPromoFreeTitle").innerHTML = '<i data-lucide="zap" style="width: 14px;"></i> ' + t.promoFreeTitle;
     document.getElementById("lblPromoFreeDesc").textContent = t.promoFreeDesc;
     
     const txtTrial = document.getElementById('txtTrial');
     if (txtTrial) txtTrial.textContent = t.trial;
+
+    const txtTgLogin = document.getElementById('txtTgLogin');
+    if (txtTgLogin) txtTgLogin.textContent = t.tgLogin;
 
     allSites.forEach(s => {
         const id = s.name.replace(/[^a-z0-9]/gi, "_");
@@ -1021,6 +1041,14 @@ buildGrid();
     // Fire both and let them run in parallel
     startChecks("freenet");
     startChecks("direct");
+// Initialize Telegram WebApp
+if (window.Telegram && window.Telegram.WebApp) {
+    const twa = window.Telegram.WebApp;
+    twa.ready();
+    twa.expand(); // Auto-expand to full height
+    console.log("Telegram Mini App Initialized");
+}
+
 })();
 function onTelegramAuth(user) {
     const progressBar = document.getElementById("progressBar");
