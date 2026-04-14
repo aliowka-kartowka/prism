@@ -186,14 +186,16 @@ def send_welcome(message):
     raw_username = message.from_user.username or f"{message.from_user.id}"
     tg_username = f"trial_{raw_username}"
     
-    # Check if this is a trial request from monitor (deep link)
-    is_monitor = "monitor" in message.text
-    
     welcome_text = (
-        f"Welcome to FreeNet Monster! 🚀\n\n"
-        f"I am setting up your secure private connection for account: **{tg_username}**..."
+        f"🚀 **Добро пожаловать в FreeNet Monster!**\n\n"
+        f"Мы подготовили для вас персональный защищенный туннель для аккаунта: `{tg_username}`\n\n"
+        f"🛡 **Почему выбирают нас?**\n"
+        f"• **10 ГБ бесплатно**: Полноценный тест на 24 часа.\n"
+        f"• **Скрытный протокол**: Используем VLESS + Reality (невидим для РКН).\n"
+        f"• **Полная анонимность**: Никаких регистраций и логов.\n"
+        f"• **Статус 24/7**: Следите за доступностью сайтов через наш [Мониторинг](https://freenet.monster).\n\n"
     )
-    bot.reply_to(message, welcome_text, parse_mode='Markdown')
+    bot.reply_to(message, welcome_text, parse_mode='Markdown', disable_web_page_preview=True)
     
     user = create_user(tg_username)
     if user and 'subscription_url' in user:
@@ -203,11 +205,16 @@ def send_welcome(message):
         qr_url = f"https://api.qrserver.com/v1/create-qr-code/?size=400x400&data={qr_content}&margin=10&bgcolor=ffffff"
         
         caption = (
-            f"✅ **Your account is ready!**\n\n"
-            f"Your Subscription Link:\n`{sub_url}`\n\n"
-            f"1. **Scan the QR code above** or copy the link.\n"
-            f"2. Import into **v2rayNG** (Android) or **V2BOX** (iOS).\n"
-            f"3. Connect and enjoy freedom! 🌍"
+            f"✅ **Ваш доступ готов!**\n\n"
+            f"🔗 **Ссылка на подписку:**\n`{sub_url}`\n\n"
+            f"📖 **Быстрая настройка:**\n"
+            f"1️⃣ **Скачайте приложение:**\n"
+            f"   - Android: [v2rayNG](https://play.google.com/store/apps/details?id=com.v2ray.ang)\n"
+            f"   - iOS: [V2Box](https://apps.apple.com/us/app/v2box-v2ray-client/id6446814690)\n"
+            f"2️⃣ **Импортируйте данные:**\n"
+            f"   - Откройте приложение и нажмите '+'\n"
+            f"   - Выберите 'Import config from QR' или скопируйте ссылку выше.\n"
+            f"3️⃣ **Подключитесь и наслаждайтесь свободой!** 🌍"
         )
         
         try:
@@ -216,7 +223,7 @@ def send_welcome(message):
             bot.send_message(message.chat.id, caption, parse_mode='Markdown')
     else:
         error_msg = user.get('error', 'Unknown error') if isinstance(user, dict) else 'Unknown error'
-        bot.send_message(message.chat.id, f"❌ Connection error: {error_msg}. Please try again in 1 minute.")
+        bot.send_message(message.chat.id, f"❌ Ошибка подключения: {error_msg}. Попробуйте еще раз через минуту.")
 
 @bot.message_handler(commands=['status'])
 def send_status(message):
