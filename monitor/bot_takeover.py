@@ -1,5 +1,5 @@
 import telebot
-from telebot import types
+from telebot import types, apihelper
 import requests
 import json
 import os
@@ -10,19 +10,28 @@ from datetime import datetime, timezone
 import traceback
 from dotenv import load_dotenv
 
-# Load environment variables
-load_dotenv()
+# Load environment variables (force override to ensure new token is picked up)
+load_dotenv(override=True)
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 # Configuration from .env
-BOT_TOKEN = os.getenv('FREENET_BOT_TOKEN')
-ADMIN_ID = int(os.getenv('FREENET_ADMIN_ID', 0))
-ADMIN_USER = os.getenv('FREENET_ADMIN_USER')
-ADMIN_PASS = os.getenv('FREENET_ADMIN_PASS')
-MARZBAN_URL = os.getenv('MARZBAN_URL', 'http://127.0.0.1:8080')
+BOT_TOKEN = os.getenv('FREENET_BOT_TOKEN', '').strip()
+ADMIN_ID = int(os.getenv('FREENET_ADMIN_ID', '0').strip() or 0)
+ADMIN_USER = os.getenv('FREENET_ADMIN_USER', '').strip()
+ADMIN_PASS = os.getenv('FREENET_ADMIN_PASS', '').strip()
+MARZBAN_URL = os.getenv('MARZBAN_URL', 'http://127.0.0.1:8080').strip()
+proxy_url = os.getenv('TELEGRAM_PROXY', '').strip()
+
+if proxy_url:
+    apihelper.proxy = {'https': proxy_url}
+    logger.info(f"Using Telegram proxy: {proxy_url}")
+
+# Debug log without exposing whole token
+if BOT_TOKEN:
+    logger.info(f"Bot token loaded (sanitized). Length: {len(BOT_TOKEN)}")
 
 bot = telebot.TeleBot(BOT_TOKEN)
 

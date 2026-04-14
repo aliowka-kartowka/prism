@@ -23,6 +23,9 @@ A dedicated node located within Russia to perform real-time connectivity checks.
 *   **Access**: `ssh root@94.159.117.222`
 *   **Functionality**:
     *   **Connectivity Monitor**: Runs a Python/HTML dashboard that tests site accessibility.
+    *   **Russian Localization**: Dashboard and Bot content fully localized for RU users.
+    *   **Native Sharing**: Mini App includes a "Поделиться" button for viral Telegram sharing.
+    *   **Proxy Support**: Bot uses a local SOCKS5 proxy (`1081`) in Moscow to bypass Telegram API blocks.
     *   **Dual-Path Testing**: Every site is checked twice:
         1.  **Direct**: Testing if the site is reachable from a Russian IP without a VPN.
         2.  **FreeNet**: Testing if the site is reachable through an Xray tunnel (SOCKS5 proxy to the Hetzner node).
@@ -32,6 +35,8 @@ A dedicated node located within Russia to perform real-time connectivity checks.
 The primary user interface for subscription management.
 
 *   **Role**: Handles automated user onboarding and billing.
+*   **Inline Mode**: Specifically optimized for sharing status cards in groups and channels. Type `@FreeNetMonsterBot` in any chat to use.
+*   **Localization**: Fully localized in Russian (messages, commands, buttons).
 *   **Payments**: Integrated with **Telegram CryptoBot** to support TON and other cryptocurrencies.
 *   **Management**: Automated syncing with Marzban to create/renew accounts upon payment or trial request.
 
@@ -66,4 +71,5 @@ We offer a **10GB 1-day trial** to new users.
 
 1.  **Monitor is "Down"**: Check the Python service on the Moscow server. It typically runs on port `8090` via `monitor/server.py`.
 2.  **VPN Connection Failure**: Check the Marzban panel status on the Hetzner server and ensure the Xray core is running.
-3.  **Bot Errors**: Check the `monitor/bot_takeover.py` logs for Telegram API or database issues.
+3.  **Bot Conflict (409 Error)**: This occurs if multiple instances use the same token. Ensure only the Moscow node is running the bot polling. If persistent, revoke the token in BotFather.
+4.  **Bot Connection in RU**: Ensure `TELEGRAM_PROXY` is set in the Moscow node's `.env` to bypass API blocks.
