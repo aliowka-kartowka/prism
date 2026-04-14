@@ -1,4 +1,5 @@
 import telebot
+from telebot import types
 import requests
 import json
 import os
@@ -200,7 +201,7 @@ def send_welcome(message):
             f"• <b>10 ГБ бесплатно</b>: Полноценный тест на 24 часа.\n"
             f"• <b>Скрытный протокол</b>: Используем VLESS + Reality (невидим для РКН).\n"
             f"• <b>Полная анонимность</b>: Никаких регистраций и логов.\n"
-            f"• <b>Статус 24/7</b>: Следите за доступностью сайтов через наш <a href='https://freenet.monster'>Мониторинг</a>.\n\n"
+            f"• <b>Статус 24/7</b>: Следите за доступностью сайтов через наш <a href='https://t.me/FreeNetMonsterBot/start'>Мониторинг</a>.\n\n"
             f"⌛ <i>Настройка подключения...</i>"
         )
         bot.reply_to(message, welcome_text, parse_mode='HTML', disable_web_page_preview=True)
@@ -255,12 +256,33 @@ def send_status(message):
         )
         bot.send_message(message.chat.id, resp, parse_mode='Markdown')
     else:
-        bot.send_message(message.chat.id, "❌ Failed to retrieve live statistics.")
+        bot.send_message(message.chat.id, "❌ Не удалось получить статистику серверов.")
+
+@bot.inline_handler(lambda query: True)
+def query_text(inline_query):
+    try:
+        # Create a beautiful shareable result
+        r = types.InlineQueryResultArticle(
+            '1',
+            '🌐 FreeNet Monster: Статус и VPN',
+            types.InputTextMessageContent(
+                "🌐 **FreeNet Monster**: Проверьте, какие сайты заблокированы в РФ, и получите 10 ГБ бесплатного VPN для обхода ограничений! \n\n"
+                "🚀 Запустить мониторинг и получить VPN: https://t.me/FreeNetMonsterBot",
+                parse_mode='Markdown'
+            ),
+            description="Поделиться мониторингом и ссылкой на 10 ГБ VPN",
+            thumbnail_url="https://freenet.monster/app_icon.png" # Assuming this works
+        )
+        bot.answer_inline_query(inline_query.id, [r], cache_time=1)
+    except Exception as e:
+        logger.error(f"Inline query error: {e}")
 
 if __name__ == '__main__':
-    print('FreeNet Bot is starting...')
+    pid = os.getpid()
+    print(f'🚀 FreeNet Bot is starting (PID: {pid})...')
+    logger.info(f'Bot process started with PID: {pid}')
     bot.set_my_commands([
-        telebot.types.BotCommand("start", "Initialize connection"),
-        telebot.types.BotCommand("status", "System stats")
+        telebot.types.BotCommand("start", "Запустить прокси и мониторинг"),
+        telebot.types.BotCommand("status", "Проверить статус системы")
     ])
     bot.infinity_polling()

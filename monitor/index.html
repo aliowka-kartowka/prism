@@ -258,7 +258,7 @@
             <img src="app_icon.png" alt="FreeNet Logo" class="header-logo">
             <div style="display: flex; flex-direction: column;">
                 <h1 id="pageTitle" style="margin: 0;">FreeNet Russian VPN</h1>
-                <span style="color: #8892b0; font-size: 0.9rem; margin-top: 5px; font-family: 'Inter', sans-serif;">Powered by FreeNet Monster VPN</span>
+                <span id="pageSubtitle" style="color: #8892b0; font-size: 0.9rem; margin-top: 5px; font-family: 'Inter', sans-serif;">Безопасный доступ без границ</span>
             </div>
         </div>
 
@@ -281,8 +281,27 @@
                         10GB / 24h
                     </p>
                 </div>
-                <div id="tg-login-button-container">
-                    <a href="https://t.me/FreeNetMonsterBot?start=monitor" target="_blank" style="text-decoration: none;">
+                <div id="tg-login-button-container" style="display: flex; gap: 10px;">
+                    <button id="btnShare" onclick="shareApp()" style="
+                        background: rgba(100, 255, 218, 0.1);
+                        color: #64ffda;
+                        border: 1px solid #64ffda;
+                        padding: 6px 15px;
+                        border-radius: 6px;
+                        cursor: pointer;
+                        font-size: 0.85rem;
+                        font-family: 'Outfit', sans-serif;
+                        font-weight: 600;
+                        display: flex;
+                        align-items: center;
+                        gap: 8px;
+                        transition: all 0.3s ease;
+                        white-space: nowrap;
+                    ">
+                        <i data-lucide="share-2" style="width: 16px;"></i>
+                        <span id="txtShare">Поделиться</span>
+                    </button>
+                    <a href="https://t.me/FreeNetMonsterBot?start=monitor" target="_blank" style="text-decoration: none;" id="tgLoginLink">
                         <button id="btnTgLogin" style="
                             background: #0088cc;
                             color: white;
@@ -302,7 +321,7 @@
                             <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
                                 <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69.01-.03.01-.14-.07-.2-.08-.06-.19-.04-.27-.02-.11.02-1.93 1.23-5.46 3.62-.51.35-.98.53-1.4.52-.46-.01-1.35-.26-2.01-.48-.81-.27-1.45-.42-1.39-.88.03-.24.37-.48 1.02-.73 4-1.74 6.67-2.89 8.01-3.45 3.81-1.59 4.6-.17 4.14 1.83z"/>
                             </svg>
-                            <span id="txtTgLogin">Log In</span>
+                            <span id="txtTgLogin">Вход</span>
                         </button>
                     </a>
                 </div>
@@ -529,7 +548,15 @@ const translations = {
     }
 };
 
-let currentLang = "en";
+let currentLang = "ru";
+
+function shareApp() {
+    if (window.Telegram && window.Telegram.WebApp) {
+        window.Telegram.WebApp.switchInlineQuery("Статус и VPN", ["groups", "channels", "users"]);
+    } else {
+        window.open('https://t.me/share/url?url=https://t.me/FreeNetMonsterBot&text=Посмотрите статус доступности сайтов в РФ и получите 10 ГБ бесплатного VPN!', '_blank');
+    }
+}
 
 const siteCategories = {
     "Sites": [
