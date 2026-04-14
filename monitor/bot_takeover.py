@@ -4,11 +4,17 @@ import json
 import os
 import time
 import re
+import logging
 from datetime import datetime, timezone
+import traceback
 from dotenv import load_dotenv
 
 # Load environment variables
 load_dotenv()
+
+# Configure logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
 # Configuration from .env
 BOT_TOKEN = os.getenv('FREENET_BOT_TOKEN')
@@ -182,48 +188,59 @@ def get_detailed_stats():
 
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
-    # Prefix with 'trial_' for better organization in Marzban
-    raw_username = message.from_user.username or f"{message.from_user.id}"
-    tg_username = f"trial_{raw_username}"
-    
-    welcome_text = (
-        f"🚀 **Добро пожаловать в FreeNet Monster!**\n\n"
-        f"Мы подготовили для вас персональный защищенный туннель для аккаунта: `{tg_username}`\n\n"
-        f"🛡 **Почему выбирают нас?**\n"
-        f"• **10 ГБ бесплатно**: Полноценный тест на 24 часа.\n"
-        f"• **Скрытный протокол**: Используем VLESS + Reality (невидим для РКН).\n"
-        f"• **Полная анонимность**: Никаких регистраций и логов.\n"
-        f"• **Статус 24/7**: Следите за доступностью сайтов через наш [Мониторинг](https://freenet.monster).\n\n"
-    )
-    bot.reply_to(message, welcome_text, parse_mode='Markdown', disable_web_page_preview=True)
-    
-    user = create_user(tg_username)
-    if user and 'subscription_url' in user:
-        sub_url = user['subscription_url']
-        # Use first config link for QR if available
-        qr_content = user['links'][0] if (user.get('links') and len(user['links']) > 0) else sub_url
-        qr_url = f"https://api.qrserver.com/v1/create-qr-code/?size=400x400&data={qr_content}&margin=10&bgcolor=ffffff"
+    try:
+        # Prefix with 'trial_' for better organization in Marzban
+        raw_username = message.from_user.username or f"{message.from_user.id}"
+        tg_username = f"trial_{raw_username}"
         
-        caption = (
-            f"✅ **Ваш доступ готов!**\n\n"
-            f"🔗 **Ссылка на подписку:**\n`{sub_url}`\n\n"
-            f"📖 **Быстрая настройка:**\n"
-            f"1️⃣ **Скачайте приложение:**\n"
-            f"   - Android: [v2rayNG](https://play.google.com/store/apps/details?id=com.v2ray.ang)\n"
-            f"   - iOS: [V2Box](https://apps.apple.com/us/app/v2box-v2ray-client/id6446814690)\n"
-            f"2️⃣ **Импортируйте данные:**\n"
-            f"   - Откройте приложение и нажмите '+'\n"
-            f"   - Выберите 'Import config from QR' или скопируйте ссылку выше.\n"
-            f"3️⃣ **Подключитесь и наслаждайтесь свободой!** 🌍"
+        welcome_text = (
+            f"🚀 <b>Добро пожаловать в FreeNet Monster!</b>\n\n"
+            f"Мы подготовили для вас персональный защищенный туннель для аккаунта: <code>{tg_username}</code>\n\n"
+            f"🛡 <b>Почему выбирают нас?</b>\n"
+            f"• <b>10 ГБ бесплатно</b>: Полноценный тест на 24 часа.\n"
+            f"• <b>Скрытный протокол</b>: Используем VLESS + Reality (невидим для РКН).\n"
+            f"• <b>Полная анонимность</b>: Никаких регистраций и логов.\n"
+            f"• <b>Статус 24/7</b>: Следите за доступностью сайтов через наш <a href='https://freenet.monster'>Мониторинг</a>.\n\n"
+            f"⌛ <i>Настройка подключения...</i>"
         )
+        bot.reply_to(message, welcome_text, parse_mode='HTML', disable_web_page_preview=True)
         
-        try:
-            bot.send_photo(message.chat.id, qr_url, caption=caption, parse_mode='Markdown')
-        except Exception:
-            bot.send_message(message.chat.id, caption, parse_mode='Markdown')
-    else:
-        error_msg = user.get('error', 'Unknown error') if isinstance(user, dict) else 'Unknown error'
-        bot.send_message(message.chat.id, f"❌ Ошибка подключения: {error_msg}. Попробуйте еще раз через минуту.")
+        user = create_user(tg_username)
+        if user and 'subscription_url' in user:
+            sub_url = user['subscription_url']
+            # Use first config link for QR if available
+            qr_content = user['links'][0] if (user.get('links') and len(user['links']) > 0) else sub_url
+            qr_url = f"https://api.qrserver.com/v1/create-qr-code/?size=400x400&data={qr_content}&margin=10&bgcolor=ffffff"
+            
+            caption = (
+                f"✅ <b>Ваш доступ готов!</b>\n\n"
+                f"🔗 <b>Ссылка на подписку:</b>\n<code>{sub_url}</code>\n\n"
+                f"📖 <b>Быстрая настройка:</b>\n"
+                f"1️⃣ <b>Скачайте приложение:</b>\n"
+                f"   - Android: <a href='https://play.google.com/store/apps/details?id=com.v2ray.ang'>v2rayNG</a>\n"
+                f"   - iOS: <a href='https://apps.apple.com/us/app/v2box-v2ray-client/id6446814690'>V2Box</a>\n"
+                f"2️⃣ <b>Импортируйте данные:</b>\n"
+                f"   - Откройте приложение и нажмите '+'\n"
+                f"   - Выберите 'Import config from QR' или скопируйте ссылку выше.\n"
+                f"3️⃣ <b>Подключитесь и наслаждайтесь свободой!</b> 🌍"
+            )
+            
+            try:
+                bot.send_photo(message.chat.id, qr_url, caption=caption, parse_mode='HTML')
+            except Exception as e:
+                logger.error(f"Error sending photo: {e}")
+                bot.send_message(message.chat.id, caption, parse_mode='HTML')
+        else:
+            error_msg = user.get('error', 'Unknown error') if isinstance(user, dict) else 'Unknown error'
+            bot.send_message(message.chat.id, f"❌ Ошибка подключения: {error_msg}. Попробуйте еще раз через минуту.")
+    except Exception as e:
+        error_trace = traceback.format_exc()
+        logger.error(f"Error in send_welcome: {error_trace}")
+        # Send error to admin
+        if ADMIN_ID:
+            try:
+                bot.send_message(ADMIN_ID, f"🚫 <b>Error in /start handler:</b>\n<code>{error_trace[:3500]}</code>", parse_mode='HTML')
+            except: pass
 
 @bot.message_handler(commands=['status'])
 def send_status(message):
