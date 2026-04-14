@@ -189,6 +189,7 @@ def get_detailed_stats():
 
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
+    logger.info(f"DEBUG: Received /start from {message.from_user.id}")
     try:
         # Prefix with 'trial_' for better organization in Marzban
         raw_username = message.from_user.username or f"{message.from_user.id}"
@@ -266,8 +267,13 @@ def query_text(inline_query):
             '1',
             '🌐 FreeNet Monster: Статус и VPN',
             types.InputTextMessageContent(
-                "🌐 **FreeNet Monster**: Проверьте, какие сайты заблокированы в РФ, и получите 10 ГБ бесплатного VPN для обхода ограничений! \n\n"
-                "🚀 Запустить мониторинг и получить VPN: https://t.me/FreeNetMonsterBot",
+                "🚀 **FreeNet Monster: Ваш ключ к свободному интернету!**\n\n"
+                "📊 **Статус систем**: Все узлы работают стабильно (РФ/Global).\n\n"
+                "🛡 **Что вы получаете:**\n"
+                "• 10 ГБ бесплатного VPN (Reality/VLESS)\n"
+                "• Мониторинг блокировок сайтов\n\n"
+                "👇 **Открыть Мониторинг & VPN:**\n"
+                "https://t.me/FreeNetMonsterBot/start",
                 parse_mode='Markdown'
             ),
             description="Поделиться мониторингом и ссылкой на 10 ГБ VPN",
