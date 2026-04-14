@@ -1135,6 +1135,19 @@ function copyTrialLink() {
         }, 2000);
     });
 }
+
+function shareApp() {
+    const shareUrl = "https://freenet.monster/";
+    const t = translations[currentLang] || {};
+    const shareText = "🚀 FreeNet Monster VPN\n\nПроверь доступность сайтов в РФ и получи 10GB VPN бесплатно!";
+    
+    if (window.Telegram && window.Telegram.WebApp) {
+        const tgLink = `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`;
+        window.Telegram.WebApp.openTelegramLink(tgLink);
+    } else {
+        window.open(`https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`, '_blank');
+    }
+}
 </script>
 </body>
 </html>
