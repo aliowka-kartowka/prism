@@ -1,0 +1,63 @@
+{
+    "log": {
+        "loglevel": "warning"
+    },
+    "routing": {
+        "rules": [
+            {
+                "ip": [
+                    "geoip:private"
+                ],
+                "outboundTag": "BLOCK",
+                "type": "field"
+            }
+        ]
+    },
+    "inbounds": [
+        {
+            "tag": "VLESS REALITY",
+            "listen": "0.0.0.0",
+            "port": 2053,
+            "protocol": "vless",
+            "settings": {
+                "clients": [],
+                "decryption": "none"
+            },
+            "streamSettings": {
+                "network": "tcp",
+                "security": "reality",
+                "realitySettings": {
+                    "show": false,
+                    "dest": "www.yandex.ru:443",
+                    "xver": 0,
+                    "serverNames": [
+                        "www.yandex.ru",
+                        "yandex.ru",
+                        "www.google.com"
+                    ],
+                    "privateKey": "qD-QrtFC3MjIzs9Yr6PStVVSGD3lqf1eaEft2Dpt5Rc",
+                    "shortIds": [
+                        "61b4a390"
+                    ]
+                }
+            },
+            "sniffing": {
+                "enabled": true,
+                "destOverride": [
+                    "http",
+                    "tls"
+                ]
+            }
+        }
+    ],
+    "outbounds": [
+        {
+            "protocol": "freedom",
+            "tag": "DIRECT"
+        },
+        {
+            "protocol": "blackhole",
+            "tag": "BLOCK"
+        }
+    ]
+}

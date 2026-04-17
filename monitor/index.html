@@ -26,7 +26,7 @@
     <link rel="icon" type="image/png" href="assets/icon/app_icon.png">
     <style>
         :root {
-            --bg-body: #0a0b10;
+            --bg-body: #0d1117;
             --bg-card: #151921;
             --accent: #64ffda;
             --accent-glow: rgba(100, 255, 218, 0.3);
@@ -37,15 +37,59 @@
             --warning: #ffcc00;
             --font-main: "Outfit", sans-serif;
             --font-mono: "JetBrains Mono", monospace;
+            --border-card: 1px solid #233554;
+            --logo-url: url('/brand_logo.png?v=logo_v2');
+        }
+
+        /* Cyber Panda Theme */
+        body[data-theme="panda"] {
+            --bg-body: #0b021d;
+            --bg-card: #1a0a2e;
+            --accent: #bc13fe;
+            --accent-glow: rgba(188, 19, 254, 0.3);
+            --border-card: 1px solid #bc13fe;
+            --logo-url: url('/logo_panda.png?v=1');
+        }
+
+        /* Glitch Theme */
+        body[data-theme="glitch"] {
+            --bg-body: #000000;
+            --bg-card: #0a0a0a;
+            --accent: #39ff14;
+            --accent-glow: rgba(57, 255, 20, 0.3);
+            --border-card: 1px solid #ff00ff;
+            --logo-url: url('/logo_glitch.png?v=1');
+        }
+
+        /* Ghost Theme */
+        body[data-theme="ghost"] {
+            --bg-body: #050505;
+            --bg-card: #111111;
+            --accent: #ff6600;
+            --accent-glow: rgba(255, 102, 0, 0.3);
+            --border-card: 1px solid #333;
+            --logo-url: url('/logo_ghost.png?v=1');
+        }
+
+        /* Banana Theme (High Contrast) */
+        body[data-theme="banana"] {
+            --bg-body: #fee12b;
+            --bg-card: #ffffff;
+            --accent: #000000;
+            --accent-glow: rgba(0, 0, 0, 0.2);
+            --text-primary: #000000;
+            --text-secondary: #333333;
+            --border-card: 2px solid #000000;
+            --logo-url: url('/logo_banana.png?v=1');
         }
 
         * { margin:0; padding:0; box-sizing:border-box; }
         html {
-            background-color: #0d1117;
+            background-color: var(--bg-body);
         }
 
         body {
-            background-color: #0d1117;
+            background-color: var(--bg-body);
             color: var(--text-primary);
             font-family: var(--font-main);
             margin: 0;
@@ -260,7 +304,18 @@
 <div class="container">
     <header class="header" style="display: flex; justify-content: space-between; align-items: center; width: 100%; gap: 30px; padding: 20px 0;">
         <div class="brand" style="display: flex; align-items: center; gap: 30px; flex: 1;">
-            <img src="/brand_logo.png?v=logo_v2" alt="FreeNet" style="width: 150px; height: 150px; border-radius: 50%; border: 3px solid #64ffda; padding: 5px; box-shadow: 0 0 30px rgba(100, 255, 218, 0.3); object-fit: cover;">
+            <div id="headerLogo" style="
+                width: 150px; 
+                height: 150px; 
+                border-radius: 50%; 
+                border: 3px solid var(--accent); 
+                padding: 5px; 
+                box-shadow: 0 0 30px var(--accent-glow); 
+                background-image: var(--logo-url);
+                background-position: center;
+                background-size: cover;
+                background-repeat: no-repeat;
+            "></div>
             <div style="display: flex; flex-direction: column;">
                 <h1 id="pageTitle" style="margin: 0; font-family: 'Outfit'; font-size: 2rem; color: #fff;">Internet Access From Russia</h1>
                 <span id="pageSubtitle" style="color: #8892b0; font-size: 1rem; margin-top: 5px; font-family: 'Inter', sans-serif;">Безопасный доступ без границ</span>
@@ -284,8 +339,8 @@
                     <div style="color: #8892b0; font-size: 0.75rem;">10GB / 24h</div>
                 </div>
                 <button class="btn-primary" onclick="window.location.href='https://t.me/FreeNetMonsterBot?start=monitor'" style="
-                    background: #64ffda;
-                    color: #0a192f;
+                    background: var(--accent);
+                    color: var(--bg-card);
                     border: none;
                     padding: 12px 20px;
                     border-radius: 8px;
@@ -293,28 +348,49 @@
                     cursor: pointer;
                     font-family: 'Outfit';
                     transition: all 0.3s;
-                " onmouseover="this.style.background='#52d1b2'" onmouseout="this.style.background='#64ffda'">
+                " onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">
                      ПОПРОБОВАТЬ БЕСПЛАТНО
                 </button>
             </div>
-            <button class="btn-share-wide" onclick="shareApp()" style="
-                width: 100%;
-                background: #0088cc;
-                color: white;
-                border: none;
-                padding: 14px;
-                border-radius: 8px;
-                font-weight: 700;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                gap: 10px;
-                cursor: pointer;
-                box-shadow: 0 4px 15px rgba(0,136,204,0.3);
-                transition: transform 0.2s;
-            " onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
-                <i class="fab fa-telegram-plane"></i> ПОДЕЛИТЬСЯ С ДРУЗЬЯМИ
-            </button>
+            <div style="display: flex; gap: 10px; width: 100%;">
+                <button class="btn-skin" onclick="toggleTheme()" style="
+                    flex: 1;
+                    background: transparent;
+                    color: var(--text-primary);
+                    border: 1px solid var(--accent);
+                    padding: 14px;
+                    border-radius: 8px;
+                    font-weight: 700;
+                    font-family: 'Outfit';
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 10px;
+                    cursor: pointer;
+                    transition: all 0.2s;
+                ">
+                    <i class="fas fa-palette"></i> СМЕНИТЬ СКИН
+                </button>
+                <button class="btn-share-wide" onclick="shareApp()" style="
+                    flex: 2;
+                    background: #0088cc;
+                    color: white;
+                    border: none;
+                    padding: 14px;
+                    border-radius: 8px;
+                    font-weight: 700;
+                    font-family: 'Outfit';
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 10px;
+                    cursor: pointer;
+                    box-shadow: 0 4px 15px rgba(0,136,204,0.3);
+                    transition: transform 0.2s;
+                " onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+                    <i class="fab fa-telegram-plane"></i> ПОДЕЛИТЬСЯ
+                </button>
+            </div>
         </div>
     </header>
 
@@ -1133,6 +1209,24 @@ function shareApp() {
     } else {
         window.open(`https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`, '_blank');
     }
+}
+
+// THEME LOGIC
+const themes = ['classic', 'panda', 'glitch', 'ghost', 'banana'];
+let currentThemeIndex = 0;
+
+function toggleTheme() {
+    currentThemeIndex = (currentThemeIndex + 1) % themes.length;
+    const themeName = themes[currentThemeIndex];
+    document.body.setAttribute('data-theme', themeName);
+    localStorage.setItem('freenet_theme', themeName);
+}
+
+// Load saved theme
+const savedTheme = localStorage.getItem('freenet_theme');
+if (savedTheme && themes.includes(savedTheme)) {
+    document.body.setAttribute('data-theme', savedTheme);
+    currentThemeIndex = themes.indexOf(savedTheme);
 }
 </script>
 </body>
