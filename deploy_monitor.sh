@@ -1,16 +1,23 @@
 #!/bin/bash
-TARGET_IP="94.159.117.222"
-TARGET_DIR="/root/monitor"
+# Moscow Node (API + Backup Monitor)
+MOSCOW_IP="94.159.117.222"
+MOSCOW_DIR="/home/aliowka/workspace/monitor"
+MOSCOW_USER="aliowka"
 
-echo "🚀 Deploying Monitor to $TARGET_IP..."
+# Hetzner Node (Main Web Front)
+HETZNER_ALIAS="vpn"
+HETZNER_DIR="/var/www/monitor"
 
-# Sync files
-# We sync the monitor/ directory content to the target directory
-rsync -avz --exclude '.git' ./monitor/ root@$TARGET_IP:$TARGET_DIR/
+echo "🚀 Deploying Monitor Branding to components..."
 
-# Restart server
-# We kill the old server.py process and start a new one in the background
-echo "🔄 Restarting Monitor service..."
-ssh root@$TARGET_IP "pkill -f server.py || true; cd $TARGET_DIR && nohup python3 server.py > server.log 2>&1 &"
+# 1. Sync to Moscow (Backend API + Subdomain)
+echo "📡 Deploying to Moscow node (API)..."
+rsync -avz --exclude '.git' ./monitor/ $MOSCOW_USER@$MOSCOW_IP:$MOSCOW_DIR/
+ssh $MOSCOW_USER@$MOSCOW_IP "pkill -u $MOSCOW_USER -f server.py || true; cd $MOSCOW_DIR && nohup python3 server.py > server.log 2>&1 &"
 
-echo "✅ Deployment complete!"
+# 2. Sync to Hetzner (Main Domain freenet.monster)
+echo "📡 Deploying to Hetzner node (Web)..."
+rsync -avz --exclude '.git' ./monitor/ $HETZNER_ALIAS:$HETZNER_DIR/
+ssh $HETZNER_ALIAS "chown -R www-data:www-data $HETZNER_DIR"
+
+echo "✅ Deployment complete! Branding updates should be visible at https://freenet.monster/"
