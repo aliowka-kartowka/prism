@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FreeNet Russian VPN - Connectivity Monitor</title>
+    <title>Честный Мониторинг</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&family=JetBrains+Mono&display=swap" rel="stylesheet">
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="icon" type="image/png" href="app_icon.png">
+    <link rel="icon" type="image/png" href="assets/icon/logo.png">
     <style>
         :root {
             --bg-body: #0a0b10;
@@ -241,9 +241,9 @@
 <div class="container">
     <header class="header">
         <div class="brand" style="display: flex; align-items: center; gap: 20px;">
-            <img src="app_icon.png" alt="FreeNet Logo" class="header-logo">
+            <img src="assets/icon/logo.png" alt="Logo" class="header-logo">
             <div style="display: flex; flex-direction: column;">
-                <h1 id="pageTitle" style="margin: 0;">FreeNet Russian VPN</h1>
+                <h1 id="pageTitle" style="margin: 0;">Честный Мониторинг</h1>
                 <span style="color: #8892b0; font-size: 0.9rem; margin-top: 5px; font-family: 'Inter', sans-serif;">Powered by FreeNet Monster VPN</span>
             </div>
         </div>
@@ -422,7 +422,7 @@
 <script>
 const translations = {
     en: {
-        title: "FreeNet Russian VPN",
+        title: "Honest Monitoring",
         refreshDirect: "Refresh Direct",
         testFreenet: "Test with FreeNet",
         globalStatus: "Global Connectivity",
@@ -452,7 +452,7 @@ const translations = {
         footerSupport: 'Support: <a href="mailto:support@freenet.monster" style="color: #64ffda; text-decoration: none;">support@freenet.monster</a>'
     },
     ru: {
-        title: "FreeNet Russian VPN",
+        title: "Честный Мониторинг",
         refreshDirect: "Обновить (Прямое)",
         testFreenet: "Тест через FreeNet",
         globalStatus: "Состояние подключения",
