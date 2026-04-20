@@ -16,3 +16,31 @@
 2026-04-17 04:40:48,602 - ERROR - Error checking https://freenet.monster (VPN: False): ('Connection aborted.', ConnectionResetError(54, 'Connection reset by peer'))
 2026-04-17 04:40:48,905 - WARNING - RKN BLOCK DETECTED!
 2026-04-17 04:50:49,362 - INFO - RKN BLOCK CLEARED.
+2026-04-17 08:36:44,852 - ERROR - Error checking https://freenet.monster (VPN: False): HTTPSConnectionPool(host='freenet.monster', port=443): Read timed out. (read timeout=3.5)
+2026-04-17 08:36:45,154 - WARNING - RKN BLOCK DETECTED!
+2026-04-17 13:19:27,479 - ERROR - Error in RKN Monitor: HTTPSConnectionPool(host='api.telegram.org', port=443): Read timed out. (read timeout=10)
+2026-04-17 13:29:28,154 - INFO - RKN BLOCK CLEARED.
+2026-04-18 23:54:52,679 - ERROR - Error checking https://freenet.monster (VPN: False): HTTPSConnectionPool(host='freenet.monster', port=443): Read timed out. (read timeout=3.5)
+2026-04-18 23:54:53,000 - WARNING - RKN BLOCK DETECTED!
+2026-04-19 00:42:40,238 - ERROR - Error in RKN Monitor: HTTPSConnectionPool(host='api.telegram.org', port=443): Read timed out. (read timeout=10)
+2026-04-19 00:52:40,938 - INFO - RKN BLOCK CLEARED.
+2026-04-19 04:20:15,020 - ERROR - Error checking https://freenet.monster (VPN: False): HTTPSConnectionPool(host='freenet.monster', port=443): Read timed out. (read timeout=3.5)
+2026-04-19 04:20:15,353 - WARNING - RKN BLOCK DETECTED!
+2026-04-19 04:30:15,792 - INFO - RKN BLOCK CLEARED.
+2026-04-19 06:05:30,185 - ERROR - Error checking https://freenet.monster (VPN: False): HTTPSConnectionPool(host='freenet.monster', port=443): Read timed out. (read timeout=3.5)
+2026-04-19 06:05:30,519 - WARNING - RKN BLOCK DETECTED!
+2026-04-19 06:15:31,036 - INFO - RKN BLOCK CLEARED.
+2026-04-19 07:49:09,339 - ERROR - Error checking https://freenet.monster (VPN: False): HTTPSConnectionPool(host='freenet.monster', port=443): Read timed out. (read timeout=3.5)
+2026-04-19 07:49:09,663 - WARNING - RKN BLOCK DETECTED!
+2026-04-19 07:59:10,164 - INFO - RKN BLOCK CLEARED.
+2026-04-19 09:04:17,730 - ERROR - Error checking https://freenet.monster (VPN: False): HTTPSConnectionPool(host='freenet.monster', port=443): Read timed out. (read timeout=3.5)
+2026-04-19 09:04:18,069 - WARNING - RKN BLOCK DETECTED!
+2026-04-19 09:14:18,548 - INFO - RKN BLOCK CLEARED.
+2026-04-19 11:16:51,844 - ERROR - Error checking https://freenet.monster (VPN: False): HTTPSConnectionPool(host='freenet.monster', port=443): Read timed out. (read timeout=3.5)
+2026-04-19 11:16:52,167 - WARNING - RKN BLOCK DETECTED!
+2026-04-19 11:26:52,643 - INFO - RKN BLOCK CLEARED.
+2026-04-20 05:35:44,533 - ERROR - Error checking https://freenet.monster (VPN: False): HTTPSConnectionPool(host='freenet.monster', port=443): Read timed out. (read timeout=3.5)
+2026-04-20 05:53:34,600 - ERROR - Error in RKN Monitor: ('Connection aborted.', TimeoutError(60, 'Operation timed out'))
+2026-04-20 23:48:14,832 - ERROR - Error checking https://freenet.monster (VPN: False): HTTPSConnectionPool(host='freenet.monster', port=443): Read timed out. (read timeout=3.5)
+2026-04-20 23:48:15,167 - WARNING - RKN BLOCK DETECTED!
+2026-04-20 23:58:17,431 - INFO - RKN BLOCK CLEARED.
