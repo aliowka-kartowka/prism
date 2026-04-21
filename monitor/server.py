@@ -197,7 +197,7 @@ def create_marzban_trial(username):
         "data_limit": DATA_LIMIT,
         "expire": int(time.time() + 86400), # 1 day from now
         "proxies": {"vless": {}},
-        "inbounds": {"vless": ["VLESS REALITY"]}
+        "inbounds": {"vless": ["VLESS REALITY", "VLESS WS"]}
     }
     
     try:
@@ -217,37 +217,46 @@ def map_user_links(user):
         token_part = sub_url.split('/sub/')[-1]
         user['subscription_url'] = f"https://vpn.freenet.monster/sub/{token_part}"
     
-    # Also update protocol links to use the public domain if they have an IP or localhost
     links = user.get('links', [])
     new_links = []
     for link in links:
         if 'vless://' in link:
-            # Replace IP/host with public domain in vless links
-            # vless://uuid@IP:PORT?... -> vless://uuid@vpn.freenet.monster:PORT?...
+            # Detect if this is the WebSocket inbound
+            is_ws = 'type=ws' in link and 'path=%2Fvpn-ws' in link
+            
+            # Replace IP/host with public domain
             if '@' in link:
                 parts = link.split('@')
-                if '/' in parts[1]:
-                    host_port, rest = parts[1].split('/', 1)
-                else:
-                    host_port = parts[1]
-                    rest = ""
+                host_part = parts[1].split('?')[0] if '?' in parts[1] else parts[1]
+                query_part = parts[1].split('?')[1] if '?' in parts[1] else ""
                 
-                if ':' in host_port:
-                    port = host_port.split(':')[-1]
+                # Composition for WebSocket (CDN) vs REALITY (Direct)
+                if is_ws:
+                    # Cloudflare CDN uses port 443 with TLS
+                    new_host_port = "vpn.freenet.monster:443"
+                    # Update security and add SNI for TLS through Cloudflare
+                    query_part = query_part.replace('security=none', 'security=tls')
+                    if 'sni=' not in query_part:
+                        query_part += '&sni=vpn.freenet.monster'
                 else:
-                    port = "443" # Default
+                    # REALITY (Direct) stays on its port (2053)
+                    port = host_part.split(':')[-1] if ':' in host_part else "2053"
+                    new_host_port = f"vpn.freenet.monster:{port}"
                 
-                new_host_port = f"vpn.freenet.monster:{port}"
-                link = f"{parts[0]}@{new_host_port}/{rest}"
+                link = f"{parts[0]}@{new_host_port}?{query_part}" if query_part else f"{parts[0]}@{new_host_port}"
             
-            # Change remark to FreeNet (username) for better identification
+            # Change remark for branding
             import re
             user_id = user.get('username', 'trial')
-            remark = f"FreeNet ({user_id})"
+            # If it's WS, mark it as CDN for the user
+            label = "FreeNet CDN" if is_ws else "FreeNet Direct"
+            remark = f"{label} ({user_id})"
+            
             if '#' in link:
                 link = re.sub(r'#.*$', f"#{remark}", link)
             else:
                 link = f"{link}#{remark}"
+                
         new_links.append(link)
     user['links'] = new_links
     return user

@@ -313,7 +313,10 @@
                 background-repeat: no-repeat;
             "></div>
             <div style="display: flex; flex-direction: column;">
-                <h1 id="pageTitle" style="margin: 0; font-family: 'Outfit'; font-size: 2rem; color: #fff;">Честный Мониторинг</h1>
+                <h1 id="pageTitle" style="margin: 0; font-family: 'Outfit'; font-size: 2rem; color: #fff; line-height: 1.1;">
+                    <span style="color: #64ffda;">FreeNet Monster</span><br>
+                    <span style="font-size: 1.5rem; font-weight: 500; opacity: 0.9;">Честный Мониторинг</span>
+                </h1>
                 <span id="pageSubtitle" style="color: #8892b0; font-size: 1rem; margin-top: 5px; font-family: 'Inter', sans-serif;">Безопасный доступ без границ</span>
             </div>
         </div>
@@ -517,7 +520,7 @@
 <script>
 const translations = {
     en: {
-        title: "Honest Monitoring",
+        title: "<span style='color: #64ffda;'>FreeNet Monster</span><br><span style='font-size: 1.5rem; font-weight: 500; opacity: 0.9;'>Honest Monitoring</span>",
         refreshDirect: "Refresh Direct",
         testFreenet: "Test with FreeNet",
         globalStatus: "Global Connectivity",
@@ -550,7 +553,7 @@ const translations = {
         tgLogin: "Log In"
     },
     ru: {
-        title: "Честный Мониторинг",
+        title: "<span style='color: #64ffda;'>FreeNet Monster</span><br><span style='font-size: 1.5rem; font-weight: 500; opacity: 0.9;'>Честный Мониторинг</span>",
         refreshDirect: "Обновить (Прямое)",
         testFreenet: "Тест через FreeNet",
         globalStatus: "Состояние подключения",
@@ -618,6 +621,18 @@ const siteCategories = {
         { name: "Pornhub", url: "https://pornhub.com", icon: "alert-triangle" },
         { name: "Xnxx", url: "https://xnxx.com", icon: "alert-triangle" },
         { name: "Youporn", url: "https://www.youporn.com", icon: "heart" }
+    ],
+    "Российские сайты": [
+        { name: "VK",            url: "https://vk.com",              icon: "users" },
+        { name: "Yandex",        url: "https://yandex.ru",           icon: "search" },
+        { name: "Mail.ru",       url: "https://www.mail.ru",         icon: "mail" },
+        { name: "Gosuslugi",     url: "https://www.gosuslugi.ru",    icon: "file-text" },
+        { name: "Sberbank",      url: "https://www.sber.ru",         icon: "credit-card" },
+        { name: "Avito",         url: "https://www.avito.ru",        icon: "tag" },
+        { name: "Ozon",          url: "https://www.ozon.ru",         icon: "shopping-cart" },
+        { name: "RuTube",        url: "https://rutube.ru",           icon: "tv" },
+        { name: "Tinkoff",       url: "https://www.tinkoff.ru",      icon: "credit-card" },
+        { name: "2GIS",          url: "https://2gis.ru",             icon: "map-pin" }
     ]
 };
 
@@ -733,7 +748,7 @@ function toggleLanguage() {
     currentLang = currentLang === "en" ? "ru" : "en";
     const t = translations[currentLang];
     
-    document.getElementById("pageTitle").textContent = getTitleWithDate(t.title);
+    document.getElementById("pageTitle").innerHTML = getTitleWithDate(t.title);
     document.getElementById("btnDirect").textContent = t.refreshDirect;
     document.getElementById("btnVPN").textContent = t.testFreenet;
     document.getElementById("langToggle").textContent = t.lang;
@@ -846,7 +861,25 @@ function buildGrid() {
     container.innerHTML = "";
     const t = translations[currentLang];
 
+    const catLabels = {
+        "Sites": null,
+        "Российские сайты": { icon: "\uD83C\uDDF7\uD83C\uDDFA", label: "Российские сайты", note: "Прямой доступ — VPN не нужен", color: "rgba(100,200,255,0.12)", border: "rgba(100,200,255,0.3)" }
+    };
+
     for (const [cat, sites] of Object.entries(siteCategories)) {
+        const meta = catLabels[cat];
+        if (meta) {
+            const header = document.createElement("div");
+            header.style.cssText = "display:flex; align-items:center; gap:10px; margin: 28px 0 12px; padding: 12px 16px; border-radius: 10px; background:" + meta.color + "; border: 1px solid " + meta.border + ";";
+            header.innerHTML = 
+                "<span style='font-size:1.5rem;'>" + meta.icon + "</span>" +
+                "<div>" +
+                    "<div style='font-weight:700; font-size:1rem; color:#e6f1ff;'>" + meta.label + "</div>" +
+                    "<div style='font-size:0.78rem; color:#64ffda; margin-top:2px;'>\u2713 " + meta.note + "</div>" +
+                "</div>";
+            container.appendChild(header);
+        }
+
         const grid = document.createElement("div");
         grid.className = "grid";
         
@@ -867,11 +900,11 @@ function buildGrid() {
                         "<span id=\"" + id + "_vpn_label\" style=\"color: var(--accent); display: flex; align-items: center; gap: 6px;\">" + 
                             "<img src=\"assets/icon/logo.png\" style=\"width: 24px; height: 24px;\">" + t.freenet + ":" + 
                         "</span>" +
-                        "<span id=\"" + id + "_vpn_val\" class=\"badge-status\">—</span>" +
+                        "<span id=\"" + id + "_vpn_val\" class=\"badge-status\">\u2014</span>" +
                     "</div>" +
                     "<div class=\"badge\" id=\"" + id + "_direct_badge\">" +
                         "<span id=\"" + id + "_direct_label\">" + t.direct + ":</span>" +
-                        "<span id=\"" + id + "_direct_val\" class=\"badge-status\">—</span>" +
+                        "<span id=\"" + id + "_direct_val\" class=\"badge-status\">\u2014</span>" +
                     "</div>" +
                 "</div>";
             grid.appendChild(card);
@@ -1099,7 +1132,7 @@ async function startChecks(mode) {
         const finalStatus = document.getElementById("statusText");
         if (finalStatus) finalStatus.textContent = translations[currentLang].standingBy;
         const pageTitle = document.getElementById("pageTitle");
-        if (pageTitle) pageTitle.textContent = getTitleWithDate(translations[currentLang].title);
+        if (pageTitle) pageTitle.innerHTML = getTitleWithDate(translations[currentLang].title);
     }
     if (btn) btn.disabled = false;
 }
@@ -1107,7 +1140,8 @@ async function startChecks(mode) {
 function getTitleWithDate(base) {
     const now = new Date();
     const opts = { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' };
-    return base + ' (' + now.toLocaleDateString('en-GB', opts) + ')';
+    const dateStr = now.toLocaleDateString('en-GB', opts);
+    return base + '<br><span style="font-size: 0.9rem; color: rgba(255,255,255,0.6); font-weight: 400;">(' + dateStr + ')</span>';
 }
 
     const langBtn = document.getElementById("langToggle");

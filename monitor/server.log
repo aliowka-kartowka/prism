@@ -46,3 +46,5 @@
 2026-04-20 23:58:17,431 - INFO - RKN BLOCK CLEARED.
 2026-04-21 15:44:14,919 - ERROR - Error checking https://freenet.monster (VPN: False): HTTPSConnectionPool(host='freenet.monster', port=443): Read timed out. (read timeout=3.5)
 2026-04-21 15:44:15,277 - WARNING - RKN BLOCK DETECTED!
+2026-04-21 18:13:44,689 - ERROR - Error in RKN Monitor: HTTPSConnectionPool(host='api.telegram.org', port=443): Read timed out. (read timeout=10)
+2026-04-21 18:23:45,571 - INFO - RKN BLOCK CLEARED.
