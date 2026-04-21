@@ -11,6 +11,7 @@ import random
 import string
 import hashlib
 import hmac
+import re
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -261,6 +262,117 @@ def map_user_links(user):
     user['links'] = new_links
     return user
 
+def generate_singbox_config(user):
+    """
+    Generates a full Sing-box JSON configuration for a user, 
+    including VLESS outbounds and automatic routing rules for Russia.
+    """
+    username = user.get('username', 'user')
+    links = user.get('links', [])
+    
+    outbounds = []
+    
+    # helper to parse VLESS params
+    def parse_vless(link):
+        try:
+            # vless://uuid@host:port?query#remark
+            p = urlparse.urlparse(link)
+            uuid = p.netloc.split('@')[0]
+            host_port = p.netloc.split('@')[1]
+            host = host_port.split(':')[0]
+            port = int(host_port.split(':')[1]) if ':' in host_port else 443
+            query = urlparse.parse_qs(p.query)
+            return {
+                "uuid": uuid,
+                "host": host,
+                "port": port,
+                "query": {k: v[0] for k, v in query.items()}
+            }
+        except Exception as e:
+            logger.error(f"Error parsing VLESS link for Sing-box: {e}")
+            return None
+
+    # 1. Add VLESS outbounds
+    for link in links:
+        if 'vless://' not in link:
+            continue
+            
+        data = parse_vless(link)
+        if not data:
+            continue
+            
+        is_ws = data['query'].get('type') == 'ws'
+        is_reality = data['query'].get('security') == 'reality'
+        
+        outbound = {
+            "type": "vless",
+            "tag": f"FreeNet-{'CDN' if is_ws else 'Direct'}",
+            "server": data['host'],
+            "server_port": data['port'],
+            "uuid": data['uuid'],
+            "packet_encoding": "xudp"
+        }
+        
+        if is_reality:
+            outbound["flow"] = "xtls-rprx-vision"
+            outbound["tls"] = {
+                "enabled": True,
+                "server_name": data['query'].get('sni', 'yandex.ru'),
+                "utls": {"enabled": True, "fingerprint": data['query'].get('fp', 'chrome')},
+                "reality": {
+                    "enabled": True,
+                    "public_key": data['query'].get('pbk', ''),
+                    "short_id": data['query'].get('sid', '')
+                }
+            }
+        elif is_ws:
+            outbound["tls"] = {
+                "enabled": True,
+                "server_name": "vpn.freenet.monster",
+                "utls": {"enabled": True, "fingerprint": "chrome"}
+            }
+            outbound["transport"] = {
+                "type": "ws",
+                "path": data['query'].get('path', '/vpn-ws'),
+                "headers": {"Host": "vpn.freenet.monster"}
+            }
+        
+        outbounds.append(outbound)
+
+    # 2. Add system outbounds
+    outbounds.append({"type": "direct", "tag": "direct"})
+    outbounds.append({"type": "dns", "tag": "dns-out"})
+    outbounds.append({"type": "block", "tag": "block"})
+
+    # 3. Construct full config
+    config = {
+        "log": {"level": "info", "timestamp": True},
+        "dns": {
+            "servers": [
+                {"tag": "dns-remote", "address": "https://1.1.1.1/dns-query", "detour": "FreeNet-Direct"},
+                {"tag": "dns-direct", "address": "8.8.8.8", "detour": "direct"},
+                {"tag": "dns-block", "address": "rcode://success"}
+            ],
+            "rules": [
+                {"outbound": "dns-direct", "disable_cache": True, "domain_suffix": [".ru", ".рф"]},
+                {"outbound": "dns-direct", "geosite": ["ru"]}
+            ]
+        },
+        "inbounds": [{"type": "tun", "tag": "tun-in", "interface_name": "tun0", "inet4_address": "172.19.0.1/30", "auto_route": True, "strict_route": True, "stack": "system", "sniff": True}],
+        "outbounds": outbounds,
+        "route": {
+            "rules": [
+                {"protocol": "dns", "outbound": "dns-out"},
+                {"geoip": ["private", "ru"], "outbound": "direct"},
+                {"geosite": ["ru"], "outbound": "direct"},
+                {"domain_suffix": [".ru", ".рф"], "outbound": "direct"}
+            ],
+            "final": "FreeNet-Direct",
+            "auto_detect_interface": True
+        }
+    }
+    return config
+
 class Handler(BaseHTTPRequestHandler):
     def send_cors(self):
         self.send_header('Access-Control-Allow-Origin', '*')
@@ -440,6 +552,25 @@ class Handler(BaseHTTPRequestHandler):
                 self.send_cors()
                 self.end_headers()
                 self.wfile.write(json.dumps(user).encode())
+        
+        elif parsed.path.startswith('/api/config/singbox/'):
+            username = parsed.path.split('/')[-1]
+            # Verify if user exists 
+            user = create_marzban_trial(username) # Fetches existing
+            if "error" in user:
+                self.send_response(404)
+                self.send_cors()
+                self.end_headers()
+                self.wfile.write(b'{"error": "User not found"}')
+            else:
+                config = generate_singbox_config(user)
+                body = json.dumps(config, indent=2).encode()
+                self.send_response(200)
+                self.send_header('Content-type', 'application/json')
+                self.send_header('Content-Disposition', f'attachment; filename="freenet_{username}.json"')
+                self.send_cors()
+                self.end_headers()
+                self.wfile.write(body)
 
         elif parsed.path in ('/', '/index.html'):
             self._serve_file('index.html', 'text/html; charset=utf-8')
