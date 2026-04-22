@@ -19,7 +19,7 @@ The primary management hub and VPN exit point.
 A dedicated node within Russia to perform real-time censorship and connectivity checks, now acting as a subscription mirror.
 *   **Host**: `94.159.117.222`
 *   **Functionality**:
-    *   **Честный Мониторинг Dashboard**: The primary monitoring interface.
+    *   **Честный Мониторинг Dashboard**: Located at `~/workspace/monitor`.
     *   **Moscow Mirror**: Proxies `http://94.159.117.222/sub/` requests directly to the back-end, bypassing domain-level blocks (SNI/DNS).
     *   **Dual-Path API**: Tests site accessibility via both Direct (RU ISP) and FreeNet (VPN) paths.
     *   **Robust Monitoring**: `check_url` logic now verifies the `Server: cloudflare` header to detect and report ISP splash-page interception.

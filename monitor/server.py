@@ -37,15 +37,20 @@ BOT_TOKEN = os.getenv('FREENET_BOT_TOKEN', "8516762550:AAHcq9hVrsgPRQIe9vUQ6uUXi
 FREENET_ADMIN_ID = 1131496447
 
 # --- Global Status Tracking ---
-CHECK_RESULTS = []
+CHECK_RESULTS = {}
+NODES = {} # Metadata about nodes
 RESULTS_LOCK = threading.Lock()
 
 def init_results():
     global CHECK_RESULTS
-    defaults = []
-    for d in ['freenet.monster', 'google.com', 'youtube.com', 'instagram.com', 'yandex.ru']:
-        defaults.append({"target": d, "is_ok": True, "node": "Hetzner (Germany)"})
-    CHECK_RESULTS = defaults
+    # Initial placeholder data
+    CHECK_RESULTS['moscow'] = {
+        "timestamp": time.time(),
+        "results": {
+            "https://freenet.monster": "up",
+            "https://google.com": "up"
+        }
+    }
 
 init_results()
 
