@@ -12,12 +12,13 @@ echo "🚀 Deploying Monitor Branding to components..."
 
 # 1. Sync to Moscow (Backend API + Subdomain)
 echo "📡 Deploying to Moscow node (API)..."
-rsync -avz --exclude '.git' ./monitor/ $MOSCOW_USER@$MOSCOW_IP:$MOSCOW_DIR/
-ssh $MOSCOW_USER@$MOSCOW_IP "pkill -u $MOSCOW_USER -f server.py || true; cd $MOSCOW_DIR && nohup python3 server.py > server.log 2>&1 &"
+rsync -avz --exclude '.git' --exclude '*.log' --exclude '.env' ./monitor/ $MOSCOW_USER@$MOSCOW_IP:$MOSCOW_DIR/
+ssh $MOSCOW_USER@$MOSCOW_IP "sudo systemctl restart freenet-monitor"
 
 # 2. Sync to Hetzner (Main Domain freenet.monster)
 echo "📡 Deploying to Hetzner node (Web)..."
-rsync -avz --exclude '.git' ./monitor/ $HETZNER_ALIAS:$HETZNER_DIR/
+rsync -avz --exclude '.git' --exclude '*.log' --exclude '.env' ./monitor/ $HETZNER_ALIAS:$HETZNER_DIR/
+ssh $HETZNER_ALIAS "sudo systemctl restart freenet-monitor"
 ssh $HETZNER_ALIAS "chown -R www-data:www-data $HETZNER_DIR"
 
 echo "✅ Deployment complete! Branding updates should be visible at https://freenet.monster/"

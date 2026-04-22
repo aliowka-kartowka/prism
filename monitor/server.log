@@ -48,3 +48,22 @@
 2026-04-21 15:44:15,277 - WARNING - RKN BLOCK DETECTED!
 2026-04-21 18:13:44,689 - ERROR - Error in RKN Monitor: HTTPSConnectionPool(host='api.telegram.org', port=443): Read timed out. (read timeout=10)
 2026-04-21 18:23:45,571 - INFO - RKN BLOCK CLEARED.
+2026-04-22 03:35:48,379 - ERROR - Error checking https://freenet.monster (VPN: False): HTTPSConnectionPool(host='freenet.monster', port=443): Read timed out. (read timeout=3.5)
+2026-04-22 03:35:49,195 - WARNING - RKN BLOCK DETECTED!
+2026-04-22 04:34:09,602 - INFO - RKN BLOCK CLEARED.
+2026-04-22 05:17:12,128 - ERROR - Error checking https://freenet.monster (VPN: False): HTTPSConnectionPool(host='freenet.monster', port=443): Read timed out. (read timeout=3.5)
+2026-04-22 05:17:22,155 - ERROR - Error in RKN Monitor: HTTPSConnectionPool(host='api.telegram.org', port=443): Read timed out. (read timeout=10)
+2026-04-22 06:56:33,494 - ERROR - Error checking https://freenet.monster (VPN: False): HTTPSConnectionPool(host='freenet.monster', port=443): Read timed out. (read timeout=3.5)
+2026-04-22 06:56:35,531 - WARNING - RKN BLOCK DETECTED!
+2026-04-22 07:06:36,011 - INFO - RKN BLOCK CLEARED.
+2026-04-22 08:24:27,179 - ERROR - Error checking https://freenet.monster (VPN: False): HTTPSConnectionPool(host='freenet.monster', port=443): Read timed out. (read timeout=3.5)
+2026-04-22 08:24:27,538 - WARNING - RKN BLOCK DETECTED!
+2026-04-22 08:34:28,046 - INFO - RKN BLOCK CLEARED.
+2026-04-22 13:06:12,808 - ERROR - Error checking https://freenet.monster (VPN: False): HTTPSConnectionPool(host='freenet.monster', port=443): Read timed out. (read timeout=3.5)
+2026-04-22 13:06:13,159 - WARNING - RKN BLOCK DETECTED!
+2026-04-22 13:16:13,616 - INFO - RKN BLOCK CLEARED.
+2026-04-22 14:26:20,081 - ERROR - Error checking https://freenet.monster (VPN: False): HTTPSConnectionPool(host='freenet.monster', port=443): Max retries exceeded with url: / (Caused by SSLError(SSLEOFError(8, 'EOF occurred in violation of protocol (_ssl.c:1129)')))
+2026-04-22 14:26:23,366 - ERROR - Error in RKN Monitor: HTTPSConnectionPool(host='api.telegram.org', port=443): Max retries exceeded with url: /bot8516762550:AAHcq9hVrsgPRQIe9vUQ6uUXi4GOyOQB-cQ/sendMessage (Caused by SSLError(SSLEOFError(8, 'EOF occurred in violation of protocol (_ssl.c:1129)')))
+2026-04-22 14:36:26,901 - ERROR - Error checking https://freenet.monster (VPN: False): HTTPSConnectionPool(host='freenet.monster', port=443): Read timed out. (read timeout=3.5)
+2026-04-22 14:36:36,922 - ERROR - Error in RKN Monitor: HTTPSConnectionPool(host='api.telegram.org', port=443): Read timed out. (read timeout=10)
+127.0.0.1 - - [22/Apr/2026 15:14:48] "GET /api/status HTTP/1.1" 404 -

@@ -56,6 +56,8 @@ def map_user_links(user):
     if sub_url and '/sub/' in sub_url:
         token_part = sub_url.split('/sub/')[-1]
         user['subscription_url'] = f"https://vpn.freenet.monster/sub/{token_part}"
+        # ADD MOSCOW MIRROR (Raw IP fallback)
+        user['mirror_subscription_url'] = f"http://94.159.117.222/sub/{token_part}"
     
     # Also update protocol links to use the public domain and rebrand remark
     username = user.get('username', 'trial')
@@ -219,28 +221,41 @@ def send_welcome(message):
         user = create_user(tg_username)
         if user and 'subscription_url' in user:
             sub_url = user['subscription_url']
+            mirror_url = user.get('mirror_subscription_url', 'http://94.159.117.222/sub/' + sub_url.split('/')[-1])
+            
             # Use first config link for QR if available
             qr_content = user['links'][0] if (user.get('links') and len(user['links']) > 0) else sub_url
             qr_url = f"https://api.qrserver.com/v1/create-qr-code/?size=400x400&data={qr_content}&margin=10&bgcolor=ffffff"
             
+            # Generate Base64 for the first link to allow "Import from Clipboard"
+            config_text = user['links'][0] if user.get('links') else sub_url
+            
+            # Create interactive keyboard
+            keyboard = types.InlineKeyboardMarkup()
+            url_button = types.InlineKeyboardButton(text="🔗 Подписка (Основая)", url=sub_url)
+            mirror_button = types.InlineKeyboardButton(text="⚡ Зеркало (РФ)", url=mirror_url)
+            # We can't actually "copy to clipboard" with a button in TG directly without a webview or specific client support, 
+            # but we can provide a button that triggers a message with the mono-spaced text for easy tapping.
+            copy_button = types.InlineKeyboardButton(text="📋 Скопировать код", callback_data=f"copy_cfg:{tg_username}")
+            keyboard.add(url_button, mirror_button)
+            keyboard.add(copy_button)
+
             caption = (
                 f"✅ <b>Ваш доступ готов!</b>\n\n"
-                f"🔗 <b>Ссылка на подписку:</b>\n<code>{sub_url}</code>\n\n"
+                f"🔗 <b>Основная ссылка:</b>\n<code>{sub_url}</code>\n"
+                f"⚡ <b>Зеркало (если не грузит):</b>\n<code>{mirror_url}</code>\n\n"
+                f"📝 <b>Код для вставки (нажми, чтобы скопировать):</b>\n<code>{config_text}</code>\n\n"
                 f"📖 <b>Быстрая настройка:</b>\n"
-                f"1️⃣ <b>Скачайте приложение:</b>\n"
-                f"   - Android: <a href='https://play.google.com/store/apps/details?id=com.v2ray.ang'>v2rayNG</a>\n"
-                f"   - iOS: <a href='https://apps.apple.com/us/app/v2box-v2ray-client/id6446814690'>V2Box</a>\n"
-                f"2️⃣ <b>Импортируйте данные:</b>\n"
-                f"   - Откройте приложение и нажмите '+'\n"
-                f"   - Выберите 'Import config from QR' или скопируйте ссылку выше.\n"
-                f"3️⃣ <b>Подключитесь и наслаждайтесь свободой!</b> 🌍"
+                f"1️⃣ Нажмите на <b>Код для вставки</b> выше.\n"
+                f"2️⃣ В приложении нажмите <b>'+'</b> -> <b>'Import from Clipboard'</b>.\n"
+                f"3️⃣ Всё готово! Пользуйтесь свободой. 🌍"
             )
             
             try:
-                bot.send_photo(message.chat.id, qr_url, caption=caption, parse_mode='HTML')
+                bot.send_photo(message.chat.id, qr_url, caption=caption, parse_mode='HTML', reply_markup=keyboard)
             except Exception as e:
                 logger.error(f"Error sending photo: {e}")
-                bot.send_message(message.chat.id, caption, parse_mode='HTML')
+                bot.send_message(message.chat.id, caption, parse_mode='HTML', reply_markup=keyboard)
         else:
             error_msg = user.get('error', 'Unknown error') if isinstance(user, dict) else 'Unknown error'
             bot.send_message(message.chat.id, f"❌ Ошибка подключения: {error_msg}. Попробуйте еще раз через минуту.")
@@ -252,6 +267,17 @@ def send_welcome(message):
             try:
                 bot.send_message(ADMIN_ID, f"🚫 <b>Error in /start handler:</b>\n<code>{error_trace[:3500]}</code>", parse_mode='HTML')
             except: pass
+
+@bot.callback_query_handler(func=lambda call: call.data.startswith('copy_cfg:'))
+def callback_copy_config(call):
+    username = call.data.split(':')[-1]
+    user = create_user(username)
+    if user and user.get('links'):
+        config_text = user['links'][0]
+        bot.answer_callback_query(call.id, "Код отправлен ниже!")
+        bot.send_message(call.message.chat.id, f"<code>{config_text}</code>", parse_mode='HTML')
+    else:
+        bot.answer_callback_query(call.id, "Ошибка получения конфига", show_alert=True)
 
 @bot.message_handler(commands=['status'])
 def send_status(message):

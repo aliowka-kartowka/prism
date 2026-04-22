@@ -322,7 +322,7 @@
         </div>
 
         <div class="actions-wrapper" style="display: flex; flex-direction: column; gap: 12px; align-items: flex-end; min-width: 320px;">
-            <div id="trial-button-container" style="display: flex; align-items: center; gap: 15px; width: 100%; justify-content: flex-end;">
+            <div class="trial-row" style="display: flex; align-items: center; gap: 15px; width: 100%; justify-content: flex-end;">
                 <div class="trial-info" style="
                     background: rgba(100, 255, 218, 0.05);
                     border: 1px solid rgba(100, 255, 218, 0.2);
@@ -333,16 +333,23 @@
                     gap: 2px;
                 ">
                     <div style="color: #64ffda; font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; gap: 5px;">
-                        <i data-lucide="zap"></i> <span id="lblPromoFreeTitle">Free Trial</span>
+                        <i class="fas fa-bolt"></i> <span id="lblPromoFreeTitle">Free Trial</span>
                     </div>
                     <div id="lblPromoFreeDesc" style="color: #8892b0; font-size: 0.75rem;">10GB / 24h</div>
                 </div>
-                <!-- Telegram Login Widget replaces the redirect button -->
-                <script async src="https://telegram.org/js/telegram-widget.js?22" 
-                    data-telegram-login="FreeNetMonsterBot" 
-                    data-size="large" 
-                    data-onauth="onTelegramAuth(user)" 
-                    data-request-access="write"></script>
+                <button class="btn-primary" onclick="window.location.href='https://t.me/FreeNetMonsterBot?start=monitor'" style="
+                    background: var(--accent);
+                    color: var(--bg-card);
+                    border: none;
+                    padding: 12px 20px;
+                    border-radius: 8px;
+                    font-weight: 700;
+                    cursor: pointer;
+                    font-family: 'Outfit';
+                    transition: all 0.3s;
+                " onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">
+                     ПОПРОБОВАТЬ БЕСПЛАТНО
+                </button>
             </div>
             <div style="display: flex; gap: 10px; width: 100%;">
                 <button class="btn-share-wide" onclick="shareApp()" style="
@@ -934,7 +941,7 @@ async function checkSite(site, useVpn) {
     valEl.className = "badge-status checking";
 
     let finalStatus = "0";
-    const maxAttempts = 3;
+    const maxAttempts = 2;
 
     for (let i = 0; i < maxAttempts; i++) {
         try {
@@ -1080,11 +1087,80 @@ async function startGraphForSite(url, name, isAuto = false) {
     }
 }
 
-function updateStats() {
-    // Widgets removed, explicitly doing nothing
+async function updateGridFromStatus() {
+    try {
+        const res = await fetch("/api/status");
+        if (!res.ok) return false;
+        const data = await res.json();
+        
+        if (Object.keys(data).length === 0) return false;
+
+        // Pick the best node: moscow first, then most recent
+        let bestNode = null;
+        if (data.moscow) {
+            bestNode = data.moscow;
+        } else {
+            const sortedNodes = Object.values(data).sort((a,b) => b.timestamp - a.timestamp);
+            bestNode = sortedNodes[0];
+        }
+
+        if (!bestNode || !bestNode.results) return false;
+
+        const t = translations[currentLang];
+        allSites.forEach(site => {
+            const id = site.name.replace(/[^a-z0-9]/gi, "_");
+            const vVal = document.getElementById(id + "_vpn_val");
+            const dVal = document.getElementById(id + "_direct_val");
+            
+            // Note: multi-node monitor currently only reports 'Direct' status from the node's POV. 
+            // In server.py: results[url] = "up" if check_connectivity(url, False) else "down"
+            // So we map it to 'direct' in our UI. 
+            // We assume VPN is 'up' if the node is checking things and reported back.
+            
+            const status = bestNode.results[site.url];
+            if (status) {
+                const finalStatus = status === "up" ? "1" : "0";
+                if (dVal) {
+                    dVal.setAttribute("data-status", finalStatus);
+                    updateBadgeText(dVal, finalStatus, t);
+                }
+                // For VPN, since we don't have per-site VPN checks from worker yet (it uses master's VPN)
+                // we mark it Online if the node itself is reporting (meaning VPN to worker is likely OK)
+                if (vVal) {
+                    vVal.setAttribute("data-status", "1");
+                    updateBadgeText(vVal, "1", t);
+                }
+            }
+        });
+        
+        // Update master widget if logic exists
+        const masterStatus = bestNode.results["https://freenet.monster"] || "down";
+        const mVal = masterStatus === "up" ? "1" : "0";
+        const mDirect = document.getElementById("masterDirect");
+        if (mDirect) {
+            const label = mDirect.querySelector('.status-indicator');
+            label.textContent = mVal === "1" ? t.online : t.offline;
+            label.style.color = mVal === "1" ? "#48bb78" : "#ff4d4d";
+        }
+
+        return true;
+    } catch (e) {
+        console.error("Status fetch failed", e);
+        return false;
+    }
 }
 
 async function startChecks(mode) {
+    // If we are looking for global status, try the aggregated API first
+    if (mode === "freenet" || mode === "direct") {
+        const ok = await updateGridFromStatus();
+        if (ok) {
+            const statusTextEl = document.getElementById("statusText");
+            if (statusTextEl) statusTextEl.textContent = translations[currentLang].standingBy;
+            return; 
+        }
+    }
+
     const isVpn = mode === "freenet";
     if (isVpn && checkingFreenet) return;
     if (!isVpn && checkingDirect) return;
@@ -1099,7 +1175,7 @@ async function startChecks(mode) {
     const progress = document.getElementById("progressBar");
     progress.style.width = "10%";
 
-    // Run sites with a concurrency limit to prevent browser connection queue timeouts
+    // Run sites with a concurrency limit
     const concurrencyLimit = 3;
     let activePromises = [];
     
@@ -1232,12 +1308,15 @@ function toggleTheme() {
     localStorage.setItem('freenet_theme', themeName);
 }
 
-// Load saved theme
-const savedTheme = localStorage.getItem('freenet_theme');
-if (savedTheme && themes.includes(savedTheme)) {
-    document.body.setAttribute('data-theme', savedTheme);
-    currentThemeIndex = themes.indexOf(savedTheme);
-}
+    // Load saved theme
+    const savedTheme = localStorage.getItem('freenet_theme');
+    if (savedTheme && themes.includes(savedTheme)) {
+        document.body.setAttribute('data-theme', savedTheme);
+        currentThemeIndex = themes.indexOf(savedTheme);
+    }
+
+    // Refresh status from nodes every 60 seconds
+    setInterval(updateGridFromStatus, 60000);
 </script>
 </body>
 </html>
