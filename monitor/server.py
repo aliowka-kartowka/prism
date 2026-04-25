@@ -1,4 +1,10 @@
 try:
+    from dotenv import load_dotenv
+    load_dotenv() # Load variables from .env
+except ImportError:
+    pass
+
+try:
     import stripe
 except ImportError:
     stripe = None
@@ -28,8 +34,8 @@ logger = logging.getLogger(__name__)
 
 # Stripe Configuration
 if stripe:
-    stripe.api_key = "sk_test_51TQ6xfQVVFdnu6MoU5HsULYfUOQdg0vIO7dUbPKehCClGbLFjH9ks0Qw7XwgBdiaWWzMlAPaEitLniJAVIsUvRIL00MHiIEZ7W"
-STRIPE_WEBHOOK_SECRET = "whsec_7WrWqRiayUfiFQIJYVS39mG00x5r0d54"
+    stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
+STRIPE_WEBHOOK_SECRET = os.getenv('STRIPE_WEBHOOK_SECRET')
 STRIPE_LOGS = [] # In-memory buffer for Stripe events
 
 # Email / SMTP Configuration for OTP
