@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Legal - Честный Мониторинг</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&family=Inter:wght@400;500&display=swap"
+        rel="stylesheet">
     <style>
         :root {
             --bg-body: #0a0b10;
@@ -16,25 +18,51 @@
             --font-content: "Inter", sans-serif;
         }
 
-        * { margin:0; padding:0; box-sizing:border-box; }
-        body { 
-            background: var(--bg-body); 
-            color: var(--text-primary); 
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--bg-body);
+            color: var(--text-primary);
             font-family: var(--font-main);
             line-height: 1.6;
             padding: 4rem 2rem;
         }
 
-        .container { max-width: 800px; margin: 0 auto; }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
 
         header {
             text-align: center;
             margin-bottom: 4rem;
         }
 
-        .logo { width: 80px; height: 80px; margin-bottom: 1rem; border-radius: 50%; border: 2px solid var(--accent); }
-        h1 { font-size: 2.5rem; color: var(--text-primary); margin-bottom: 0.5rem; }
-        .subtitle { color: var(--accent); font-weight: 600; letter-spacing: 2px; text-transform: uppercase; font-size: 0.8rem; }
+        .logo {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 1rem;
+            border-radius: 50%;
+            border: 2px solid var(--accent);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            color: var(--accent);
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+        }
 
         section {
             background: var(--bg-card);
@@ -44,17 +72,30 @@
             margin-bottom: 2rem;
         }
 
-        h2 { color: var(--accent); font-size: 1.4rem; margin-bottom: 1.5rem; border-bottom: 1px solid rgba(100, 255, 218, 0.2); padding-bottom: 0.5rem; }
-        
-        p, li {
+        h2 {
+            color: var(--accent);
+            font-size: 1.4rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid rgba(100, 255, 218, 0.2);
+            padding-bottom: 0.5rem;
+        }
+
+        p,
+        li {
             font-family: var(--font-content);
             color: var(--text-secondary);
             font-size: 1rem;
             margin-bottom: 1rem;
         }
 
-        ul { padding-left: 1.5rem; margin-bottom: 1rem; }
-        li { margin-bottom: 0.5rem; }
+        ul {
+            padding-left: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+        }
 
         .back-link {
             display: inline-block;
@@ -64,7 +105,10 @@
             font-weight: 600;
             transition: opacity 0.2s;
         }
-        .back-link:hover { opacity: 0.8; }
+
+        .back-link:hover {
+            opacity: 0.8;
+        }
 
         .contact-box {
             background: rgba(100, 255, 218, 0.05);
@@ -74,49 +118,80 @@
             text-align: center;
             margin-top: 3rem;
         }
-        .contact-box a { color: var(--accent); text-decoration: none; font-weight: 600; }
+
+        .contact-box a {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 600;
+        }
     </style>
     <meta name="lava-verify" content="adf89e0b6ef39bbb" />
 </head>
+
 <body>
 
-<div class="container">
-    <header>
-        <img src="assets/icon/logo.png" alt="FreeNet Logo" class="logo">
-        <h1>Юридические Документы</h1>
-        <div class="subtitle">Условия использования и Конфиденциальность</div>
-    </header>
+    <div class="container">
+        <header>
+            <img src="assets/icon/logo.png" alt="FreeNet Logo" class="logo">
+            <h1>Юридические Документы</h1>
+            <div class="subtitle">Условия использования и Конфиденциальность</div>
+        </header>
 
-    <section id="privacy">
-        <h2>Политика конфиденциальности (No-Logs)</h2>
-        <p>В FreeNet Monster мы верим в абсолютную приватность. Наша инфраструктура спроектирована так, чтобы полностью защищать ваш цифровой след.</p>
-        <ul>
-            <li><strong>Никаких логов посещений</strong>: Мы не отслеживаем, не записываем и не храним информацию о сайтах, которые вы посещаете, или сервисах, которые вы используете.</li>
-            <li><strong>Никаких логов подключений</strong>: Мы не сохраняем время подключений, продолжительность сессий или ваши оригинальные IP-адреса.</li>
-            <li><strong>Шифрование данных</strong>: Весь трафик, проходящий через нашу инфраструктуру, зашифрован с использованием надежных, современных протоколов.</li>
-            <li><strong>Идентификация пользователей</strong>: Поскольку мы идентифицируем пользователей через Telegram или Email, нам не нужны ваше настоящее имя, физический адрес или номер телефона.</li>
-            <li><strong>Способы оплаты</strong>: Пользователи могут оплатить подписку в Stripe с помощью загранкарты, к которой мы не имеем никакого доступа. В этом случае линк на подписку будет привязан к имейлу, указанному при оплате. Никаких других данных не требуется. Для того чтобы сохранить анонимность в этом случае, мы рекомендуем использовать временный имейл. <br> <br> Если у вас нет заграничной карты, можно оплатить через нашего бота в Telegram с помощью любой криптовалюты поддерживаемой Telegram.</li>
-        </ul>
-    </section>
+        <section id="privacy">
+            <h2>Политика конфиденциальности</h2>
+            <p>В FreeNet Monster мы верим в абсолютную приватность. Наша инфраструктура спроектирована так, чтобы
+                полностью защищать ваш цифровой след.</p>
+            <ul>
+                <li><strong>Никаких логов посещений</strong>: Мы не отслеживаем, не записываем и не храним информацию о
+                    сайтах, которые вы посещаете, или сервисах, которые вы используете.</li>
+                <li><strong>Никаких логов подключений</strong>: Мы не сохраняем время подключений, продолжительность
+                    сессий или ваши оригинальные IP-адреса.</li>
+                <li><strong>Шифрование данных</strong>: Весь трафик, проходящий через нашу инфраструктуру, зашифрован с
+                    использованием надежных, современных протоколов.</li>
+                <li><strong>Идентификация пользователей</strong>: Поскольку мы идентифицируем пользователей через
+                    Telegram или Email, нам не нужны ваше настоящее имя, физический адрес или номер телефона.</li>
+                <li><strong>Способы оплаты</strong>: Пользователи могут оплатить подписку в Stripe с помощью
+                    загранкарты, к которой мы не имеем никакого доступа. В этом случае линк на подписку будет привязан к
+                    Email, указанному при оплате. Никаких других данных не требуется. Для того чтобы сохранить
+                    анонимность в этом случае, мы рекомендуем использовать анонимный Email (ProtonMail или аналог). <br>
+                    Если у вас нет
+                    заграничной карты, можно оплатить через нашего бота в Telegram с помощью любой криптовалюты
+                    поддерживаемой Telegram.</li>
+            </ul>
+        </section>
 
-    <section id="terms">
-        <h2>Условия использования</h2>
-        <p>Используя FreeNet Monster VPN, вы соглашаетесь со следующими условиями:</p>
-        <ul>
-            <li><strong>Допустимое использование</strong>: Сервис предоставляется для личной приватности и обхода цензуры. Вы обязуетесь не использовать сервис для незаконных действий, включая (но не ограничиваясь) DDoS-атаки, спам или мошенничество.</li>
-            <li><strong>Ограничения пробного периода</strong>: Бесплатный тестовый период предоставляется один раз. Злоупотребление пробным периодом (например, создание множества аккаунтов) может привести к вечной блокировке.</li>
-            <li><strong>Отказ от ответственности</strong>: Сервис предоставляется «как есть» (as is). Хотя мы стремимся к 100% аптайму, мы не несем ответственности за прерывания в обслуживании или потерю данных.</li>
-            <li><strong>Блокировка</strong>: Мы оставляем за собой право прекратить доступ пользователям, нарушающим данные условия или создающим чрезмерную нагрузку на нашу инфраструктуру.</li>
-        </ul>
-    </section>
+        <section id="terms">
+            <h2>Условия использования</h2>
+            <p>Используя FreeNet Monster, вы соглашаетесь со следующими условиями:</p>
+            <ul>
+                <li><strong>Допустимое использование</strong>: Сервис предоставляется для личной приватности и обхода
+                    цензуры. Вы обязуетесь не использовать сервис для незаконных действий, включая (но не ограничиваясь)
+                    DDoS-атаками, спамом или мошенничеством.</li>
+                <li><strong>Использование на разных устройствах</strong>:
+                    Пользователь имеет право использовать подписку на нескольких устройствах одновременно,
+                    не превышая указанный в тарифе лимит устройств. В случае нарушения этого правила,
+                    мы оставляем за собой право прекратить доступ пользователю без объяснения причин,
+                    а также прекратить доступ пользователям, создающим чрезмерную нагрузку на нашу инфраструктуру.</li>
+                <li><strong>Ограничения подарочного периода</strong>: Бесплатный подарочный период предоставляется один
+                    раз.
+                    Злоупотребление подарочным периодом (например, создание множества аккаунтов) может привести к вечной
+                    блокировке.</li>
+                <li><strong>Отказ от ответственности</strong>: Сервис предоставляется «как есть» (as is). Хотя мы
+                    стремимся к 100% аптайму, мы не несем ответственности за прерывания в обслуживании или потерю
+                    данных.</li>
+                <li><strong>Блокировка</strong>: Мы оставляем за собой право прекратить доступ пользователям, нарушающим
+                    данные условия и/или создающим чрезмерную нагрузку на нашу инфраструктуру.</li>
+            </ul>
+        </section>
 
-    <div class="contact-box">
-        Остались вопросы? Свяжитесь с нашей поддержкой:<br>
-        <a href="mailto:support@freenet.monster">support@freenet.monster</a>
+        <div class="contact-box">
+            Остались вопросы? Свяжитесь с нашей поддержкой:<br>
+            <a href="mailto:support@freenet.monster">support@freenet.monster</a>
+        </div>
+
+        <a href="/" class="back-link">← Вернуться на главную</a>
     </div>
 
-    <a href="/" class="back-link">← Вернуться на главную</a>
-</div>
-
 </body>
+
 </html>

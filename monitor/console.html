@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FreeNet System Console</title>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono&family=Outfit:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono&family=Outfit:wght@400;700&display=swap"
+        rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         :root {
@@ -12,7 +14,13 @@
             --accent: #64ffda;
             --font-mono: "JetBrains Mono", monospace;
         }
-        * { margin:0; padding:0; box-sizing:border-box; }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
             background: var(--bg);
             color: #d1d1d1;
@@ -22,6 +30,7 @@
             flex-direction: column;
             overflow: hidden;
         }
+
         .header {
             background: #111;
             padding: 10px 20px;
@@ -31,10 +40,32 @@
             align-items: center;
             font-family: 'Outfit', sans-serif;
         }
-        .brand { font-weight: 700; color: var(--accent); letter-spacing: 1px; }
-        .status { font-size: 0.8rem; color: #888; display: flex; align-items: center; gap: 8px; }
-        .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #555; }
-        .status-dot.active { background: var(--accent); box-shadow: 0 0 10px var(--accent); }
+
+        .brand {
+            font-weight: 700;
+            color: var(--accent);
+            letter-spacing: 1px;
+        }
+
+        .status {
+            font-size: 0.8rem;
+            color: #888;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #555;
+        }
+
+        .status-dot.active {
+            background: var(--accent);
+            box-shadow: 0 0 10px var(--accent);
+        }
 
         .tab-btn {
             background: transparent;
@@ -46,17 +77,20 @@
             font-size: 0.8rem;
             transition: all 0.3s;
         }
+
         .tab-btn.active {
             border-color: var(--accent);
             color: var(--accent);
             background: rgba(100, 255, 218, 0.05);
         }
+
         .tab-content {
             display: none;
             flex: 1;
             padding: 20px;
             overflow-y: auto;
         }
+
         .tab-content.active {
             display: block;
         }
@@ -69,6 +103,7 @@
             padding: 15px;
             margin-bottom: 20px;
         }
+
         .node-header {
             display: flex;
             justify-content: space-between;
@@ -77,41 +112,86 @@
             border-bottom: 1px solid #222;
             padding-bottom: 10px;
         }
-        .node-name { font-weight: bold; color: var(--accent); font-size: 1.1rem; }
-        .node-meta { font-size: 0.8rem; color: #666; }
+
+        .node-name {
+            font-weight: bold;
+            color: var(--accent);
+            font-size: 1.1rem;
+        }
+
+        .node-meta {
+            font-size: 0.8rem;
+            color: #666;
+        }
+
         .results-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
             gap: 10px;
             margin-top: 10px;
         }
+
         .res-item {
             font-size: 0.75rem;
             display: flex;
             justify-content: space-between;
             padding: 4px 8px;
-            background: rgba(255,255,255,0.02);
+            background: rgba(255, 255, 255, 0.02);
             border-radius: 4px;
         }
-        .status-up { color: #64ffda; }
-        .status-down { color: #ff4d4d; }
 
-        #terminal-sys, #terminal-xray {
+        .status-up {
+            color: #64ffda;
+        }
+
+        .status-down {
+            color: #ff4d4d;
+        }
+
+        #terminal-sys,
+        #terminal-xray {
             font-size: 0.9rem;
             line-height: 1.5;
         }
-        
-        .log-line { margin-bottom: 4px; border-left: 2px solid transparent; padding-left: 10px; }
-        .log-line:hover { background: rgba(255,255,255,0.03); }
-        .log-info { color: #64ffda; border-color: #64ffda; }
-        .log-error { color: #ff4d4d; border-color: #ff4d4d; font-weight: bold; }
-        .log-warn { color: #ffcc00; border-color: #ffcc00; }
-        .log-time { color: #555; margin-right: 12px; }
+
+        .log-line {
+            margin-bottom: 4px;
+            border-left: 2px solid transparent;
+            padding-left: 10px;
+        }
+
+        .log-line:hover {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .log-info {
+            color: #64ffda;
+            border-color: #64ffda;
+        }
+
+        .log-error {
+            color: #ff4d4d;
+            border-color: #ff4d4d;
+            font-weight: bold;
+        }
+
+        .log-warn {
+            color: #ffcc00;
+            border-color: #ffcc00;
+        }
+
+        .log-time {
+            color: #555;
+            margin-right: 12px;
+        }
 
         #auth-overlay {
             position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9);
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -119,6 +199,7 @@
             z-index: 100;
             backdrop-filter: blur(10px);
         }
+
         input {
             background: #111;
             border: 1px solid #333;
@@ -131,6 +212,7 @@
             font-family: var(--font-mono);
             margin-bottom: 20px;
         }
+
         button {
             background: var(--accent);
             color: #000;
@@ -141,16 +223,31 @@
             cursor: pointer;
             font-family: 'Outfit', sans-serif;
         }
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #444; }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #444;
+        }
     </style>
 </head>
+
 <body>
     <div id="auth-overlay">
         <div class="brand" style="font-size: 1.5rem; margin-bottom: 30px;">SYSTEM ACCESS RESTRICTED</div>
-        <input type="password" id="password" placeholder="ENTER ADMIN PASSWORD" onkeyup="if(event.key==='Enter') login()">
+        <input type="password" id="password" placeholder="ENTER ADMIN PASSWORD"
+            onkeyup="if(event.key==='Enter') login()">
         <button onclick="login()">AUTHORIZE</button>
     </div>
 
@@ -214,9 +311,9 @@
             currentTab = id;
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            
+
             // Fixed selector to find the button by lowercased ID in onclick or text
-            const activeBtn = Array.from(document.querySelectorAll('.tab-btn')).find(b => 
+            const activeBtn = Array.from(document.querySelectorAll('.tab-btn')).find(b =>
                 b.getAttribute('onclick').includes(`'${id}'`)
             );
             if (activeBtn) activeBtn.classList.add('active');
@@ -260,10 +357,10 @@
                 const res = await fetch(`/api/status?token=${encodeURIComponent(token)}`);
                 if (res.status === 401) { logout(); return; }
                 const data = await res.json();
-                
+
                 const list = document.getElementById('nodeList');
                 list.innerHTML = '';
-                
+
                 if (Object.keys(data).length === 0) {
                     list.innerHTML = '<div class="log-line log-warn">No nodes reporting yet...</div>';
                     return;
@@ -272,11 +369,11 @@
                 for (const [nodeId, info] of Object.entries(data)) {
                     const card = document.createElement('div');
                     card.className = 'node-card';
-                    
+
                     const lastSeen = new Date(info.timestamp * 1000).toLocaleTimeString();
-                    const age = Math.round(Date.now()/1000 - info.timestamp);
+                    const age = Math.round(Date.now() / 1000 - info.timestamp);
                     const statusClass = age < 60 ? 'active' : '';
-                    
+
                     let resultsHtml = '';
                     if (info.results) {
                         for (const [url, status] of Object.entries(info.results)) {
@@ -320,17 +417,17 @@
             const data = await res.json();
             const term = document.getElementById(id);
             const isAtBottom = term.scrollHeight - term.scrollTop <= term.clientHeight + 100;
-            
+
             const logs = Array.isArray(data.logs) ? data.logs : (data.content || "").split('\n');
-            
+
             term.innerHTML = '';
             logs.forEach(line => {
-                if(!line.trim()) return;
+                if (!line.trim()) return;
                 // Filter out internal polling and API noise in both local and Xray logs
-                if(line.includes('/api/logs') || line.includes('/api/marzban') || 
-                   line.includes('GET /api/') || line.includes('POST /api/admin/token') ||
-                   line.includes('/api/status') || line.includes('/api/update')) return;
-                
+                if (line.includes('/api/logs') || line.includes('/api/marzban') ||
+                    line.includes('GET /api/') || line.includes('POST /api/admin/token') ||
+                    line.includes('/api/status') || line.includes('/api/update')) return;
+
                 const div = document.createElement('div');
                 div.className = 'log-line';
                 if (line.includes('INFO') || line.includes('info')) div.classList.add('log-info');
@@ -348,20 +445,20 @@
                 if (res.status === 401) { logout(); return; }
                 const data = await res.json();
                 const users = data.users || []; // Handle {users: [], total: X} format
-                
+
                 const body = document.getElementById('trafficBody');
                 body.innerHTML = '';
-                
+
                 users.forEach(u => {
                     const tr = document.createElement('tr');
                     tr.style.borderBottom = '1px solid #222';
-                    const used = (u.used_traffic / (1024**3)).toFixed(2);
-                    const limit = u.data_limit ? (u.data_limit / (1024**3)).toFixed(2) : "∞";
+                    const used = (u.used_traffic / (1024 ** 3)).toFixed(2);
+                    const limit = u.data_limit ? (u.data_limit / (1024 ** 3)).toFixed(2) : "∞";
                     const expiry = u.expire ? new Date(u.expire * 1000).toLocaleDateString() : "Never";
-                    
+
                     tr.innerHTML = `
                         <td style="padding:10px;">${u.username}</td>
-                        <td style="padding:10px;"><span style="color:${u.status==='active'?'#64ffda':'#ff4d4d'}">${u.status}</span></td>
+                        <td style="padding:10px;"><span style="color:${u.status === 'active' ? '#64ffda' : '#ff4d4d'}">${u.status}</span></td>
                         <td style="padding:10px;">${used} GB</td>
                         <td style="padding:10px;">${limit} GB</td>
                         <td style="padding:10px; font-size:0.8rem; color:#666;">${expiry}</td>
@@ -382,4 +479,5 @@
         }
     </script>
 </body>
+
 </html>
