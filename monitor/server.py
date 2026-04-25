@@ -18,6 +18,9 @@ import hmac
 import re
 import base64
 import traceback
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -25,9 +28,20 @@ logger = logging.getLogger(__name__)
 
 # Stripe Configuration
 if stripe:
-    stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
-STRIPE_WEBHOOK_SECRET = os.getenv('STRIPE_WEBHOOK_SECRET')
+    stripe.api_key = "sk_test_51TQ6xfQVVFdnu6MoU5HsULYfUOQdg0vIO7dUbPKehCClGbLFjH9ks0Qw7XwgBdiaWWzMlAPaEitLniJAVIsUvRIL00MHiIEZ7W"
+STRIPE_WEBHOOK_SECRET = "whsec_7WrWqRiayUfiFQIJYVS39mG00x5r0d54"
 STRIPE_LOGS = [] # In-memory buffer for Stripe events
+
+# Email / SMTP Configuration for OTP
+SMTP_HOST = os.getenv('SMTP_HOST', 'smtp.gmail.com')
+SMTP_PORT = int(os.getenv('SMTP_PORT', '587'))
+SMTP_USER = os.getenv('SMTP_USER', '')          # e.g. noreply@freenet.monster
+SMTP_PASS = os.getenv('SMTP_PASS', '')          # app password
+SMTP_FROM = os.getenv('SMTP_FROM', SMTP_USER)   # display sender
+
+# OTP store: email -> {code, expires, attempts}
+OTP_STORE = {}
+OTP_LOCK  = threading.Lock()
 
 # Node Identity & Environment
 IS_MOSCOW_NODE = os.getenv('IS_MOSCOW_NODE', 'false').lower() == 'true'
@@ -252,7 +266,19 @@ def get_marzban_token():
 DEFAULT_INBOUNDS = {"vless": ["VLESS REALITY", "VLESS WS"]}
 DEFAULT_PROXIES = {"vless": {}}
 
-def update_marzban_premium(username, is_active=True, days=0):
+def email_to_username(email):
+    """Convert email to a safe Marzban username.
+    aliowka@gmail.com -> aliowka_gmail_com
+    Max 32 chars, lowercase, alphanumeric + underscore only.
+    """
+    import re
+    if not email:
+        return None
+    username = email.lower().replace('@', '_').replace('.', '_')
+    username = re.sub(r'[^a-z0-9_]', '_', username)
+    return username[:32]
+
+def update_marzban_premium(username, is_active=True, days=0, note="PREMIUM_USER", ip_limit=0):
     token = get_marzban_token()
     if not token:
         return {"error": "Authentication failed"}
@@ -284,8 +310,9 @@ def update_marzban_premium(username, is_active=True, days=0):
     data = {
         "username": username,
         "status": status,
-        "note": "PREMIUM_USER",
-        "data_limit": 0 if is_active else 1 # No limit if active
+        "note": note,
+        "data_limit": 0 if is_active else 1, # No limit if active
+        "ip_limit": ip_limit
     }
     if days > 0:
         data["expire"] = expire_ts
@@ -428,9 +455,11 @@ def map_user_links(user):
     sub_url = user.get('subscription_url', '')
     if sub_url and '/sub/' in sub_url:
         token_part = sub_url.split('/sub/')[-1]
-        user['subscription_url'] = f"https://vpn.freenet.monster/sub/{token_part}"
+        user['sub_url'] = f"https://vpn.freenet.monster/sub/{token_part}"
         # ADD MOSCOW MIRROR (Raw IP fallback)
         user['mirror_subscription_url'] = f"http://94.159.117.222/sub/{token_part}"
+    else:
+        user['sub_url'] = sub_url
     
     user_id = user.get('username', 'trial')
     links = user.get('links', [])
@@ -590,35 +619,68 @@ class Handler(BaseHTTPRequestHandler):
         try:
             if event['type'] == 'checkout.session.completed':
                 session_obj = event['data']['object']
-                username = session_obj.get('client_reference_id')
                 amount = session_obj.get('amount_total', 0)
-                
-                if username:
-                    # Determine duration based on amount (in cents)
-                    # $4.99 -> 30 days, $14.99 -> 90 days, $49.99 -> 365 days
+
+                # Get email from customer_details (primary) or billing_details
+                customer_details = session_obj.get('customer_details') or {}
+                email = (
+                    customer_details.get('email') or
+                    session_obj.get('customer_email')
+                )
+                username = email_to_username(email)
+
+                if username and email:
+                    # Determine duration and IP limit based on amount (in cents)
+                    # $6.99 -> 30 days, $14.99 -> 90 days, $44.99 -> 365 days
                     days = 30
-                    if amount >= 4500: days = 365
-                    elif amount >= 1400: days = 90
+                    ip_limit = 2
+                    if amount >= 4400: 
+                        days = 365
+                        ip_limit = 10
+                    elif amount >= 1400: 
+                        days = 90
+                        ip_limit = 4
+
+                    # Check if user already exists and has received the gift
+                    has_received_gift = False
+                    m_token = get_marzban_token()
+                    if m_token:
+                        try:
+                            headers = {'Authorization': f'Bearer {m_token}'}
+                            user_resp = session.get(f"{MARZBAN_URL}/api/user/{username}", headers=headers, timeout=5)
+                            if user_resp.status_code == 200:
+                                current_user_data = user_resp.json()
+                                note = current_user_data.get('note') or ""
+                                # Check if they already have any premium status (old or new)
+                                if "PREMIUM" in note:
+                                    has_received_gift = True
+                                    logger.info(f"User {username} already has premium status ({note}). Adding only {days} days.")
+                        except: pass
+
+                    total_days = days
+                    new_note = 'PREMIUM_GIFT_USED'
                     
-                    # Add 1 month gift (30 days) to all purchases
-                    total_days = days + 30
-                    
-                    success_msg = f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] SUCCESS: {username} paid {amount/100}$. Activating {total_days} days."
+                    if not has_received_gift:
+                        total_days += 30
+                        logger.info(f"User {username} first time purchase. Adding +30 days gift. Total: {total_days}")
+                    else:
+                        # If already had gift, keep the note as GIFT_USED
+                        new_note = 'PREMIUM_GIFT_USED'
+
+                    success_msg = f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] SUCCESS: {email} ({username}) paid {amount/100:.2f}$. Activating {total_days} days (IP Limit: {ip_limit}). Gift: {not has_received_gift}"
                     logger.info(success_msg)
                     STRIPE_LOGS.append(success_msg)
-                    if len(STRIPE_LOGS) > 200: STRIPE_LOGS.pop(0)
 
-                    update_marzban_premium(username, is_active=True, days=total_days)
-            
-            elif event['type'] in ('customer.subscription.updated', 'customer.subscription.deleted'):
-                sub = event['data']['object']
-                status = sub.get('status')
-                # If subscription is past_due, canceled, or unpaid, deactivate
-                if status in ('past_due', 'canceled', 'unpaid', 'incomplete_expired'):
-                    # We need to find the username. Since metadata might be empty,
-                    # ideally we saved it during checkout or we search in Marzban for users
-                    # with a specific note containing the stripe customer ID.
-                    pass 
+                    result = update_marzban_premium(username, is_active=True, days=total_days, note=new_note, ip_limit=ip_limit)
+                    result_msg = f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Marzban result for {username}: {result.get('status', result.get('error', 'ok'))}"
+                    logger.info(result_msg)
+                    STRIPE_LOGS.append(result_msg)
+                    if len(STRIPE_LOGS) > 200: STRIPE_LOGS.pop(0)
+                else:
+                    warn_msg = f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] WARNING: checkout.session.completed but no email found! session_id={session_obj.get('id')}"
+                    logger.warning(warn_msg)
+                    STRIPE_LOGS.append(warn_msg)
+                    if len(STRIPE_LOGS) > 200: STRIPE_LOGS.pop(0)
 
             self.send_response(200)
             self.end_headers()
@@ -957,6 +1019,81 @@ class Handler(BaseHTTPRequestHandler):
             self.send_cors()
             self.end_headers()
             self.wfile.write(json.dumps({"logs": STRIPE_LOGS}).encode())
+
+        elif parsed.path == '/api/user_status':
+            params = urlparse.parse_qs(parsed.query)
+            email = params.get('email', [''])[0].strip().lower()
+            session_id = params.get('session_id', [''])[0].strip()
+
+            # Security: If session_id is provided, verify it and override email
+            if session_id and stripe:
+                try:
+                    stripe_session = stripe.checkout.Session.retrieve(session_id)
+                    if stripe_session.customer_details and stripe_session.customer_details.email:
+                        verified_email = stripe_session.customer_details.email.lower()
+                        logger.info(f"Verified lookup via session {session_id} for {verified_email}")
+                        email = verified_email
+                    else:
+                        self.send_response(403); self.send_cors(); self.end_headers()
+                        self.wfile.write(b'{"error": "Invalid session"}'); return
+                except Exception as e:
+                    logger.error(f"Stripe session check failed: {e}")
+                    self.send_response(403); self.send_cors(); self.end_headers()
+                    self.wfile.write(b'{"error": "Session verification failed"}'); return
+            elif not session_id:
+                # OPTIONAL: if you want to allow ONLY session-based lookups
+                self.send_response(401); self.send_cors(); self.end_headers()
+                self.wfile.write(b'{"error": "Authentication required (session_id)"}'); return
+
+            if not email:
+                self.send_response(400); self.send_cors(); self.end_headers()
+                self.wfile.write(b'{"error": "email required"}'); return
+
+            username = email_to_username(email)
+            m_token = get_marzban_token()
+            if not m_token:
+                self.send_response(503)
+                self.send_cors()
+                self.end_headers()
+                self.wfile.write(b'{"error": "Marzban unavailable"}')
+                return
+
+            try:
+                headers = {'Authorization': f'Bearer {m_token}'}
+                resp = session.get(f"{MARZBAN_URL}/api/user/{username}", headers=headers, timeout=5)
+                if resp.status_code == 404:
+                    body = json.dumps({"status": "none", "username": username, "email": email}).encode()
+                elif resp.status_code == 200:
+                    user = resp.json()
+                    # Always map links to ensure sub_url and other formatting is applied
+                    user = map_user_links(user)
+                    expire = user.get('expire')
+                    days_left = max(0, int((expire - time.time()) / 86400)) if expire else 0
+                    body = json.dumps({
+                        "status": user.get('status', 'unknown'),
+                        "username": username,
+                        "email": email,
+                        "is_premium": user.get('note') == 'PREMIUM_USER',
+                        "expire": expire,
+                        "days_left": days_left,
+                        "sub_url": user.get('sub_url', ''),
+                        "links": user.get('links', []),
+                        "qr_url": user.get('qr_url', '')
+                    }).encode()
+                else:
+                    body = json.dumps({"error": f"Marzban returned {resp.status_code}"}).encode()
+                self.send_response(200)
+                self.send_header('Content-type', 'application/json')
+                self.send_cors()
+                self.end_headers()
+                self.wfile.write(body)
+            except Exception as e:
+                logger.error(f"Error in /api/user_status: {e}")
+                self.send_response(500)
+                self.send_cors()
+                self.end_headers()
+                self.wfile.write(json.dumps({"error": str(e)}).encode())
+
 
         elif parsed.path == '/api/trial':
             # Prioritize X-Real-IP or X-Forwarded-For if behind a proxy

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,13 +8,14 @@
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-92ELQGX7M9"></script>
     <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
 
-      gtag('config', 'G-92ELQGX7M9');
+        gtag('config', 'G-92ELQGX7M9');
     </script>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&family=JetBrains+Mono&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&family=JetBrains+Mono&display=swap"
+        rel="stylesheet">
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <!-- Chart.js -->
@@ -24,21 +26,44 @@
         window.Telegram.WebApp.ready();
     </script>
     <link rel="icon" type="image/png" href="assets/icon/logo.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --bg-body: #0d1117;
-            --bg-card: #151921;
-            --accent: #64ffda;
-            --accent-glow: rgba(100, 255, 218, 0.3);
-            --text-primary: #e6f1ff;
-            --text-secondary: #8892b0;
+            /* DEFAULT THEME: MONSTER (Black & Cyan) */
+            --bg-body: #000000;
+            --bg-card: #0a0c10;
+            --accent: #00f2ff;
+            --accent-glow: rgba(0, 242, 255, 0.4);
+            --text-primary: #ffffff;
+            --text-secondary: #94a3b8;
             --success: #00ff7f;
             --error: #ff4d4d;
             --warning: #ffcc00;
             --font-main: "Outfit", sans-serif;
             --font-mono: "JetBrains Mono", monospace;
-            --border-card: 1px solid #233554;
+            --border-card: 1px solid rgba(0, 242, 255, 0.3);
             --logo-url: url('assets/icon/logo.png');
+        }
+
+        /* Classic Theme (Legacy Blue) */
+        body[data-theme="classic"] {
+            --bg-body: #0d1117;
+            --bg-card: #151921;
+            --accent: #64ffda;
+            --accent-glow: rgba(100, 255, 218, 0.3);
+            --border-card: 1px solid #233554;
+        }
+
+        /* Monster Theme (Black & Cyan) - Redundant but for completeness */
+        body[data-theme="monster"] {
+            --bg-body: #000000;
+            --bg-card: #0a0c10;
+            --accent: #00f2ff;
+            --accent-glow: rgba(0, 242, 255, 0.4);
+            --border-card: 1px solid rgba(0, 242, 255, 0.3);
+            --logo-url: url('assets/icon/logo.png');
+            --text-primary: #ffffff;
+            --text-secondary: #94a3b8;
         }
 
         /* Cyber Panda Theme */
@@ -83,7 +108,12 @@
             --logo-url: url('/logo_banana.png?v=1');
         }
 
-        * { margin:0; padding:0; box-sizing:border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         html {
             background-color: var(--bg-body);
         }
@@ -98,7 +128,11 @@
             min-height: 100vh;
         }
 
-        .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
 
         .header {
             display: flex;
@@ -109,11 +143,29 @@
             border-bottom: 1px solid #233554;
         }
 
-        .brand { display: flex; align-items: center; gap: 1rem; }
-        .brand h1 { font-size: 1.8rem; font-weight: 600; letter-spacing: -0.5px; }
-        .header-logo { width: 120px; height: auto; display: block; }
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
 
-        .controls { display: flex; gap: 1rem; align-items: center; }
+        .brand h1 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+        }
+
+        .header-logo {
+            width: 120px;
+            height: auto;
+            display: block;
+        }
+
+        .controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
 
         button {
             background: #112240;
@@ -133,7 +185,12 @@
             box-shadow: 0 0 15px var(--accent-glow);
         }
 
-        button:disabled { opacity: 0.5; cursor: not-allowed; border-color: var(--text-secondary); color: var(--text-secondary); }
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            border-color: var(--text-secondary);
+            color: var(--text-secondary);
+        }
 
         .lang-toggle {
             border-color: var(--text-secondary);
@@ -157,10 +214,24 @@
             gap: 0.5rem;
         }
 
-        .stat-label { color: var(--text-secondary); font-size: 0.9rem; }
-        .stat-value { font-size: 1.5rem; font-weight: 600; font-family: var(--font-mono); }
-        .stat-value.success { color: var(--success); }
-        .stat-value.error { color: var(--error); }
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 600;
+            font-family: var(--font-mono);
+        }
+
+        .stat-value.success {
+            color: var(--success);
+        }
+
+        .stat-value.error {
+            color: var(--error);
+        }
 
         /* Custom Host Check Section */
         .search-section {
@@ -190,7 +261,7 @@
 
         .search-input {
             flex: 1;
-            background: rgba(0,0,0,0.3);
+            background: rgba(0, 0, 0, 0.3);
             border: 1px solid #233554;
             border-radius: 6px;
             padding: 0.8rem 1.2rem;
@@ -201,7 +272,9 @@
             transition: border-color 0.2s;
         }
 
-        .search-input:focus { border-color: var(--accent); }
+        .search-input:focus {
+            border-color: var(--accent);
+        }
 
         .search-results {
             display: grid;
@@ -210,7 +283,7 @@
         }
 
         .result-badge {
-            background: rgba(0,0,0,0.2);
+            background: rgba(0, 0, 0, 0.2);
             padding: 1rem;
             border-radius: 8px;
             display: flex;
@@ -245,14 +318,36 @@
             border: 1px solid transparent;
         }
 
-        .card:hover { border-color: #233554; transform: translateY(-3px); }
+        .card:hover {
+            border-color: #233554;
+            transform: translateY(-3px);
+        }
 
-        .site-info { display: flex; align-items: center; justify-content: flex-start; gap: 0.8rem; margin-bottom: 1rem; }
-        .site-name { font-weight: 600; font-size: 1.1rem; }
-        .site-icon { width: 20px; height: 20px; color: var(--accent); }
-        
-        .status-badges { display: flex; flex-direction: column; gap: 0.5rem; }
-        
+        .site-info {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 0.8rem;
+            margin-bottom: 1rem;
+        }
+
+        .site-name {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .site-icon {
+            width: 20px;
+            height: 20px;
+            color: var(--accent);
+        }
+
+        .status-badges {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
         .badge {
             display: flex;
             justify-content: space-between;
@@ -261,20 +356,33 @@
             border-radius: 6px;
             font-size: 0.85rem;
             font-family: var(--font-mono);
-            background: rgba(0,0,0,0.2);
+            background: rgba(0, 0, 0, 0.2);
         }
 
-        .badge-status.online { color: var(--success); font-weight: 600; }
-        .badge-status.offline { color: var(--error); font-weight: 600; }
-        .badge-status.checking { color: var(--warning); }
+        .badge-status.online {
+            color: var(--success);
+            font-weight: 600;
+        }
+
+        .badge-status.offline {
+            color: var(--error);
+            font-weight: 600;
+        }
+
+        .badge-status.checking {
+            color: var(--warning);
+        }
 
         #progress-container {
             position: fixed;
-            top: 0; left: 0; right: 0;
+            top: 0;
+            left: 0;
+            right: 0;
             height: 3px;
             background: transparent;
             z-index: 1000;
         }
+
         #progressBar {
             height: 100%;
             width: 0%;
@@ -291,20 +399,31 @@
         }
 
         @media (max-width: 768px) {
-            .search-results { grid-template-columns: 1fr; }
-            .header { flex-direction: column; gap: 1rem; text-align: center; }
+            .search-results {
+                grid-template-columns: 1fr;
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
         }
     </style>
     <meta name="lava-verify" content="adf89e0b6ef39bbb" />
 </head>
+
 <body>
 
-<div id="progress-container"><div id="progressBar"></div></div>
+    <div id="progress-container">
+        <div id="progressBar"></div>
+    </div>
 
-<div class="container">
-    <header class="header" style="display: flex; justify-content: space-between; align-items: center; width: 100%; gap: 30px; padding: 20px 0;">
-        <div class="brand" style="display: flex; align-items: center; gap: 30px; flex: 1;">
-            <div id="headerLogo" style="
+    <div class="container">
+        <header class="header"
+            style="display: flex; justify-content: space-between; align-items: center; width: 100%; gap: 30px; padding: 20px 0;">
+            <div class="brand" style="display: flex; align-items: center; gap: 30px; flex: 1;">
+                <div id="headerLogo" style="
                 width: 150px; 
                 height: 150px; 
                 background-image: var(--logo-url);
@@ -312,20 +431,25 @@
                 background-size: contain;
                 background-repeat: no-repeat;
             "></div>
-            <div style="display: flex; flex-direction: column;">
-                <h1 id="pageTitle" style="margin: 0; font-family: 'Outfit'; font-size: 2rem; color: #fff; line-height: 1.1;">
-                    <span style="color: #64ffda;">FreeNet Monster</span><br>
-                    <span style="font-size: 1.5rem; font-weight: 500; opacity: 0.9;">Честный Мониторинг</span>
-                </h1>
-                <span id="pageSubtitle" style="color: #8892b0; font-size: 1rem; margin-top: 5px; font-family: 'Inter', sans-serif;">Безопасный доступ без границ</span>
+                <div style="display: flex; flex-direction: column;">
+                    <h1 id="pageTitle"
+                        style="margin: 0; font-family: 'Outfit'; font-size: 2rem; color: #fff; line-height: 1.1;">
+                        <span style="color: var(--accent);">FreeNet Monster</span><br>
+                        <span style="font-size: 1.5rem; font-weight: 500; opacity: 0.9;">Честный Мониторинг</span>
+                    </h1>
+                    <span id="pageSubtitle"
+                        style="color: #8892b0; font-size: 1rem; margin-top: 5px; font-family: 'Inter', sans-serif;">Безопасный
+                        доступ без границ</span>
+                </div>
             </div>
-        </div>
 
-        <div class="actions-wrapper" style="display: flex; flex-direction: column; gap: 12px; align-items: flex-end; min-width: 320px;">
-            
-            <!-- Premium Row -->
-            <div class="premium-row" style="display: flex; align-items: center; gap: 15px; width: 100%; justify-content: flex-end;">
-                <div class="premium-info" style="
+            <div class="actions-wrapper"
+                style="display: flex; flex-direction: column; gap: 12px; align-items: flex-end; min-width: 320px;">
+
+                <!-- Premium Row -->
+                <div class="premium-row"
+                    style="display: flex; align-items: center; gap: 15px; width: 100%; justify-content: flex-end;">
+                    <div class="premium-info" style="
                     background: rgba(100, 255, 218, 0.05);
                     border: 1px solid rgba(100, 255, 218, 0.2);
                     border-radius: 8px;
@@ -334,12 +458,14 @@
                     flex-direction: column;
                     gap: 2px;
                 ">
-                    <div style="color: #64ffda; font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; gap: 5px;">
-                        <i class="fas fa-gift"></i> <span>АКЦИЯ</span>
+                        <div
+                            style="color: var(--accent); font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 5px; text-transform: uppercase;">
+                            <i class="fas fa-gift"></i> <span>5$ в месяц</span>
+                        </div>
+                        <div style="color: #fff; font-size: 0.8rem; font-weight: 600;">+1 Месяц Бесплатно</div>
+                        <div style="color: #8892b0; font-size: 0.7rem;">на любую подписку</div>
                     </div>
-                    <div style="color: #8892b0; font-size: 0.75rem;">+1 Месяц Бесплатно</div>
-                </div>
-                <button class="btn-premium" onclick="openPricing()" style="
+                    <button class="btn-premium" onclick="openPricing()" style="
                     background: var(--accent);
                     color: var(--bg-card);
                     border: none;
@@ -352,1051 +478,1296 @@
                     box-shadow: 0 0 20px rgba(100, 255, 218, 0.3);
                     animation: pulse 2s infinite;
                 " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
-                     🎁 МЕСЯЦ В ПОДАРОК
-                </button>
+                        🎁 МЕСЯЦ В ПОДАРОК
+                    </button>
+                </div>
             </div>
+        </header>
 
-            <div style="display: flex; gap: 10px; width: 100%;">
-                <button class="btn-share-wide" onclick="shareApp()" style="
-                    flex: 1;
-                    background: #0088cc;
-                    color: white;
-                    border: none;
-                    padding: 14px;
-                    border-radius: 8px;
-                    font-weight: 700;
-                    font-family: 'Outfit';
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    gap: 10px;
-                    cursor: pointer;
-                    box-shadow: 0 4px 15px rgba(0,136,204,0.3);
-                    transition: transform 0.2s;
-                " onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
-                    <i class="fab fa-telegram-plane"></i> ПОДЕЛИТЬСЯ
-                </button>
+        <!-- Verified Subscription Status (Hidden by default, shown only if session_id exists) -->
+        <div id="verifiedSubscriptionSection" style="display:none; margin: 0 0 24px 0;">
+            <div
+                style="background: rgba(100,255,218,0.06); border: 1px solid rgba(100,255,218,0.3); border-radius: 16px; padding: 24px;">
+                <div style="display:flex; align-items:center; gap: 10px; margin-bottom: 15px;">
+                    <i class="fas fa-check-circle" style="color:var(--accent); font-size:1.2rem;"></i>
+                    <h3 style="margin:0; font-family:'Outfit'; color:#fff;">Подписка подтверждена</h3>
+                </div>
+                <div id="subStatusResult"></div>
             </div>
         </div>
-    </header>
 
-    <!-- Pricing Modal -->
-    <div id="pricingModal" class="modal-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(10,11,30,0.95); z-index:2000; align-items:center; justify-content:center; backdrop-filter: blur(10px);">
-        <div class="pricing-container" style="background: var(--bg-card); border: 1px solid rgba(100,255,218,0.2); border-radius: 20px; padding: 40px; max-width: 1000px; width: 90%; position: relative; box-shadow: 0 0 50px rgba(100,255,218,0.1);">
-            <button onclick="closePricing()" style="position:absolute; top:20px; right:20px; background:none; border:none; color: #8892b0; font-size: 1.5rem; cursor:pointer;"><i class="fas fa-times"></i></button>
-            
-            <h2 style="text-align:center; font-family:'Outfit'; font-size: 2.5rem; color:#fff; margin-bottom: 10px;">Выберите ваш уровень <span style="color:var(--accent);">Monster</span></h2>
-            <p style="text-align:center; color:var(--accent); font-weight:700; font-size:1.2rem; margin-bottom: 30px; text-transform: uppercase; letter-spacing: 1px;">🎁 Акция: 1 МЕСЯЦ БЕСПЛАТНО при покупке любого тарифа!</p>
+        <div id="pricingModal" class="modal-overlay" style="display:none;">
+            <div class="pricing-container">
+                <button onclick="closePricing()" class="close-modal">
+                    <i class="fas fa-times"></i>
+                </button>
 
-            <div class="pricing-grid" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px;">
-                <!-- 1 Month -->
-                <div class="pricing-card" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 15px; padding: 30px; text-align:center; transition: all 0.3s;">
-                    <div style="font-size: 1.5rem; color: #fff; font-family:'Outfit'; margin-bottom: 15px;">Monster Pack</div>
-                    <div style="font-size: 3rem; color: var(--accent); font-weight: 800; margin-bottom: 5px;">$6.99</div>
-                    <div style="color: #8892b0; margin-bottom: 25px;">30 Дней</div>
-                    <ul style="list-style:none; padding:0; margin:0 0 30px 0; color:#ccd6f6; text-align:left; font-size: 0.9rem;">
-                        <li style="margin-bottom: 10px; color:var(--accent); font-weight:700;"><i class="fas fa-gift" style="margin-right:10px;"></i> +1 МЕСЯЦ БЕСПЛАТНО</li>
-                        <li style="margin-bottom: 10px;"><i class="fas fa-check" style="color:var(--accent); margin-right:10px;"></i> Безлимитный трафик</li>
-                        <li style="margin-bottom: 10px;"><i class="fas fa-check" style="color:var(--accent); margin-right:10px;"></i> Все локации</li>
-                    </ul>
-                    <button id="btn-pack" style="width:100%; padding:12px; border-radius:8px; border:1px solid var(--accent); background:transparent; color:var(--accent); font-weight:700; cursor:pointer; transition:0.3s;" onmouseover="this.style.background='var(--accent)'; this.style.color='var(--bg-card)'" onmouseout="this.style.background='transparent'; this.style.color='var(--accent)'">ВЫБРАТЬ</button>
-                </div>
+                <h2 id="pricingTitle"
+                    style="text-align:center; font-family:'Outfit'; font-size: 2.5rem; color:#fff; margin-bottom: 10px;">
+                    Выберите ваш уровень <span style="color:var(--accent);">Monster</span></h2>
+                <p
+                    style="text-align:center; color:var(--accent); font-weight:700; font-size:1rem; margin-bottom: 30px; text-transform: uppercase; letter-spacing: 1px;">
+                    🎁 Акция: 1 МЕСЯЦ БЕСПЛАТНО при покупке любого тарифа!</p>
 
-                <!-- 90 Days -->
-                <div class="pricing-card popular" style="background: rgba(100,255,218,0.05); border: 2px solid var(--accent); border-radius: 15px; padding: 30px; text-align:center; transform: scale(1.05); position:relative; transition: all 0.3s;">
-                    <div style="position:absolute; top:-15px; left:50%; transform:translateX(-50%); background:var(--accent); color:var(--bg-card); padding:5px 15px; border-radius:20px; font-size:0.8rem; font-weight:800;">ПОПУЛЯРНЫЙ</div>
-                    <div style="font-size: 1.5rem; color: #fff; font-family:'Outfit'; margin-bottom: 15px;">Monster Guard</div>
-                    <div style="font-size: 3rem; color: var(--accent); font-weight: 800; margin-bottom: 5px;">$14.99</div>
-                    <div style="color: #8892b0; margin-bottom: 25px;">90 Дней</div>
-                    <ul style="list-style:none; padding:0; margin:0 0 30px 0; color:#ccd6f6; text-align:left; font-size: 0.9rem;">
-                        <li style="margin-bottom: 10px; color:var(--accent); font-weight:700;"><i class="fas fa-gift" style="margin-right:10px;"></i> +1 МЕСЯЦ БЕСПЛАТНО</li>
-                        <li style="margin-bottom: 10px;"><i class="fas fa-check" style="color:var(--accent); margin-right:10px;"></i> Все преимущества Pack</li>
-                        <li style="margin-bottom: 10px;"><i class="fas fa-check" style="color:var(--accent); margin-right:10px;"></i> Приоритетный канал</li>
-                        <li style="margin-bottom: 10px;"><i class="fas fa-check" style="color:var(--accent); margin-right:10px;"></i> Экономия 15%</li>
-                    </ul>
-                    <button id="btn-guard" style="width:100%; padding:15px; border-radius:8px; border:none; background:var(--accent); color:var(--bg-card); font-weight:800; cursor:pointer; transition:0.3s; box-shadow: 0 0 20px rgba(100,255,218,0.3);" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">КУПИТЬ СЕЙЧАС</button>
-                </div>
+                <div class="pricing-grid"
+                    style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px;">
+                    <!-- 1 Month -->
+                    <div class="pricing-card"
+                        style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 15px; padding: 30px; text-align:center; transition: all 0.3s;">
+                        <div style="font-size: 1.4rem; color: #fff; font-family:'Outfit'; margin-bottom: 15px;">🐲
+                            Monster Pack</div>
+                        <div style="font-size: 3rem; color: var(--accent); font-weight: 800; margin-bottom: 5px;">$6.99
+                        </div>
+                        <div style="color: #fff; font-weight: 600; margin-bottom: 25px;">30 Дней</div>
+                        <ul
+                            style="list-style:none; padding:0; margin:0 0 30px 0; color:#ccd6f6; text-align:left; font-size: 0.9rem;">
+                            <li style="margin-bottom: 10px; color:var(--accent); font-weight:700;"><i
+                                    class="fas fa-gift" style="margin-right:10px;"></i> +1 МЕСЯЦ БЕСПЛАТНО</li>
+                            <li style="margin-bottom: 10px;"><i class="fas fa-mobile-alt"
+                                    style="color:var(--accent); margin-right:10px;"></i> До 2-х устройств</li>
+                            <li style="margin-bottom: 10px;"><i class="fas fa-check"
+                                    style="color:var(--accent); margin-right:10px;"></i> Безлимитный трафик</li>
+                            <li style="margin-bottom: 10px;"><i class="fas fa-check"
+                                    style="color:var(--accent); margin-right:10px;"></i> Все локации</li>
+                        </ul>
+                        <button id="btn-pack"
+                            style="width:100%; padding:12px; border-radius:8px; border:1px solid var(--accent); background:transparent; color:var(--accent); font-weight:700; cursor:pointer; transition:0.3s;"
+                            onmouseover="this.style.background='var(--accent)'; this.style.color='var(--bg-card)'"
+                            onmouseout="this.style.background='transparent'; this.style.color='var(--accent)'">ВЫБРАТЬ</button>
+                    </div>
 
-                <!-- 1 Year -->
-                <div class="pricing-card" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 15px; padding: 30px; text-align:center; transition: all 0.3s;">
-                    <div style="font-size: 1.5rem; color: #fff; font-family:'Outfit'; margin-bottom: 15px;">Monster Legend</div>
-                    <div style="font-size: 3rem; color: var(--accent); font-weight: 800; margin-bottom: 5px;">$49.99</div>
-                    <div style="color: #8892b0; margin-bottom: 25px;">1 Год</div>
-                    <ul style="list-style:none; padding:0; margin:0 0 30px 0; color:#ccd6f6; text-align:left; font-size: 0.9rem;">
-                        <li style="margin-bottom: 10px; color:var(--accent); font-weight:700;"><i class="fas fa-gift" style="margin-right:10px;"></i> +1 МЕСЯЦ БЕСПЛАТНО</li>
-                        <li style="margin-bottom: 10px;"><i class="fas fa-check" style="color:var(--accent); margin-right:10px;"></i> VIP Статус</li>
-                        <li style="margin-bottom: 10px;"><i class="fas fa-check" style="color:var(--accent); margin-right:10px;"></i> Выделенный IP</li>
-                    </ul>
-                    <button id="btn-legend" style="width:100%; padding:12px; border-radius:8px; border:1px solid var(--accent); background:transparent; color:var(--accent); font-weight:700; cursor:pointer; transition:0.3s;" onmouseover="this.style.background='var(--accent)'; this.style.color='var(--bg-card)'" onmouseout="this.style.background='transparent'; this.style.color='var(--accent)'">ВЫБРАТЬ</button>
+                    <!-- 90 Days -->
+                    <div class="pricing-card popular"
+                        style="background: rgba(100,255,218,0.05); border: 2px solid var(--accent); border-radius: 15px; padding: 30px; text-align:center; position:relative; transition: all 0.3s;">
+                        <div
+                            style="position:absolute; top:-15px; left:50%; transform:translateX(-50%); background:var(--accent); color:var(--bg-card); padding:5px 15px; border-radius:20px; font-size:0.8rem; font-weight:800;">
+                            ЛУЧШИЙ ВЫБОР</div>
+                        <div style="font-size: 1.4rem; color: #fff; font-family:'Outfit'; margin-bottom: 15px;">🛡️
+                            Monster Guard</div>
+                        <div style="font-size: 3rem; color: var(--accent); font-weight: 800; margin-bottom: 5px;">$14.99
+                        </div>
+                        <div style="color: #fff; font-weight: 600; margin-bottom: 25px;">90 Дней</div>
+                        <ul
+                            style="list-style:none; padding:0; margin:0 0 30px 0; color:#ccd6f6; text-align:left; font-size: 0.9rem;">
+                            <li style="margin-bottom: 10px; color:var(--accent); font-weight:700;"><i
+                                    class="fas fa-gift" style="margin-right:10px;"></i> +1 МЕСЯЦ БЕСПЛАТНО</li>
+                            <li style="margin-bottom: 10px;"><i class="fas fa-mobile-alt"
+                                    style="color:var(--accent); margin-right:10px;"></i> До 4-х устройств</li>
+                            <li style="margin-bottom: 10px;"><i class="fas fa-check"
+                                    style="color:var(--accent); margin-right:10px;"></i> Приоритетный канал</li>
+                            <li style="margin-bottom: 10px;"><i class="fas fa-check"
+                                    style="color:var(--accent); margin-right:10px;"></i> Экономия 30%</li>
+                        </ul>
+                        <button id="btn-guard"
+                            style="width:100%; padding:15px; border-radius:8px; border:none; background:var(--accent); color:var(--bg-card); font-weight:800; cursor:pointer; transition:0.3s; box-shadow: 0 0 20px rgba(100,255,218,0.3);"
+                            onmouseover="this.style.transform='translateY(-2px)'"
+                            onmouseout="this.style.transform='translateY(0)'">КУПИТЬ СЕЙЧАС</button>
+                    </div>
+
+                    <!-- 1 Year -->
+                    <div class="pricing-card"
+                        style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 15px; padding: 30px; text-align:center; transition: all 0.3s;">
+                        <div style="font-size: 1.4rem; color: #fff; font-family:'Outfit'; margin-bottom: 15px;">👑
+                            Monster Legend</div>
+                        <div style="font-size: 3rem; color: var(--accent); font-weight: 800; margin-bottom: 5px;">$44.99
+                        </div>
+                        <div style="color: #fff; font-weight: 600; margin-bottom: 25px;">1 Год</div>
+                        <ul
+                            style="list-style:none; padding:0; margin:0 0 30px 0; color:#ccd6f6; text-align:left; font-size: 0.9rem;">
+                            <li style="margin-bottom: 10px; color:var(--accent); font-weight:700;"><i
+                                    class="fas fa-gift" style="margin-right:10px;"></i> +1 МЕСЯЦ БЕСПЛАТНО</li>
+                            <li style="margin-bottom: 10px;"><i class="fas fa-mobile-alt"
+                                    style="color:var(--accent); margin-right:10px;"></i> До 10-ти устройств</li>
+                            <li style="margin-bottom: 10px;"><i class="fas fa-check"
+                                    style="color:var(--accent); margin-right:10px;"></i> VIP Статус</li>
+                            <li style="margin-bottom: 10px;"><i class="fas fa-check"
+                                    style="color:var(--accent); margin-right:10px;"></i> 365 дней безлимита</li>
+                        </ul>
+                        <button id="btn-legend"
+                            style="width:100%; padding:12px; border-radius:8px; border:1px solid var(--accent); background:transparent; color:var(--accent); font-weight:700; cursor:pointer; transition:0.3s;"
+                            onmouseover="this.style.background='var(--accent)'; this.style.color='var(--bg-card)'"
+                            onmouseout="this.style.background='transparent'; this.style.color='var(--accent)'">ВЫБРАТЬ</button>
+                    </div>
                 </div>
             </div>
         </div>
+
+
+        <style>
+            @keyframes pulse {
+                0% {
+                    transform: scale(1);
+                    box-shadow: 0 4px 15px rgba(100, 255, 218, 0.3);
+                }
+
+                50% {
+                    transform: scale(1.05);
+                    box-shadow: 0 4px 25px rgba(100, 255, 218, 0.5);
+                }
+
+                100% {
+                    transform: scale(1);
+                    box-shadow: 0 4px 15px rgba(100, 255, 218, 0.3);
+                }
+            }
+
+            .modal-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(10, 11, 30, 0.98);
+                z-index: 2000;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                backdrop-filter: blur(15px);
+                padding: 10px;
+            }
+
+            .pricing-container {
+                background: var(--bg-card);
+                border: 1px solid rgba(100, 255, 218, 0.2);
+                border-radius: 24px;
+                padding: 40px;
+                max-width: 1000px;
+                width: 100%;
+                max-height: 95vh;
+                overflow-y: auto;
+                position: relative;
+                box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+                scrollbar-width: thin;
+                scrollbar-color: var(--accent) transparent;
+            }
+
+            .close-modal {
+                position: absolute;
+                top: 20px;
+                right: 20px;
+                background: rgba(255, 255, 255, 0.05);
+                border: none;
+                color: #fff;
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 10;
+                transition: 0.3s;
+            }
+
+            .close-modal:hover {
+                background: var(--accent);
+                color: var(--bg-card);
+            }
+
+            @media (max-width: 768px) {
+                .pricing-container {
+                    padding: 30px 15px;
+                    border-radius: 16px;
+                }
+
+                #pricingTitle {
+                    font-size: 1.8rem !important;
+                }
+
+                .pricing-grid {
+                    grid-template-columns: 1fr !important;
+                    gap: 20px !important;
+                }
+
+                .pricing-card {
+                    padding: 25px !important;
+                }
+
+                .popular {
+                    transform: none !important;
+                    border-width: 2px !important;
+                }
+            }
+        </style>
+
+        <div id="chartContainer"
+            style="margin-bottom: 2rem; height: 260px; background: rgba(0,0,0,0.2); border-radius: 8px; padding: 1rem; border: 1px solid #233554; display: none; position: relative;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
+                <h2 id="chartTitle" style="margin: 0; font-size: 1.1rem; color: #e6f1ff; font-family: 'Outfit';">
+                    Monitoring</h2>
+                <div style="display: flex; gap: 20px; align-items: baseline; margin-right: 60px;">
+                    <div style="text-align: right;">
+                        <span
+                            style="font-size: 0.7rem; color: rgba(255, 77, 77, 0.8); text-transform: uppercase; font-weight: 600; letter-spacing: 1px;">Direct</span>
+                        <div id="directPctBig"
+                            style="font-size: 1.6rem; font-weight: 700; color: #ff4d4d; font-family: 'Outfit'; line-height: 1;">
+                            --%</div>
+                    </div>
+                    <div style="text-align: right;">
+                        <span
+                            style="font-size: 0.7rem; color: rgba(100, 255, 218, 0.8); text-transform: uppercase; font-weight: 600; letter-spacing: 1px;">FreeNet</span>
+                        <div id="freenetPctBig"
+                            style="font-size: 1.6rem; font-weight: 700; color: #64ffda; font-family: 'Outfit'; line-height: 1;">
+                            --%</div>
+                    </div>
+                </div>
+            </div>
+            <div id="liveIndicator"
+                style="position: absolute; top: 15px; right: 15px; color: var(--success); font-size: 0.7rem; font-family: var(--font-mono); display: flex; align-items: center; gap: 5px;">
+                <span
+                    style="width: 6px; height: 6px; background: var(--success); border-radius: 50%; display: inline-block; animation: blink 1s infinite;"></span>
+                LIVE
+            </div>
+            <div style="position: relative; height: 180px; width: 100%;">
+                <canvas id="latencyChart"></canvas>
+            </div>
+        </div>
+        <style>
+            @keyframes blink {
+                0% {
+                    opacity: 1;
+                }
+
+                50% {
+                    opacity: 0.3;
+                }
+
+                100% {
+                    opacity: 1;
+                }
+            }
+        </style>
+
+
+
+
+        <div id="monitorGrid"></div>
+
+        <footer class="footer"
+            style="display: flex; flex-direction: column; align-items: center; justify-content: center; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 2rem;">
+            <div
+                style="margin-bottom: 12px; font-size: 0.85rem; color: #8892b0; font-family: 'Inter', sans-serif; display: flex; justify-content: center; gap: 20px; align-items: center; flex-wrap: wrap;">
+                <a href="/legal.html" id="footerLegal" style="color: #64ffda; text-decoration: none;">Terms &
+                    Privacy</a>
+                <span style="opacity: 0.1;">|</span>
+                <span id="footerSupport">Support: <a href="mailto:support@freenet.monster"
+                        style="color: #64ffda; text-decoration: none;">support@freenet.monster</a></span>
+            </div>
+            <div style="font-size: 0.8rem; opacity: 0.6; font-family: 'Inter', sans-serif;">
+                &copy; 2026 FreeNet Monster Infrastructure
+            </div>
+        </footer>
     </div>
 
-
-    <style>
-        @keyframes pulse {
-            0% { transform: scale(1); box-shadow: 0 4px 15px rgba(100, 255, 218, 0.3); }
-            50% { transform: scale(1.05); box-shadow: 0 4px 25px rgba(100, 255, 218, 0.5); }
-            100% { transform: scale(1); box-shadow: 0 4px 15px rgba(100, 255, 218, 0.3); }
-        }
-    </style>
-
-    <div id="chartContainer" style="margin-bottom: 2rem; height: 260px; background: rgba(0,0,0,0.2); border-radius: 8px; padding: 1rem; border: 1px solid #233554; display: none; position: relative;">
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
-            <h2 id="chartTitle" style="margin: 0; font-size: 1.1rem; color: #e6f1ff; font-family: 'Outfit';">Monitoring</h2>
-            <div style="display: flex; gap: 20px; align-items: baseline; margin-right: 60px;">
-                <div style="text-align: right;">
-                    <span style="font-size: 0.7rem; color: rgba(255, 77, 77, 0.8); text-transform: uppercase; font-weight: 600; letter-spacing: 1px;">Direct</span>
-                    <div id="directPctBig" style="font-size: 1.6rem; font-weight: 700; color: #ff4d4d; font-family: 'Outfit'; line-height: 1;">--%</div>
-                </div>
-                <div style="text-align: right;">
-                    <span style="font-size: 0.7rem; color: rgba(100, 255, 218, 0.8); text-transform: uppercase; font-weight: 600; letter-spacing: 1px;">FreeNet</span>
-                    <div id="freenetPctBig" style="font-size: 1.6rem; font-weight: 700; color: #64ffda; font-family: 'Outfit'; line-height: 1;">--%</div>
-                </div>
-            </div>
-        </div>
-        <div id="liveIndicator" style="position: absolute; top: 15px; right: 15px; color: var(--success); font-size: 0.7rem; font-family: var(--font-mono); display: flex; align-items: center; gap: 5px;">
-            <span style="width: 6px; height: 6px; background: var(--success); border-radius: 50%; display: inline-block; animation: blink 1s infinite;"></span>
-            LIVE
-        </div>
-        <div style="position: relative; height: 180px; width: 100%;">
-            <canvas id="latencyChart"></canvas>
-        </div>
-    </div>
-    <style>
-        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
-    </style>
-
-
-    
-
-    <div id="monitorGrid"></div>
-
-    <footer class="footer" style="display: flex; flex-direction: column; align-items: center; justify-content: center; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 2rem;">
-        <div style="margin-bottom: 12px; font-size: 0.85rem; color: #8892b0; font-family: 'Inter', sans-serif; display: flex; justify-content: center; gap: 20px; align-items: center; flex-wrap: wrap;">
-            <a href="/legal.html" id="footerLegal" style="color: #64ffda; text-decoration: none;">Terms & Privacy</a>
-            <span style="opacity: 0.1;">|</span>
-            <span id="footerSupport">Support: <a href="mailto:support@freenet.monster" style="color: #64ffda; text-decoration: none;">support@freenet.monster</a></span>
-        </div>
-        <div style="font-size: 0.8rem; opacity: 0.6; font-family: 'Inter', sans-serif;">
-            &copy; 2026 FreeNet Monster Infrastructure
-        </div>
-    </footer>
-</div>
-
-<script>
-const translations = {
-    en: {
-        title: "<span style='color: #64ffda;'>FreeNet Monster</span><br><span style='font-size: 1.5rem; font-weight: 500; opacity: 0.9;'>Honest Monitoring</span>",
-        refreshDirect: "Refresh Direct",
-        testFreenet: "Test with FreeNet",
-        globalStatus: "Global Connectivity",
-        directlyAccessible: "Directly Accessible From Russia",
-        freenetWorking: "FreeNet Accessible",
-        standingBy: "Standing by...",
-        scanning: "Scanning...",
-        direct: "Direct",
-        freenet: "FreeNet",
-        checking: "Checking...",
-        online: "Online",
-        offline: "Blocked",
-        lang: "RU",
-        searchTitle: "Quick Host Check",
-        searchPlaceholder: "Enter hostname (e.g., example.com)...",
-        searchBtn: "Check Now",
-        resDirect: "Direct Access:",
-        resVPN: "FreeNet Access:",
-        subscribe: "GET SUBSCRIPTION",
-        trial: "GET FREE TRIAL",
-        modalTitle: "Trial Created!",
-        modalSub: "Your 10GB trial subscription is ready.",
-        btnCopy: "Copy Link",
-        btnCopied: "Copied!",
-        limitText: "Limit: 10GB per user. Accounts expire after data usage.",
-        promoFreeTitle: "Free Trial",
-        promoFreeDesc: "Get started with 10GB of high-speed data. Renewable every 24 hours if exhausted.",
-        footerLegal: "Terms & Privacy",
-        footerSupport: 'Support: <a href="mailto:support@freenet.monster" style="color: #64ffda; text-decoration: none;">support@freenet.monster</a>',
-        tgLogin: "Log In",
-        singboxLabel: "Sing-box (Auto)",
-        singboxTooltip: "Automatic split-tunneling: blocked sites via VPN, RU sites via local ISP.",
-        btnCopyUrl: "Copy URL"
-    },
-    ru: {
-        title: "<span style='color: #64ffda;'>FreeNet Monster</span><br><span style='font-size: 1.5rem; font-weight: 500; opacity: 0.9;'>Честный Мониторинг</span>",
-        refreshDirect: "Обновить (Прямое)",
-        testFreenet: "Тест через FreeNet",
-        globalStatus: "Состояние подключения",
-        directlyAccessible: "Доступно из России",
-        freenetWorking: "Доступно через FreeNet",
-        standingBy: "Ожидание...",
-        scanning: "Сканирование...",
-        direct: "Прямое",
-        freenet: "FreeNet",
-        checking: "Проверка...",
-        online: "Доступен",
-        offline: "Заблокирован",
-        lang: "EN",
-        searchTitle: "Быстрая проверка",
-        searchPlaceholder: "Введите адрес (например, google.com)...",
-        searchBtn: "Проверить",
-        resDirect: "Прямой доступ:",
-        resVPN: "Через FreeNet:",
-        subscribe: "ПОДПИСКА VPN",
-        trial: "ПРОБНЫЙ ПЕРИОД",
-        modalTitle: "Доступ создан!",
-        modalSub: "Ваша подписка на 10ГБ готова.",
-        btnCopy: "Копировать",
-        btnCopied: "Скопировано!",
-        limitText: "Лимит: 10ГБ на пользователя. Аккаунт отключится после исчерпания трафика.",
-        promoFreeTitle: "Бесплатный период",
-        promoFreeDesc: "Начните с 10 ГБ высокоскоростных данных. Обновляется каждые 24 часа.",
-        promoPremiumTitle: "Премиум доступ",
-        prem1: "Безлимитный трафик 24/7",
-        prem2: "Выделенные неблокируемые IP",
-        prem3: "Поддержка всех устройств (iOS, Android, ПК)",
-        prem4: "Приоритетная поддержка и протоколы",
-        footerLegal: "Условия и Конфиденциальность",
-        footerSupport: 'Поддержка: <a href="mailto:support@freenet.monster" style="color: #64ffda; text-decoration: none;">support@freenet.monster</a>',
-        tgLogin: "Войти"
-    }
-};
-
-let currentLang = "ru";
-
-function shareApp() {
-    if (window.Telegram && window.Telegram.WebApp) {
-        window.Telegram.WebApp.switchInlineQuery("Статус и VPN", ["groups", "channels", "users"]);
-    } else {
-        window.open('https://t.me/share/url?url=https://t.me/FreeNetMonsterBot&text=Посмотрите статус доступности сайтов в РФ и получите 10 ГБ бесплатного VPN!', '_blank');
-    }
-}
-
-const siteCategories = {
-    "Sites": [
-        { name: "Youtube", url: "https://youtube.com", icon: "tv" },
-        { name: "Telegram", url: "https://t.me", icon: "users" },
-        { name: "Instagram", url: "https://instagram.com", icon: "users" },
-        { name: "Facebook", url: "https://facebook.com", icon: "users" },
-        { name: "Whatsapp", url: "https://whatsapp.com", icon: "globe" },
-        { name: "Google", url: "https://google.com", icon: "search" },
-        { name: "Linkedin", url: "https://linkedin.com", icon: "users" },
-        { name: "Netflix", url: "https://netflix.com", icon: "tv" },
-        { name: "Aliexpress", url: "https://aliexpress.com", icon: "shopping-cart" },
-        { name: "Bbc", url: "https://bbc.com", icon: "file-text" },
-        { name: "Foxnews", url: "https://foxnews.com", icon: "file-text" },
-        { name: "Chatgpt", url: "https://chatgpt.com", icon: "cpu" },
-        { name: "Xvideos", url: "https://xvideos.com", icon: "alert-triangle" },
-        { name: "Pornhub", url: "https://pornhub.com", icon: "alert-triangle" },
-        { name: "Xnxx", url: "https://xnxx.com", icon: "alert-triangle" },
-        { name: "Youporn", url: "https://www.youporn.com", icon: "heart" }
-    ],
-    "Российские сайты": [
-        { name: "VK",            url: "https://vk.com",              icon: "users" },
-        { name: "Yandex",        url: "https://yandex.ru",           icon: "search" },
-        { name: "Mail.ru",       url: "https://www.mail.ru",         icon: "mail" },
-        { name: "Gosuslugi",     url: "https://www.gosuslugi.ru",    icon: "file-text" },
-        { name: "Sberbank",      url: "https://www.sber.ru",         icon: "credit-card" },
-        { name: "Avito",         url: "https://www.avito.ru",        icon: "tag" },
-        { name: "Ozon",          url: "https://www.ozon.ru",         icon: "shopping-cart" },
-        { name: "RuTube",        url: "https://rutube.ru",           icon: "tv" },
-        { name: "Tinkoff",       url: "https://www.tinkoff.ru",      icon: "credit-card" },
-        { name: "2GIS",          url: "https://2gis.ru",             icon: "map-pin" }
-    ],
-    "FreeNet": [
-        { name: "FreeNet", url: "https://freenet.monster", icon: "shield-check" }
-    ]
-};
-
-const allSites = Object.values(siteCategories).flat();
-let checkingFreenet = false;
-let checkingDirect = false;
-let autoRefreshEnabled = true;
-let autoCheckTimer = null;
-let currentGraphUrl = null;
-let currentGraphName = null;
-
-let latencyChart = null;
-const latencyHistory = {
-    labels: [],
-    direct: [],
-    directStatus: [],
-    freenet: [],
-    freenetStatus: []
-};
-
-function initLatencyChart() {
-    const ctx = document.getElementById('latencyChart').getContext('2d');
-    latencyChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: latencyHistory.labels,
-            datasets: [
-                {
-                    label: 'Direct Access (ms)',
-                    data: latencyHistory.direct,
-                    borderColor: '#ff4d4d',
-                    backgroundColor: 'rgba(255, 77, 77, 0.1)',
-                    borderWidth: 2,
-                    tension: 0.3,
-                    fill: false,
-                    pointBackgroundColor: '#ff4d4d',
-                    pointStyle: (ctx) => (latencyHistory.directStatus[ctx.dataIndex] ? 'crossRot' : 'circle'),
-                    pointRadius: (ctx) => (latencyHistory.directStatus[ctx.dataIndex] ? 8 : 4),
-                    pointHoverRadius: (ctx) => (latencyHistory.directStatus[ctx.dataIndex] ? 10 : 6),
-                    segment: {
-                        borderColor: ctx => latencyHistory.directStatus[ctx.p1DataIndex] || latencyHistory.directStatus[ctx.p0DataIndex] ? 'rgba(255, 77, 77, 0.5)' : undefined,
-                        borderDash: ctx => latencyHistory.directStatus[ctx.p1DataIndex] || latencyHistory.directStatus[ctx.p0DataIndex] ? [5, 5] : undefined,
-                    }
-                },
-                {
-                    label: 'FreeNet Access (ms)',
-                    data: latencyHistory.freenet,
-                    borderColor: '#64ffda',
-                    backgroundColor: 'rgba(100, 255, 218, 0.1)',
-                    borderWidth: 3,
-                    tension: 0.3,
-                    fill: true,
-                    pointBackgroundColor: '#64ffda',
-                    pointStyle: (ctx) => (latencyHistory.freenetStatus[ctx.dataIndex] ? 'crossRot' : 'circle'),
-                    pointRadius: (ctx) => (latencyHistory.freenetStatus[ctx.dataIndex] ? 8 : 4),
-                    pointHoverRadius: (ctx) => (latencyHistory.freenetStatus[ctx.dataIndex] ? 10 : 6),
-                    segment: {
-                        borderDash: ctx => latencyHistory.freenetStatus[ctx.p1DataIndex] || latencyHistory.freenetStatus[ctx.p0DataIndex] ? [5, 5] : undefined,
-                    }
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            interaction: { mode: 'index', intersect: false },
-            scales: {
-                x: {
-                    grid: { color: 'rgba(255,255,255,0.05)' },
-                    ticks: { color: '#8892b0', font: { family: 'JetBrains Mono', size: 10 } }
-                },
-                y: {
-                    grid: { color: 'rgba(255,255,255,0.05)' },
-                    ticks: { color: '#8892b0', font: { family: 'JetBrains Mono', size: 10 } },
-                    beginAtZero: true,
-                    title: { display: true, text: 'Lag (ms)', color: '#8892b0', font: { family: 'Outfit' } }
-                }
+    <script>
+        const translations = {
+            en: {
+                title: "<span style='color: #64ffda;'>FreeNet Monster</span><br><span style='font-size: 1.5rem; font-weight: 500; opacity: 0.9;'>Honest Monitoring</span>",
+                refreshDirect: "Refresh Direct",
+                testFreenet: "Test with FreeNet",
+                globalStatus: "Global Connectivity",
+                directlyAccessible: "Directly Accessible From Russia",
+                freenetWorking: "FreeNet Accessible",
+                standingBy: "Standing by...",
+                scanning: "Scanning...",
+                direct: "Direct",
+                freenet: "FreeNet",
+                checking: "Checking...",
+                online: "Online",
+                offline: "Blocked",
+                lang: "RU",
+                searchTitle: "Quick Host Check",
+                searchPlaceholder: "Enter hostname (e.g., example.com)...",
+                searchBtn: "Check Now",
+                resDirect: "Direct Access:",
+                resVPN: "FreeNet Access:",
+                subscribe: "GET SUBSCRIPTION",
+                trial: "GET FREE TRIAL",
+                modalTitle: "Trial Created!",
+                modalSub: "Your 10GB trial subscription is ready.",
+                btnCopy: "Copy Link",
+                btnCopied: "Copied!",
+                limitText: "Limit: 10GB per user. Accounts expire after data usage.",
+                promoFreeTitle: "Free Trial",
+                promoFreeDesc: "Get started with 10GB of high-speed data. Renewable every 24 hours if exhausted.",
+                footerLegal: "Terms & Privacy",
+                footerSupport: 'Support: <a href="mailto:support@freenet.monster" style="color: #64ffda; text-decoration: none;">support@freenet.monster</a>',
+                tgLogin: "Log In",
+                singboxLabel: "Sing-box (Auto)",
+                singboxTooltip: "Automatic split-tunneling: blocked sites via VPN, RU sites via local ISP.",
+                btnCopyUrl: "Copy URL"
             },
-            plugins: {
-                legend: {
-                    display: false,
-                    position: 'top',
-                    labels: { color: '#e6f1ff', font: { family: 'Outfit', size: 12 }, usePointStyle: true }
-                },
-                tooltip: {
-                    backgroundColor: '#112240',
-                    titleColor: '#64ffda',
-                    bodyColor: '#e6f1ff',
-                    borderColor: '#233554',
-                    borderWidth: 1,
-                    padding: 12,
-                    titleFont: { family: 'Outfit', weight: 'bold', size: 14 },
-                    bodyFont: { family: 'JetBrains Mono' },
-                    callbacks: {
-                        label: function(context) {
-                            let label = context.dataset.label || '';
-                            const isFreenet = label.includes('FreeNet');
-                            const isBlocked = isFreenet ? latencyHistory.freenetStatus[context.dataIndex] : latencyHistory.directStatus[context.dataIndex];
-                            if (label) label += ': ';
-                            if (isBlocked) {
-                                return label + '❌ BLOCKED';
+            ru: {
+                title: "<span style='color: #64ffda;'>FreeNet Monster</span><br><span style='font-size: 1.5rem; font-weight: 500; opacity: 0.9;'>Честный Мониторинг</span>",
+                refreshDirect: "Обновить (Прямое)",
+                testFreenet: "Тест через FreeNet",
+                globalStatus: "Состояние подключения",
+                directlyAccessible: "Доступно из России",
+                freenetWorking: "Доступно через FreeNet",
+                standingBy: "Ожидание...",
+                scanning: "Сканирование...",
+                direct: "Прямое",
+                freenet: "FreeNet",
+                checking: "Проверка...",
+                online: "Доступен",
+                offline: "Заблокирован",
+                lang: "EN",
+                searchTitle: "Быстрая проверка",
+                searchPlaceholder: "Введите адрес (например, google.com)...",
+                searchBtn: "Проверить",
+                resDirect: "Прямой доступ:",
+                resVPN: "Через FreeNet:",
+                subscribe: "ПОДПИСКА VPN",
+                trial: "ПРОБНЫЙ ПЕРИОД",
+                modalTitle: "Доступ создан!",
+                modalSub: "Ваша подписка на 10ГБ готова.",
+                btnCopy: "Копировать",
+                btnCopied: "Скопировано!",
+                limitText: "Лимит: 10ГБ на пользователя. Аккаунт отключится после исчерпания трафика.",
+                promoFreeTitle: "Бесплатный период",
+                promoFreeDesc: "Начните с 10 ГБ высокоскоростных данных. Обновляется каждые 24 часа.",
+                promoPremiumTitle: "Премиум доступ",
+                prem1: "Безлимитный трафик 24/7",
+                prem2: "Выделенные неблокируемые IP",
+                prem3: "Поддержка всех устройств (iOS, Android, ПК)",
+                prem4: "Приоритетная поддержка и протоколы",
+                footerLegal: "Условия и Конфиденциальность",
+                footerSupport: 'Поддержка: <a href="mailto:support@freenet.monster" style="color: #64ffda; text-decoration: none;">support@freenet.monster</a>',
+                tgLogin: "Войти"
+            }
+        };
+
+        let currentLang = "ru";
+
+        function shareApp() {
+            if (window.Telegram && window.Telegram.WebApp) {
+                window.Telegram.WebApp.switchInlineQuery("Статус и VPN", ["groups", "channels", "users"]);
+            } else {
+                window.open('https://t.me/share/url?url=https://t.me/FreeNetMonsterBot&text=Посмотрите статус доступности сайтов в РФ и получите 10 ГБ бесплатного VPN!', '_blank');
+            }
+        }
+
+        const siteCategories = {
+            "Sites": [
+                { name: "Youtube", url: "https://youtube.com", icon: "tv" },
+                { name: "Telegram", url: "https://t.me", icon: "users" },
+                { name: "Instagram", url: "https://instagram.com", icon: "users" },
+                { name: "Facebook", url: "https://facebook.com", icon: "users" },
+                { name: "Whatsapp", url: "https://whatsapp.com", icon: "globe" },
+                { name: "Google", url: "https://google.com", icon: "search" },
+                { name: "Linkedin", url: "https://linkedin.com", icon: "users" },
+                { name: "Netflix", url: "https://netflix.com", icon: "tv" },
+                { name: "Aliexpress", url: "https://aliexpress.com", icon: "shopping-cart" },
+                { name: "Bbc", url: "https://bbc.com", icon: "file-text" },
+                { name: "Foxnews", url: "https://foxnews.com", icon: "file-text" },
+                { name: "Chatgpt", url: "https://chatgpt.com", icon: "cpu" },
+                { name: "Xvideos", url: "https://xvideos.com", icon: "alert-triangle" },
+                { name: "Pornhub", url: "https://pornhub.com", icon: "alert-triangle" },
+                { name: "Xnxx", url: "https://xnxx.com", icon: "alert-triangle" },
+                { name: "Youporn", url: "https://www.youporn.com", icon: "heart" }
+            ],
+            "Российские сайты": [
+                { name: "VK", url: "https://vk.com", icon: "users" },
+                { name: "Yandex", url: "https://yandex.ru", icon: "search" },
+                { name: "Mail.ru", url: "https://www.mail.ru", icon: "mail" },
+                { name: "Gosuslugi", url: "https://www.gosuslugi.ru", icon: "file-text" },
+                { name: "Sberbank", url: "https://www.sber.ru", icon: "credit-card" },
+                { name: "Avito", url: "https://www.avito.ru", icon: "tag" },
+                { name: "Ozon", url: "https://www.ozon.ru", icon: "shopping-cart" },
+                { name: "RuTube", url: "https://rutube.ru", icon: "tv" },
+                { name: "Tinkoff", url: "https://www.tinkoff.ru", icon: "credit-card" },
+                { name: "2GIS", url: "https://2gis.ru", icon: "map-pin" }
+            ],
+            "FreeNet": [
+                { name: "FreeNet", url: "https://freenet.monster", icon: "shield-check" }
+            ]
+        };
+
+        const allSites = Object.values(siteCategories).flat();
+        let checkingFreenet = false;
+        let checkingDirect = false;
+        let autoRefreshEnabled = true;
+        let autoCheckTimer = null;
+        let currentGraphUrl = null;
+        let currentGraphName = null;
+
+        let latencyChart = null;
+        const latencyHistory = {
+            labels: [],
+            direct: [],
+            directStatus: [],
+            freenet: [],
+            freenetStatus: []
+        };
+
+        function initLatencyChart() {
+            const ctx = document.getElementById('latencyChart').getContext('2d');
+            latencyChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: latencyHistory.labels,
+                    datasets: [
+                        {
+                            label: 'Direct Access (ms)',
+                            data: latencyHistory.direct,
+                            borderColor: '#ff4d4d',
+                            backgroundColor: 'rgba(255, 77, 77, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.3,
+                            fill: false,
+                            pointBackgroundColor: '#ff4d4d',
+                            pointStyle: (ctx) => (latencyHistory.directStatus[ctx.dataIndex] ? 'crossRot' : 'circle'),
+                            pointRadius: (ctx) => (latencyHistory.directStatus[ctx.dataIndex] ? 8 : 4),
+                            pointHoverRadius: (ctx) => (latencyHistory.directStatus[ctx.dataIndex] ? 10 : 6),
+                            segment: {
+                                borderColor: ctx => latencyHistory.directStatus[ctx.p1DataIndex] || latencyHistory.directStatus[ctx.p0DataIndex] ? 'rgba(255, 77, 77, 0.5)' : undefined,
+                                borderDash: ctx => latencyHistory.directStatus[ctx.p1DataIndex] || latencyHistory.directStatus[ctx.p0DataIndex] ? [5, 5] : undefined,
                             }
-                            return label + context.raw + 'ms';
+                        },
+                        {
+                            label: 'FreeNet Access (ms)',
+                            data: latencyHistory.freenet,
+                            borderColor: '#64ffda',
+                            backgroundColor: 'rgba(100, 255, 218, 0.1)',
+                            borderWidth: 3,
+                            tension: 0.3,
+                            fill: true,
+                            pointBackgroundColor: '#64ffda',
+                            pointStyle: (ctx) => (latencyHistory.freenetStatus[ctx.dataIndex] ? 'crossRot' : 'circle'),
+                            pointRadius: (ctx) => (latencyHistory.freenetStatus[ctx.dataIndex] ? 8 : 4),
+                            pointHoverRadius: (ctx) => (latencyHistory.freenetStatus[ctx.dataIndex] ? 10 : 6),
+                            segment: {
+                                borderDash: ctx => latencyHistory.freenetStatus[ctx.p1DataIndex] || latencyHistory.freenetStatus[ctx.p0DataIndex] ? [5, 5] : undefined,
+                            }
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    scales: {
+                        x: {
+                            grid: { color: 'rgba(255,255,255,0.05)' },
+                            ticks: { color: '#8892b0', font: { family: 'JetBrains Mono', size: 10 } }
+                        },
+                        y: {
+                            grid: { color: 'rgba(255,255,255,0.05)' },
+                            ticks: { color: '#8892b0', font: { family: 'JetBrains Mono', size: 10 } },
+                            beginAtZero: true,
+                            title: { display: true, text: 'Round Trip (ms)', color: '#8892b0', font: { family: 'Outfit' } }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false,
+                            position: 'top',
+                            labels: { color: '#e6f1ff', font: { family: 'Outfit', size: 12 }, usePointStyle: true }
+                        },
+                        tooltip: {
+                            backgroundColor: '#112240',
+                            titleColor: '#64ffda',
+                            bodyColor: '#e6f1ff',
+                            borderColor: '#233554',
+                            borderWidth: 1,
+                            padding: 12,
+                            titleFont: { family: 'Outfit', weight: 'bold', size: 14 },
+                            bodyFont: { family: 'JetBrains Mono' },
+                            callbacks: {
+                                label: function (context) {
+                                    let label = context.dataset.label || '';
+                                    const isFreenet = label.includes('FreeNet');
+                                    const isBlocked = isFreenet ? latencyHistory.freenetStatus[context.dataIndex] : latencyHistory.directStatus[context.dataIndex];
+                                    if (label) label += ': ';
+                                    if (isBlocked) {
+                                        return label + '❌ BLOCKED';
+                                    }
+                                    return label + context.raw + 'ms';
+                                }
+                            }
                         }
                     }
                 }
+            });
+        }
+
+        function toggleLanguage() {
+            currentLang = currentLang === "en" ? "ru" : "en";
+            const t = translations[currentLang];
+
+            document.getElementById("pageTitle").innerHTML = getTitleWithDate(t.title);
+            document.getElementById("btnDirect").textContent = t.refreshDirect;
+            document.getElementById("btnVPN").textContent = t.testFreenet;
+            document.getElementById("langToggle").textContent = t.lang;
+            document.getElementById("lblGlobalStatus").textContent = t.globalStatus;
+            document.getElementById("lblAccessible").textContent = t.directlyAccessible;
+            document.getElementById("lblFreenetReady").innerHTML = '<img src="assets/icon/logo.png" style="width: 24px; height: 24px; vertical-align: middle; margin-right: 8px;">' + t.freenetWorking;
+
+            // Search elements
+            document.getElementById("lblSearchTitle").innerHTML = '<i data-lucide="search" style="width: 18px; margin-top: -2px"></i> ' + t.searchTitle;
+            document.getElementById("customUrl").placeholder = t.searchPlaceholder;
+            document.getElementById("btnCustom").textContent = t.searchBtn;
+            document.getElementById("lblResDirect").textContent = t.resDirect;
+            document.getElementById("lblResVPN").textContent = t.resVPN;
+
+            // Promo
+            document.getElementById("lblPromoFreeTitle").innerHTML = '<i data-lucide="zap" style="width: 14px;"></i> ' + t.promoFreeTitle;
+            document.getElementById("lblPromoFreeDesc").textContent = t.promoFreeDesc;
+
+            document.getElementById('txtSubscribe').textContent = t.subscribe;
+            const qrHint = document.getElementById("qrHint");
+            if (qrHint) qrHint.textContent = currentLang === "ru" ? "Сканируйте или сделайте скриншот" : "Scan or Screenshot to Import";
+
+            const cdVal = document.getElementById("customDirectVal");
+            if (cvVal.getAttribute("data-status")) updateBadgeText(cvVal, cvVal.getAttribute("data-status"), t);
+
+            // Updated Trial Modal text
+            const mTitle = document.getElementById("modalTitle");
+            const mSub = document.getElementById("modalSub");
+            const bCopy = document.getElementById("btnCopy");
+            const lText = document.getElementById("limitText");
+            const hTitle = document.getElementById("howToUseTitle");
+            const hStep1 = document.getElementById("howToUseStep1");
+            const hStep2 = document.getElementById("howToUseStep2");
+            const hStep3 = document.getElementById("howToUseStep3");
+            const hStep4 = document.getElementById("howToUseStep4");
+
+            if (mTitle) mTitle.textContent = t.modalTitle;
+            if (mSub) mSub.textContent = t.modalSub;
+            if (bCopy) bCopy.textContent = t.btnCopy;
+            if (lText) lText.textContent = t.limitText;
+            if (hTitle) hTitle.textContent = t.howToUseTitle;
+            if (hStep1) hStep1.textContent = t.howToUseStep1;
+            if (hStep2) hStep2.textContent = t.howToUseStep2;
+            if (hStep3) hStep3.textContent = t.howToUseStep3;
+            if (hStep4) hStep4.textContent = t.howToUseStep4;
+
+            const fSupport = document.getElementById("footerSupport");
+            if (fLegal) fLegal.textContent = t.footerLegal;
+            if (fSupport) fSupport.innerHTML = t.footerSupport;
+
+            // Update promo texts
+            document.getElementById("lblPromoFreeTitle").innerHTML = '<i data-lucide="zap" style="width: 14px;"></i> ' + t.promoFreeTitle;
+            document.getElementById("lblPromoFreeDesc").textContent = t.promoFreeDesc;
+
+            const txtTrial = document.getElementById('txtTrial');
+            if (txtTrial) txtTrial.textContent = t.trial;
+
+            const txtTgLogin = document.getElementById('txtTgLogin');
+            if (txtTgLogin) txtTgLogin.textContent = t.tgLogin;
+
+            allSites.forEach(s => {
+                const id = s.name.replace(/[^a-z0-9]/gi, "_");
+                const db = document.getElementById(id + "_direct_val");
+                const vb = document.getElementById(id + "_vpn_val");
+                const dl = document.getElementById(id + "_direct_label");
+                const vl = document.getElementById(id + "_vpn_label");
+
+                if (dl) dl.textContent = t.direct + ":";
+                if (vl) vl.innerHTML = '<img src="assets/icon/logo.png" style="width: 24px; height: 24px; vertical-align: middle; margin-right: 6px;">' + t.freenet + ":";
+
+                if (db) {
+                    const status = db.getAttribute("data-status");
+                    if (db.classList.contains("checking")) db.textContent = t.checking;
+                    else if (status !== null) updateBadgeText(db, status, t);
+                }
+
+                if (vb) {
+                    const status = vb.getAttribute("data-status");
+                    if (vb.classList.contains("checking")) vb.textContent = t.checking;
+                    else if (status !== null) updateBadgeText(vb, status, t);
+                }
+            });
+            lucide.createIcons();
+        }
+
+        function updateBadgeText(el, status, t) {
+            if (status === "1") {
+                el.textContent = t.online;
+                el.className = "badge-status online";
+            } else if (status === "0") {
+                el.textContent = t.offline;
+                el.className = "badge-status offline";
+            } else {
+                el.textContent = "—";
+                el.className = "badge-status";
             }
         }
-    });
-}
 
-function toggleLanguage() {
-    currentLang = currentLang === "en" ? "ru" : "en";
-    const t = translations[currentLang];
-    
-    document.getElementById("pageTitle").innerHTML = getTitleWithDate(t.title);
-    document.getElementById("btnDirect").textContent = t.refreshDirect;
-    document.getElementById("btnVPN").textContent = t.testFreenet;
-    document.getElementById("langToggle").textContent = t.lang;
-    document.getElementById("lblGlobalStatus").textContent = t.globalStatus;
-    document.getElementById("lblAccessible").textContent = t.directlyAccessible;
-    document.getElementById("lblFreenetReady").innerHTML = '<img src="assets/icon/logo.png" style="width: 24px; height: 24px; vertical-align: middle; margin-right: 8px;">' + t.freenetWorking;
-    
-    // Search elements
-    document.getElementById("lblSearchTitle").innerHTML = '<i data-lucide="search" style="width: 18px; margin-top: -2px"></i> ' + t.searchTitle;
-    document.getElementById("customUrl").placeholder = t.searchPlaceholder;
-    document.getElementById("btnCustom").textContent = t.searchBtn;
-    document.getElementById("lblResDirect").textContent = t.resDirect;
-    document.getElementById("lblResVPN").textContent = t.resVPN;
-    
-    // Promo
-    document.getElementById("lblPromoFreeTitle").innerHTML = '<i data-lucide="zap" style="width: 14px;"></i> ' + t.promoFreeTitle;
-    document.getElementById("lblPromoFreeDesc").textContent = t.promoFreeDesc;
-    
-    document.getElementById('txtSubscribe').textContent = t.subscribe;
-    const qrHint = document.getElementById("qrHint");
-    if (qrHint) qrHint.textContent = currentLang === "ru" ? "Сканируйте или сделайте скриншот" : "Scan or Screenshot to Import";
-
-    const cdVal = document.getElementById("customDirectVal");
-    if (cvVal.getAttribute("data-status")) updateBadgeText(cvVal, cvVal.getAttribute("data-status"), t);
-    
-    // Updated Trial Modal text
-    const mTitle = document.getElementById("modalTitle");
-    const mSub = document.getElementById("modalSub");
-    const bCopy = document.getElementById("btnCopy");
-    const lText = document.getElementById("limitText");
-    const hTitle = document.getElementById("howToUseTitle");
-    const hStep1 = document.getElementById("howToUseStep1");
-    const hStep2 = document.getElementById("howToUseStep2");
-    const hStep3 = document.getElementById("howToUseStep3");
-    const hStep4 = document.getElementById("howToUseStep4");
-
-    if (mTitle) mTitle.textContent = t.modalTitle;
-    if (mSub) mSub.textContent = t.modalSub;
-    if (bCopy) bCopy.textContent = t.btnCopy;
-    if (lText) lText.textContent = t.limitText;
-    if (hTitle) hTitle.textContent = t.howToUseTitle;
-    if (hStep1) hStep1.textContent = t.howToUseStep1;
-    if (hStep2) hStep2.textContent = t.howToUseStep2;
-    if (hStep3) hStep3.textContent = t.howToUseStep3;
-    if (hStep4) hStep4.textContent = t.howToUseStep4;
-    
-    const fSupport = document.getElementById("footerSupport");
-    if (fLegal) fLegal.textContent = t.footerLegal;
-    if (fSupport) fSupport.innerHTML = t.footerSupport;
-    
-    // Update promo texts
-    document.getElementById("lblPromoFreeTitle").innerHTML = '<i data-lucide="zap" style="width: 14px;"></i> ' + t.promoFreeTitle;
-    document.getElementById("lblPromoFreeDesc").textContent = t.promoFreeDesc;
-    
-    const txtTrial = document.getElementById('txtTrial');
-    if (txtTrial) txtTrial.textContent = t.trial;
-
-    const txtTgLogin = document.getElementById('txtTgLogin');
-    if (txtTgLogin) txtTgLogin.textContent = t.tgLogin;
-
-    allSites.forEach(s => {
-        const id = s.name.replace(/[^a-z0-9]/gi, "_");
-        const db = document.getElementById(id + "_direct_val");
-        const vb = document.getElementById(id + "_vpn_val");
-        const dl = document.getElementById(id + "_direct_label");
-        const vl = document.getElementById(id + "_vpn_label");
-        
-        if (dl) dl.textContent = t.direct + ":";
-        if (vl) vl.innerHTML = '<img src="assets/icon/logo.png" style="width: 24px; height: 24px; vertical-align: middle; margin-right: 6px;">' + t.freenet + ":";
-        
-        if (db) {
-            const status = db.getAttribute("data-status");
-            if (db.classList.contains("checking")) db.textContent = t.checking;
-            else if (status !== null) updateBadgeText(db, status, t);
-        }
-        
-        if (vb) {
-            const status = vb.getAttribute("data-status");
-            if (vb.classList.contains("checking")) vb.textContent = t.checking;
-            else if (status !== null) updateBadgeText(vb, status, t);
-        }
-    });
-    lucide.createIcons();
-}
-
-function updateBadgeText(el, status, t) {
-    if (status === "1") {
-        el.textContent = t.online;
-        el.className = "badge-status online";
-    } else if (status === "0") {
-        el.textContent = t.offline;
-        el.className = "badge-status offline";
-    } else {
-        el.textContent = "—";
-        el.className = "badge-status";
-    }
-}
-
-function getFavicon(site) {
-    if (site.name === "WhatsApp") return "https://static.whatsapp.net/rsrc.php/v3/yP/r/r_oBsbi9V90.png";
-    try {
-        return "https://www.google.com/s2/favicons?sz=64&domain=" + new URL(site.url).hostname;
-    } catch (e) {
-        return "";
-    }
-}
-
-function buildGrid() {
-    const container = document.getElementById("monitorGrid");
-    container.innerHTML = "";
-    const t = translations[currentLang];
-
-    const catLabels = {
-        "Sites": null,
-        "Российские сайты": { icon: "flag", label: "Российские сайты", note: "Прямой доступ — VPN не нужен", color: "rgba(100,200,255,0.12)", border: "rgba(100,200,255,0.3)" },
-        "FreeNet": { icon: "shield-check", label: "Инфраструктура FreeNet", note: "Наши серверы и сервисы", color: "rgba(100,255,218,0.12)", border: "rgba(100,255,218,0.3)" }
-    };
-
-    for (const [cat, sites] of Object.entries(siteCategories)) {
-        const meta = catLabels[cat];
-        if (meta) {
-            const header = document.createElement("div");
-            header.style.cssText = "display:flex; align-items:center; gap:10px; margin: 28px 0 12px; padding: 12px 16px; border-radius: 10px; background:" + meta.color + "; border: 1px solid " + meta.border + ";";
-            header.innerHTML = 
-                (meta.icon ? "<i data-lucide=\"" + meta.icon + "\" style=\"color: " + (meta.border.replace('0.3', '1.0')) + "; width:20px; height:20px;\"></i>" : "") +
-                "<div>" +
-                    "<div style='font-weight:700; font-size:1rem; color:#e6f1ff;'>" + meta.label + "</div>" +
-                    "<div style='font-size:0.78rem; color:#64ffda; margin-top:2px;'>\u2713 " + meta.note + "</div>" +
-                "</div>";
-            container.appendChild(header);
+        function getFavicon(site) {
+            if (site.name === "WhatsApp") return "https://static.whatsapp.net/rsrc.php/v3/yP/r/r_oBsbi9V90.png";
+            try {
+                return "https://www.google.com/s2/favicons?sz=64&domain=" + new URL(site.url).hostname;
+            } catch (e) {
+                return "";
+            }
         }
 
-        const grid = document.createElement("div");
-        grid.className = "grid";
-        
-        sites.forEach(site => {
-            const id = site.name.replace(/[^a-z0-9]/gi, "_");
-            const faviconUrl = getFavicon(site);
-            const card = document.createElement("div");
-            card.className = "card";
-            card.id = "card_" + id;
-            card.style.cursor = "pointer";
-            card.onclick = () => { startGraphForSite(site.url, site.name); };
-            card.innerHTML = 
-                "<div class=\"site-info\">" +
-                    "<img src=\"" + faviconUrl + "\" class=\"site-icon\" onerror=\"this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2224%22 height=%2224%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%2364ffda%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><circle cx=%2212%22 cy=%2212%22 r=%2210%22></circle><line x1=%222%22 y1=%2212%22 x2=%2222%22 y2=%2212%22></line><path d=%22M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z%22></path></svg>'\">" +
-                    "<span class=\"site-name\">" + site.name + "</span>" +
-                "</div>" +
-                "<div class=\"status-badges\">" +
-                    "<div class=\"badge\" id=\"" + id + "_vpn_badge\">" +
-                        "<span id=\"" + id + "_vpn_label\" style=\"color: var(--accent); display: flex; align-items: center; gap: 6px;\">" + 
-                            "<img src=\"assets/icon/logo.png\" style=\"width: 24px; height: 24px;\">" + t.freenet + ":" + 
+        function buildGrid() {
+            const container = document.getElementById("monitorGrid");
+            container.innerHTML = "";
+            const t = translations[currentLang];
+
+            const catLabels = {
+                "Sites": null,
+                "Российские сайты": { icon: "flag", label: "Российские сайты", note: "Прямой доступ — VPN не нужен", color: "rgba(100,200,255,0.12)", border: "rgba(100,200,255,0.3)" },
+                "FreeNet": { icon: "shield-check", label: "Инфраструктура FreeNet", note: "Наши серверы и сервисы", color: "rgba(100,255,218,0.12)", border: "rgba(100,255,218,0.3)" }
+            };
+
+            for (const [cat, sites] of Object.entries(siteCategories)) {
+                const meta = catLabels[cat];
+                if (meta) {
+                    const header = document.createElement("div");
+                    header.style.cssText = "display:flex; align-items:center; gap:10px; margin: 28px 0 12px; padding: 12px 16px; border-radius: 10px; background:" + meta.color + "; border: 1px solid " + meta.border + ";";
+                    header.innerHTML =
+                        (meta.icon ? "<i data-lucide=\"" + meta.icon + "\" style=\"color: " + (meta.border.replace('0.3', '1.0')) + "; width:20px; height:20px;\"></i>" : "") +
+                        "<div>" +
+                        "<div style='font-weight:700; font-size:1rem; color:#e6f1ff;'>" + meta.label + "</div>" +
+                        "<div style='font-size:0.78rem; color:#64ffda; margin-top:2px;'>\u2713 " + meta.note + "</div>" +
+                        "</div>";
+                    container.appendChild(header);
+                }
+
+                const grid = document.createElement("div");
+                grid.className = "grid";
+
+                sites.forEach(site => {
+                    const id = site.name.replace(/[^a-z0-9]/gi, "_");
+                    const faviconUrl = getFavicon(site);
+                    const card = document.createElement("div");
+                    card.className = "card";
+                    card.id = "card_" + id;
+                    card.style.cursor = "pointer";
+                    card.onclick = () => { startGraphForSite(site.url, site.name); };
+                    card.innerHTML =
+                        "<div class=\"site-info\">" +
+                        "<img src=\"" + faviconUrl + "\" class=\"site-icon\" onerror=\"this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2224%22 height=%2224%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%2364ffda%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><circle cx=%2212%22 cy=%2212%22 r=%2210%22></circle><line x1=%222%22 y1=%2212%22 x2=%2222%22 y2=%2212%22></line><path d=%22M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z%22></path></svg>'\">" +
+                        "<span class=\"site-name\">" + site.name + "</span>" +
+                        "</div>" +
+                        "<div class=\"status-badges\">" +
+                        "<div class=\"badge\" id=\"" + id + "_vpn_badge\">" +
+                        "<span id=\"" + id + "_vpn_label\" style=\"color: var(--accent); display: flex; align-items: center; gap: 6px;\">" +
+                        "<img src=\"assets/icon/logo.png\" style=\"width: 24px; height: 24px;\">" + t.freenet + ":" +
                         "</span>" +
                         "<span id=\"" + id + "_vpn_val\" class=\"badge-status\">\u2014</span>" +
-                    "</div>" +
-                    "<div class=\"badge\" id=\"" + id + "_direct_badge\">" +
+                        "</div>" +
+                        "<div class=\"badge\" id=\"" + id + "_direct_badge\">" +
                         "<span id=\"" + id + "_direct_label\">" + t.direct + ":</span>" +
                         "<span id=\"" + id + "_direct_val\" class=\"badge-status\">\u2014</span>" +
-                    "</div>" +
-                "</div>";
-            grid.appendChild(card);
-        });
-        container.appendChild(grid);
-    }
-    if (typeof lucide !== 'undefined') lucide.createIcons();
-}
-
-async function fetchWithTimeout(resource, options = {}) {
-    const { timeout = 15000 } = options;
-    const controller = new AbortController();
-    const id = setTimeout(() => controller.abort(), timeout);
-    try {
-        const response = await fetch(resource, { ...options, signal: controller.signal });
-        clearTimeout(id);
-        return response;
-    } catch (e) {
-        clearTimeout(id);
-        throw e;
-    }
-}
-
-async function checkSite(site, useVpn) {
-    const id = site.name.replace(/[^a-z0-9]/gi, "_");
-    const suffix = useVpn ? "_vpn" : "_direct";
-    const valEl = document.getElementById(id + suffix + "_val");
-    const t = translations[currentLang];
-
-    valEl.textContent = t.checking;
-    valEl.className = "badge-status checking";
-
-    let finalStatus = "0";
-    const maxAttempts = 2;
-
-    for (let i = 0; i < maxAttempts; i++) {
-        try {
-            const res = await fetchWithTimeout("/api/check?url=" + encodeURIComponent(site.url) + "&use_vpn=" + useVpn);
-            const data = await res.json();
-            const status = data.status === "down" ? "0" : "1";
-            finalStatus = status;
-            if (status === "1") break;
-        } catch (e) {
-            finalStatus = "0";
+                        "</div>" +
+                        "</div>";
+                    grid.appendChild(card);
+                });
+                container.appendChild(grid);
+            }
+            if (typeof lucide !== 'undefined') lucide.createIcons();
         }
-        // If it was the last attempt, don't wait obviously
-        if (i < maxAttempts - 1 && finalStatus === "0") {
-            await new Promise(r => setTimeout(r, 500));
-        }
-    }
 
-    valEl.setAttribute("data-status", finalStatus);
-    updateBadgeText(valEl, finalStatus, t);
-
-    // MASTER WIDGET SYNC
-    if (site.url.includes("freenet.monster")) {
-        const masterId = useVpn ? "masterVPN" : "masterDirect";
-        const masterEl = document.getElementById(masterId);
-        if (masterEl) {
-            const label = masterEl.querySelector('.status-indicator');
-            if (finalStatus === "1") {
-                label.textContent = t.online;
-                label.style.color = useVpn ? "#64ffda" : "#48bb78";
-                masterEl.style.borderColor = useVpn ? "rgba(100, 255, 218, 0.5)" : "rgba(72, 187, 120, 0.5)";
-                masterEl.style.background = useVpn ? "rgba(100, 255, 218, 0.1)" : "rgba(72, 187, 120, 0.1)";
-            } else {
-                label.textContent = t.offline;
-                label.style.color = "#ff4d4d";
-                masterEl.style.borderColor = "rgba(255, 77, 77, 0.5)";
-                masterEl.style.background = "rgba(255, 77, 77, 0.1)";
+        async function fetchWithTimeout(resource, options = {}) {
+            const { timeout = 15000 } = options;
+            const controller = new AbortController();
+            const id = setTimeout(() => controller.abort(), timeout);
+            try {
+                const response = await fetch(resource, { ...options, signal: controller.signal });
+                clearTimeout(id);
+                return response;
+            } catch (e) {
+                clearTimeout(id);
+                throw e;
             }
         }
-    }
 
-    updateStats();
-}
-async function startGraphForSite(url, name, isAuto = false) {
-    if (!url) return;
-    
-    if (autoCheckTimer) clearTimeout(autoCheckTimer);
+        async function checkSite(site, useVpn) {
+            const id = site.name.replace(/[^a-z0-9]/gi, "_");
+            const suffix = useVpn ? "_vpn" : "_direct";
+            const valEl = document.getElementById(id + suffix + "_val");
+            const t = translations[currentLang];
 
-    if (!isAuto) {
-        currentGraphUrl = url;
-        currentGraphName = name;
-        latencyHistory.labels = [];
-        latencyHistory.direct = [];
-        latencyHistory.directStatus = [];
-        latencyHistory.freenet = [];
-        latencyHistory.freenetStatus = [];
-        if (latencyChart) {
-            latencyChart.destroy();
-            latencyChart = null;
+            valEl.textContent = t.checking;
+            valEl.className = "badge-status checking";
+
+            let finalStatus = "0";
+            const maxAttempts = 2;
+
+            for (let i = 0; i < maxAttempts; i++) {
+                try {
+                    const res = await fetchWithTimeout("/api/check?url=" + encodeURIComponent(site.url) + "&use_vpn=" + useVpn);
+                    const data = await res.json();
+                    const status = data.status === "down" ? "0" : "1";
+                    finalStatus = status;
+                    if (status === "1") break;
+                } catch (e) {
+                    finalStatus = "0";
+                }
+                // If it was the last attempt, don't wait obviously
+                if (i < maxAttempts - 1 && finalStatus === "0") {
+                    await new Promise(r => setTimeout(r, 500));
+                }
+            }
+
+            valEl.setAttribute("data-status", finalStatus);
+            updateBadgeText(valEl, finalStatus, t);
+
+            // MASTER WIDGET SYNC
+            if (site.url.includes("freenet.monster")) {
+                const masterId = useVpn ? "masterVPN" : "masterDirect";
+                const masterEl = document.getElementById(masterId);
+                if (masterEl) {
+                    const label = masterEl.querySelector('.status-indicator');
+                    if (finalStatus === "1") {
+                        label.textContent = t.online;
+                        label.style.color = useVpn ? "#64ffda" : "#48bb78";
+                        masterEl.style.borderColor = useVpn ? "rgba(100, 255, 218, 0.5)" : "rgba(72, 187, 120, 0.5)";
+                        masterEl.style.background = useVpn ? "rgba(100, 255, 218, 0.1)" : "rgba(72, 187, 120, 0.1)";
+                    } else {
+                        label.textContent = t.offline;
+                        label.style.color = "#ff4d4d";
+                        masterEl.style.borderColor = "rgba(255, 77, 77, 0.5)";
+                        masterEl.style.background = "rgba(255, 77, 77, 0.1)";
+                    }
+                }
+            }
+
+            updateStats();
         }
-        document.getElementById('directPctBig').textContent = '--%';
-        document.getElementById('freenetPctBig').textContent = '--%';
-        
-        const titleEl = document.getElementById('chartTitle');
-        if(titleEl) {
-            const favicon = getFavicon({url: url, name: name});
-            titleEl.innerHTML = `<div style="display:flex; align-items:center; gap:10px;">
+        async function startGraphForSite(url, name, isAuto = false) {
+            if (!url) return;
+
+            if (autoCheckTimer) clearTimeout(autoCheckTimer);
+
+            if (!isAuto) {
+                currentGraphUrl = url;
+                currentGraphName = name;
+                latencyHistory.labels = [];
+                latencyHistory.direct = [];
+                latencyHistory.directStatus = [];
+                latencyHistory.freenet = [];
+                latencyHistory.freenetStatus = [];
+                if (latencyChart) {
+                    latencyChart.destroy();
+                    latencyChart = null;
+                }
+                document.getElementById('directPctBig').textContent = '--%';
+                document.getElementById('freenetPctBig').textContent = '--%';
+
+                const titleEl = document.getElementById('chartTitle');
+                if (titleEl) {
+                    const favicon = getFavicon({ url: url, name: name });
+                    titleEl.innerHTML = `<div style="display:flex; align-items:center; gap:10px;">
                 <img src="${favicon}" style="width:24px; height:24px; border-radius:4px;" onerror="this.style.display='none'">
                 <span>${name}</span>
             </div>`;
-        }
-        
-        const chartCont = document.getElementById('chartContainer');
-        if(chartCont) chartCont.style.display = 'block';
-
-        // Highlight selected card
-        document.querySelectorAll('.card').forEach(c => {
-            c.style.boxShadow = 'none';
-            c.style.borderColor = 'transparent';
-        });
-        const siteId = name.replace(/[^a-z0-9]/gi, "_");
-        const activeCard = document.getElementById("card_" + siteId);
-        if (activeCard) {
-            activeCard.style.boxShadow = '0 0 20px rgba(100, 255, 218, 0.4), inset 0 0 10px rgba(100, 255, 218, 0.1)';
-            activeCard.style.borderColor = 'var(--accent)';
-        }
-        
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-    
-    try {
-        const startTotal = Date.now();
-        await Promise.all([
-            (async () => {
-                const s = Date.now();
-                try {
-                    const resV = await fetchWithTimeout("/api/check?url=" + encodeURIComponent(url) + "&use_vpn=true");
-                    const dataV = await resV.json();
-                    const lat = Date.now() - s;
-                    const statusV = dataV.status === "down" ? "0" : "1";
-                    latencyHistory.freenet.push(lat);
-                    latencyHistory.freenetStatus.push(statusV === "0");
-                } catch (e) {
-                    latencyHistory.freenet.push(3000); 
-                    latencyHistory.freenetStatus.push(true);
                 }
-            })(),
-            (async () => {
-                const s = Date.now();
-                try {
-                    const resD = await fetchWithTimeout("/api/check?url=" + encodeURIComponent(url) + "&use_vpn=false");
-                    const dataD = await resD.json();
-                    const lat = Date.now() - s;
-                    const statusD = dataD.status === "down" ? "0" : "1";
-                    latencyHistory.direct.push(lat);
-                    latencyHistory.directStatus.push(statusD === "0");
-                } catch (e) {
-                    latencyHistory.direct.push(3000);
-                    latencyHistory.directStatus.push(true);
+
+                const chartCont = document.getElementById('chartContainer');
+                if (chartCont) chartCont.style.display = 'block';
+
+                // Highlight selected card
+                document.querySelectorAll('.card').forEach(c => {
+                    c.style.boxShadow = 'none';
+                    c.style.borderColor = 'transparent';
+                });
+                const siteId = name.replace(/[^a-z0-9]/gi, "_");
+                const activeCard = document.getElementById("card_" + siteId);
+                if (activeCard) {
+                    activeCard.style.boxShadow = '0 0 20px rgba(100, 255, 218, 0.4), inset 0 0 10px rgba(100, 255, 218, 0.1)';
+                    activeCard.style.borderColor = 'var(--accent)';
                 }
-            })()
-        ]);
 
-        const host = new URL(url).hostname;
-        latencyHistory.labels.push(new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'}));
-        
-        const MAX_SAMPLES = 10;
-        if (latencyHistory.labels.length > MAX_SAMPLES) {
-            latencyHistory.labels.shift();
-            latencyHistory.direct.shift();
-            latencyHistory.directStatus.shift();
-            latencyHistory.freenet.shift();
-            latencyHistory.freenetStatus.shift();
-        }
-        
-        if (!latencyChart) {
-            initLatencyChart();
-        }
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
 
-        const totalReqs = latencyHistory.labels.length;
-        if (totalReqs > 0) {
-            const dirFails = latencyHistory.directStatus.filter(s => s).length;
-            const freeFails = latencyHistory.freenetStatus.filter(s => s).length;
-            const dirPct = Math.round(((totalReqs - dirFails) / totalReqs) * 100);
-            const freePct = Math.round(((totalReqs - freeFails) / totalReqs) * 100);
-            document.getElementById('directPctBig').textContent = dirPct + '%';
-            document.getElementById('freenetPctBig').textContent = freePct + '%';
-            latencyChart.data.datasets[0].label = 'Direct Access';
-            latencyChart.data.datasets[1].label = 'FreeNet Access';
-        }
+            try {
+                const startTotal = Date.now();
+                await Promise.all([
+                    (async () => {
+                        const s = Date.now();
+                        try {
+                            const resV = await fetchWithTimeout("/api/check?url=" + encodeURIComponent(url) + "&use_vpn=true");
+                            const dataV = await resV.json();
+                            const lat = Date.now() - s;
+                            const statusV = dataV.status === "down" ? "0" : "1";
+                            latencyHistory.freenet.push(lat);
+                            latencyHistory.freenetStatus.push(statusV === "0");
+                        } catch (e) {
+                            latencyHistory.freenet.push(3000);
+                            latencyHistory.freenetStatus.push(true);
+                        }
+                    })(),
+                    (async () => {
+                        const s = Date.now();
+                        try {
+                            const resD = await fetchWithTimeout("/api/check?url=" + encodeURIComponent(url) + "&use_vpn=false");
+                            const dataD = await resD.json();
+                            const lat = Date.now() - s;
+                            const statusD = dataD.status === "down" ? "0" : "1";
+                            latencyHistory.direct.push(lat);
+                            latencyHistory.directStatus.push(statusD === "0");
+                        } catch (e) {
+                            latencyHistory.direct.push(3000);
+                            latencyHistory.directStatus.push(true);
+                        }
+                    })()
+                ]);
 
-        latencyChart.update();
+                const host = new URL(url).hostname;
+                latencyHistory.labels.push(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
 
-        if (autoRefreshEnabled) {
-            autoCheckTimer = setTimeout(() => startGraphForSite(currentGraphUrl, currentGraphName, true), 3000);
-        }
-    } catch (e) {
-        console.error("Custom check fail:", e);
-        if (autoRefreshEnabled && !autoCheckTimer) {
-            autoCheckTimer = setTimeout(() => startGraphForSite(currentGraphUrl, currentGraphName, true), 3000);
-        }
-    }
-}
-
-async function updateGridFromStatus() {
-    try {
-        const res = await fetch("/api/status");
-        if (!res.ok) return false;
-        const data = await res.json();
-        
-        if (Object.keys(data).length === 0) return false;
-
-        // Pick the best node: moscow first, then most recent
-        let bestNode = null;
-        if (data.moscow) {
-            bestNode = data.moscow;
-        } else {
-            const sortedNodes = Object.values(data).sort((a,b) => b.timestamp - a.timestamp);
-            bestNode = sortedNodes[0];
-        }
-
-        if (!bestNode || !bestNode.results) return false;
-
-        const t = translations[currentLang];
-        allSites.forEach(site => {
-            const id = site.name.replace(/[^a-z0-9]/gi, "_");
-            const vVal = document.getElementById(id + "_vpn_val");
-            const dVal = document.getElementById(id + "_direct_val");
-            
-            // Note: multi-node monitor currently only reports 'Direct' status from the node's POV. 
-            // In server.py: results[url] = "up" if check_connectivity(url, False) else "down"
-            // So we map it to 'direct' in our UI. 
-            // We assume VPN is 'up' if the node is checking things and reported back.
-            
-            const status = bestNode.results[site.url];
-            if (status) {
-                const finalStatus = status === "up" ? "1" : "0";
-                if (dVal) {
-                    dVal.setAttribute("data-status", finalStatus);
-                    updateBadgeText(dVal, finalStatus, t);
+                const MAX_SAMPLES = 10;
+                if (latencyHistory.labels.length > MAX_SAMPLES) {
+                    latencyHistory.labels.shift();
+                    latencyHistory.direct.shift();
+                    latencyHistory.directStatus.shift();
+                    latencyHistory.freenet.shift();
+                    latencyHistory.freenetStatus.shift();
                 }
-                // For VPN, since we don't have per-site VPN checks from worker yet (it uses master's VPN)
-                // we mark it Online if the node itself is reporting (meaning VPN to worker is likely OK)
-                if (vVal) {
-                    vVal.setAttribute("data-status", "1");
-                    updateBadgeText(vVal, "1", t);
+
+                if (!latencyChart) {
+                    initLatencyChart();
+                }
+
+                const totalReqs = latencyHistory.labels.length;
+                if (totalReqs > 0) {
+                    const dirFails = latencyHistory.directStatus.filter(s => s).length;
+                    const freeFails = latencyHistory.freenetStatus.filter(s => s).length;
+                    const dirPct = Math.round(((totalReqs - dirFails) / totalReqs) * 100);
+                    const freePct = Math.round(((totalReqs - freeFails) / totalReqs) * 100);
+                    document.getElementById('directPctBig').textContent = dirPct + '%';
+                    document.getElementById('freenetPctBig').textContent = freePct + '%';
+                    latencyChart.data.datasets[0].label = 'Direct Access';
+                    latencyChart.data.datasets[1].label = 'FreeNet Access';
+                }
+
+                latencyChart.update();
+
+                if (autoRefreshEnabled) {
+                    autoCheckTimer = setTimeout(() => startGraphForSite(currentGraphUrl, currentGraphName, true), 3000);
+                }
+            } catch (e) {
+                console.error("Custom check fail:", e);
+                if (autoRefreshEnabled && !autoCheckTimer) {
+                    autoCheckTimer = setTimeout(() => startGraphForSite(currentGraphUrl, currentGraphName, true), 3000);
                 }
             }
-        });
-        
-        // Update master widget if logic exists
-        const masterStatus = bestNode.results["https://freenet.monster"] || "down";
-        const mVal = masterStatus === "up" ? "1" : "0";
-        const mDirect = document.getElementById("masterDirect");
-        if (mDirect) {
-            const label = mDirect.querySelector('.status-indicator');
-            label.textContent = mVal === "1" ? t.online : t.offline;
-            label.style.color = mVal === "1" ? "#48bb78" : "#ff4d4d";
         }
 
-        return true;
-    } catch (e) {
-        console.error("Status fetch failed", e);
-        return false;
-    }
-}
+        async function updateGridFromStatus() {
+            try {
+                const res = await fetch("/api/status");
+                if (!res.ok) return false;
+                const data = await res.json();
 
-async function startChecks(mode) {
-    // If we are looking for global status, try the aggregated API first
-    if (mode === "freenet" || mode === "direct") {
-        const ok = await updateGridFromStatus();
-        if (ok) {
+                if (Object.keys(data).length === 0) return false;
+
+                // Pick the best node: moscow first, then most recent
+                let bestNode = null;
+                if (data.moscow) {
+                    bestNode = data.moscow;
+                } else {
+                    const sortedNodes = Object.values(data).sort((a, b) => b.timestamp - a.timestamp);
+                    bestNode = sortedNodes[0];
+                }
+
+                if (!bestNode || !bestNode.results) return false;
+
+                const t = translations[currentLang];
+                allSites.forEach(site => {
+                    const id = site.name.replace(/[^a-z0-9]/gi, "_");
+                    const vVal = document.getElementById(id + "_vpn_val");
+                    const dVal = document.getElementById(id + "_direct_val");
+
+                    // Note: multi-node monitor currently only reports 'Direct' status from the node's POV. 
+                    // In server.py: results[url] = "up" if check_connectivity(url, False) else "down"
+                    // So we map it to 'direct' in our UI. 
+                    // We assume VPN is 'up' if the node is checking things and reported back.
+
+                    const status = bestNode.results[site.url];
+                    if (status) {
+                        const finalStatus = status === "up" ? "1" : "0";
+                        if (dVal) {
+                            dVal.setAttribute("data-status", finalStatus);
+                            updateBadgeText(dVal, finalStatus, t);
+                        }
+                        // For VPN, since we don't have per-site VPN checks from worker yet (it uses master's VPN)
+                        // we mark it Online if the node itself is reporting (meaning VPN to worker is likely OK)
+                        if (vVal) {
+                            vVal.setAttribute("data-status", "1");
+                            updateBadgeText(vVal, "1", t);
+                        }
+                    }
+                });
+
+                // Update master widget if logic exists
+                const masterStatus = bestNode.results["https://freenet.monster"] || "down";
+                const mVal = masterStatus === "up" ? "1" : "0";
+                const mDirect = document.getElementById("masterDirect");
+                if (mDirect) {
+                    const label = mDirect.querySelector('.status-indicator');
+                    label.textContent = mVal === "1" ? t.online : t.offline;
+                    label.style.color = mVal === "1" ? "#48bb78" : "#ff4d4d";
+                }
+
+                return true;
+            } catch (e) {
+                console.error("Status fetch failed", e);
+                return false;
+            }
+        }
+
+        async function startChecks(mode) {
+            // If we are looking for global status, try the aggregated API first
+            if (mode === "freenet" || mode === "direct") {
+                const ok = await updateGridFromStatus();
+                if (ok) {
+                    const statusTextEl = document.getElementById("statusText");
+                    if (statusTextEl) statusTextEl.textContent = translations[currentLang].standingBy;
+                    return;
+                }
+            }
+
+            const isVpn = mode === "freenet";
+            if (isVpn && checkingFreenet) return;
+            if (!isVpn && checkingDirect) return;
+
+            if (isVpn) checkingFreenet = true; else checkingDirect = true;
+
+            const btn = isVpn ? document.getElementById("btnVPN") : document.getElementById("btnDirect");
+            if (btn) btn.disabled = true;
             const statusTextEl = document.getElementById("statusText");
-            if (statusTextEl) statusTextEl.textContent = translations[currentLang].standingBy;
-            return; 
+            if (statusTextEl) statusTextEl.textContent = translations[currentLang].scanning;
+
+            const progress = document.getElementById("progressBar");
+            progress.style.width = "10%";
+
+            // Run sites with a concurrency limit
+            const concurrencyLimit = 3;
+            let activePromises = [];
+
+            for (let i = 0; i < allSites.length; i++) {
+                const p = checkSite(allSites[i], isVpn).then(() => {
+                    const currentProgress = parseFloat(progress.style.width);
+                    if (currentProgress < 90) progress.style.width = (currentProgress + (80 / allSites.length)) + "%";
+                    activePromises.splice(activePromises.indexOf(p), 1);
+                });
+                activePromises.push(p);
+
+                if (activePromises.length >= concurrencyLimit) {
+                    await Promise.race(activePromises);
+                }
+            }
+            await Promise.all(activePromises);
+
+            progress.style.width = "100%";
+            setTimeout(() => {
+                if (!checkingFreenet && !checkingDirect) progress.style.width = "0%";
+            }, 1000);
+
+            if (isVpn) checkingFreenet = false; else checkingDirect = false;
+
+            if (!checkingFreenet && !checkingDirect) {
+                const finalStatus = document.getElementById("statusText");
+                if (finalStatus) finalStatus.textContent = translations[currentLang].standingBy;
+                const pageTitle = document.getElementById("pageTitle");
+                if (pageTitle) pageTitle.innerHTML = getTitleWithDate(translations[currentLang].title);
+            }
+            if (btn) btn.disabled = false;
         }
-    }
 
-    const isVpn = mode === "freenet";
-    if (isVpn && checkingFreenet) return;
-    if (!isVpn && checkingDirect) return;
-    
-    if (isVpn) checkingFreenet = true; else checkingDirect = true;
-    
-    const btn = isVpn ? document.getElementById("btnVPN") : document.getElementById("btnDirect");
-    if(btn) btn.disabled = true;
-    const statusTextEl = document.getElementById("statusText");
-    if (statusTextEl) statusTextEl.textContent = translations[currentLang].scanning;
-    
-    const progress = document.getElementById("progressBar");
-    progress.style.width = "10%";
-
-    // Run sites with a concurrency limit
-    const concurrencyLimit = 3;
-    let activePromises = [];
-    
-    for (let i = 0; i < allSites.length; i++) {
-        const p = checkSite(allSites[i], isVpn).then(() => {
-            const currentProgress = parseFloat(progress.style.width);
-            if (currentProgress < 90) progress.style.width = (currentProgress + (80 / allSites.length)) + "%";
-            activePromises.splice(activePromises.indexOf(p), 1);
-        });
-        activePromises.push(p);
-        
-        if (activePromises.length >= concurrencyLimit) {
-            await Promise.race(activePromises);
+        function getTitleWithDate(base) {
+            const now = new Date();
+            const opts = { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' };
+            const dateStr = now.toLocaleDateString('en-GB', opts);
+            return base + '<br><span style="font-size: 0.9rem; color: rgba(255,255,255,0.6); font-weight: 400;">(' + dateStr + ')</span>';
         }
-    }
-    await Promise.all(activePromises);
 
-    progress.style.width = "100%";
-    setTimeout(() => {
-        if (!checkingFreenet && !checkingDirect) progress.style.width = "0%";
-    }, 1000);
+        const langBtn = document.getElementById("langToggle");
+        if (langBtn) langBtn.addEventListener("click", toggleLanguage);
 
-    if (isVpn) checkingFreenet = false; else checkingDirect = false;
-    
-    if (!checkingFreenet && !checkingDirect) {
-        const finalStatus = document.getElementById("statusText");
-        if (finalStatus) finalStatus.textContent = translations[currentLang].standingBy;
-        const pageTitle = document.getElementById("pageTitle");
-        if (pageTitle) pageTitle.innerHTML = getTitleWithDate(translations[currentLang].title);
-    }
-    if (btn) btn.disabled = false;
-}
+        buildGrid();
+        // Initially open YouTube graph
+        setTimeout(() => {
+            startGraphForSite("https://youtube.com", "Youtube");
+        }, 500);
 
-function getTitleWithDate(base) {
-    const now = new Date();
-    const opts = { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' };
-    const dateStr = now.toLocaleDateString('en-GB', opts);
-    return base + '<br><span style="font-size: 0.9rem; color: rgba(255,255,255,0.6); font-weight: 400;">(' + dateStr + ')</span>';
-}
+        // Initial run: PER USER REQUEST: RUN SIMULTANEOUSLY
+        (async () => {
+            // Fire both and let them run in parallel
+            startChecks("freenet");
+            startChecks("direct");
+            // Initialize Telegram WebApp
+            if (window.Telegram && window.Telegram.WebApp) {
+                const twa = window.Telegram.WebApp;
+                twa.ready();
+                twa.expand(); // Auto-expand to full height
+                console.log("Telegram Mini App Initialized");
+            }
 
-    const langBtn = document.getElementById("langToggle");
-    if(langBtn) langBtn.addEventListener("click", toggleLanguage);
+        })();
+        // Global User State
+        let currentUser = JSON.parse(localStorage.getItem('freenet_user') || 'null');
 
-buildGrid();
-// Initially open YouTube graph
-setTimeout(() => {
-    startGraphForSite("https://youtube.com", "Youtube");
-}, 500);
+        function onTelegramAuth(user) {
+            console.log('Logged in as:', user);
+            currentUser = user;
+            localStorage.setItem('freenet_user', JSON.stringify(user));
 
-// Initial run: PER USER REQUEST: RUN SIMULTANEOUSLY
-(async () => {
-    // Fire both and let them run in parallel
-    startChecks("freenet");
-    startChecks("direct");
-// Initialize Telegram WebApp
-if (window.Telegram && window.Telegram.WebApp) {
-    const twa = window.Telegram.WebApp;
-    twa.ready();
-    twa.expand(); // Auto-expand to full height
-    console.log("Telegram Mini App Initialized");
-}
+            // Refresh pricing links immediately
+            updatePricingLinks();
 
-})();
-// Global User State
-let currentUser = JSON.parse(localStorage.getItem('freenet_user') || 'null');
+            const progressBar = document.getElementById("progressBar");
+            if (progressBar) progressBar.style.width = "50%";
 
-function onTelegramAuth(user) {
-    console.log('Logged in as:', user);
-    currentUser = user;
-    localStorage.setItem('freenet_user', JSON.stringify(user));
-    
-    // Refresh pricing links immediately
-    updatePricingLinks();
-    
-    const progressBar = document.getElementById("progressBar");
-    if(progressBar) progressBar.style.width = "50%";
-    
-    fetch('/api/trial', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(user)
-    })
-    .then(res => res.json())
-    .then(data => {
-        if(progressBar) progressBar.style.width = "100%";
-        if (data.subscription_url) {
-            const qrContent = (data.links && data.links.length > 0) ? data.links[0] : data.subscription_url;
-            const encodedUrl = encodeURIComponent(qrContent);
-            document.getElementById('trialQR').src = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodedUrl}&margin=5&bgcolor=ffffff`;
-            
-            document.getElementById('trialLink').textContent = data.subscription_url;
-            document.getElementById('trialModal').style.display = 'flex';
-        } else {
-            alert(data.error || "TRIAL LIMIT: 1 per 24 hours per Telegram account.");
+            fetch('/api/trial', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(user)
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (progressBar) progressBar.style.width = "100%";
+                    if (data.subscription_url) {
+                        const qrContent = (data.links && data.links.length > 0) ? data.links[0] : data.subscription_url;
+                        const encodedUrl = encodeURIComponent(qrContent);
+                        document.getElementById('trialQR').src = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodedUrl}&margin=5&bgcolor=ffffff`;
+
+                        document.getElementById('trialLink').textContent = data.subscription_url;
+                        document.getElementById('trialModal').style.display = 'flex';
+                    } else {
+                        alert(data.error || "TRIAL LIMIT: 1 per 24 hours per Telegram account.");
+                    }
+                    setTimeout(() => { if (progressBar) progressBar.style.width = "0%"; }, 1000);
+                })
+                .catch(err => {
+                    if (progressBar) progressBar.style.width = "0%";
+                    alert("Server error. Please try again later.");
+                });
         }
-        setTimeout(() => { if(progressBar) progressBar.style.width = "0%"; }, 1000);
-    })
-    .catch(err => {
-        if(progressBar) progressBar.style.width = "0%";
-        alert("Server error. Please try again later.");
-    });
-}
 
-function updatePricingLinks() {
-    const username = currentUser ? `tg_${currentUser.id}` : 'unknown';
-    const links = {
-        'btn-pack': 'https://buy.stripe.com/test_dRm00jeFjemx7v9b5AbbG05',
-        'btn-guard': 'https://buy.stripe.com/test_3cI8wPeFj4LXcPtehMbbG03',
-        'btn-legend': 'https://buy.stripe.com/test_6oU8wP1Sx2DP9DhehMbbG04'
-    };
-    
-    for (const [id, url] of Object.entries(links)) {
-        const el = document.getElementById(id);
-        if (el) {
-            if (username === 'unknown') {
-                el.classList.add('disabled');
-                el.style.opacity = "0.3";
-                el.style.pointerEvents = "none";
-            } else {
-                el.classList.remove('disabled');
-                el.style.opacity = "1";
-                el.style.pointerEvents = "auto";
-                el.onclick = () => {
-                    window.location.href = `${url}?client_reference_id=${username}&success_url=https://freenet.monster`;
-                };
+        function updatePricingLinks() {
+            const username = currentUser ? `tg_${currentUser.id}` : '';
+            const links = {
+                'btn-pack': 'https://buy.stripe.com/test_fZu7sN3PjecC2r4e8B7ss02',
+                'btn-guard': 'https://buy.stripe.com/test_00wfZjclP9Wm7Lo8Oh7ss01',
+                'btn-legend': 'https://buy.stripe.com/test_fZu7sN3PjecC2r4e8B7ss02'
+            };
+
+            for (const [id, url] of Object.entries(links)) {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.classList.remove('disabled');
+                    el.style.opacity = "1";
+                    el.style.pointerEvents = "auto";
+                    el.onclick = () => {
+                        // Pass username (email or tg_id) only if available
+                        const finalUrl = username ? `${url}?client_reference_id=${username}` : url;
+                        window.location.href = finalUrl;
+                    };
+                }
             }
         }
-    }
-}
 
-function openPricing() {
-    updatePricingLinks();
-    const loginWarning = document.getElementById('loginWarning');
-    if (loginWarning) {
-        loginWarning.style.display = currentUser ? 'none' : 'block';
-    }
-    document.getElementById('pricingModal').style.display = 'flex';
-}
-}
-function closePricing() {
-    document.getElementById('pricingModal').style.display = 'none';
-}
-
-function onTelegramAuth(user) {
-    const progressBar = document.getElementById("progressBar");
-    if(progressBar) progressBar.style.width = "50%";
-    
-    fetch('/api/trial', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(user)
-    })
-    .then(res => res.json())
-    .then(data => {
-        if(progressBar) progressBar.style.width = "100%";
-        if (data.subscription_url) {
-            // Use the first VLESS link for the QR code for better app compatibility
-            const qrContent = (data.links && data.links.length > 0) ? data.links[0] : data.subscription_url;
-            const encodedUrl = encodeURIComponent(qrContent);
-            document.getElementById('trialQR').src = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodedUrl}&margin=5&bgcolor=ffffff`;
-            
-            document.getElementById('trialLink').textContent = data.subscription_url;
-            document.getElementById('trialModal').style.display = 'flex';
-        } else {
-            alert(data.error || "TRIAL LIMIT: 1 per 24 hours per Telegram account.");
+        function openPricing() {
+            updatePricingLinks();
+            const loginWarning = document.getElementById('loginWarning');
+            if (loginWarning) {
+                loginWarning.style.display = currentUser ? 'none' : 'block';
+            }
+            document.getElementById('pricingModal').style.display = 'flex';
         }
-        setTimeout(() => { if(progressBar) progressBar.style.width = "0%"; }, 1000);
-    })
-    .catch(err => {
-        if(progressBar) progressBar.style.width = "0%";
-        alert("Server error. Please try again later.");
-    });
-}
 
-function closeTrialModal() {
-    document.getElementById('trialModal').style.display = 'none';
-}
+        function closePricing() {
+            document.getElementById('pricingModal').style.display = 'none';
+        }
 
-function copyTrialLink() {
-    const link = document.getElementById('trialLink').textContent;
-    navigator.clipboard.writeText(link).then(() => {
-        const btn = document.getElementById('btnCopy');
-        const originalText = btn.textContent;
-        const t = translations[currentLang];
-        btn.textContent = t.btnCopied;
-        btn.style.background = "#48bb78";
-        setTimeout(() => {
-            btn.textContent = t.btnCopy;
-            btn.style.background = "#64ffda";
-        }, 2000);
-    });
-}
+        function onTelegramAuth(user) {
+            const progressBar = document.getElementById("progressBar");
+            if (progressBar) progressBar.style.width = "50%";
 
-function shareApp() {
-    const shareUrl = "https://t.me/FreeNetMonsterBot/start";
-    const shareText = "🚀 Пользуюсь FreeNet Monster для доступа к любым сайтам из России! Попробуй бесплатно.";
-    
-    if (window.Telegram && window.Telegram.WebApp) {
-        const tgLink = `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`;
-        window.Telegram.WebApp.openTelegramLink(tgLink);
-    } else {
-        window.open(`https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`, '_blank');
-    }
-}
+            fetch('/api/trial', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(user)
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (progressBar) progressBar.style.width = "100%";
+                    if (data.subscription_url) {
+                        // Use the first VLESS link for the QR code for better app compatibility
+                        const qrContent = (data.links && data.links.length > 0) ? data.links[0] : data.subscription_url;
+                        const encodedUrl = encodeURIComponent(qrContent);
+                        document.getElementById('trialQR').src = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodedUrl}&margin=5&bgcolor=ffffff`;
 
-// THEME LOGIC
-const themes = ['classic', 'panda', 'glitch', 'ghost', 'banana'];
-let currentThemeIndex = 0;
+                        document.getElementById('trialLink').textContent = data.subscription_url;
+                        document.getElementById('trialModal').style.display = 'flex';
+                    } else {
+                        alert(data.error || "TRIAL LIMIT: 1 per 24 hours per Telegram account.");
+                    }
+                    setTimeout(() => { if (progressBar) progressBar.style.width = "0%"; }, 1000);
+                })
+                .catch(err => {
+                    if (progressBar) progressBar.style.width = "0%";
+                    alert("Server error. Please try again later.");
+                });
+        }
 
-function toggleTheme() {
-    currentThemeIndex = (currentThemeIndex + 1) % themes.length;
-    const themeName = themes[currentThemeIndex];
-    document.body.setAttribute('data-theme', themeName);
-    localStorage.setItem('freenet_theme', themeName);
-}
+        function closeTrialModal() {
+            document.getElementById('trialModal').style.display = 'none';
+        }
 
-    // Load saved theme
-    const savedTheme = localStorage.getItem('freenet_theme');
-    if (savedTheme && themes.includes(savedTheme)) {
-        document.body.setAttribute('data-theme', savedTheme);
-        currentThemeIndex = themes.indexOf(savedTheme);
-    }
+        function copyTrialLink() {
+            const link = document.getElementById('trialLink').textContent;
+            navigator.clipboard.writeText(link).then(() => {
+                const btn = document.getElementById('btnCopy');
+                const originalText = btn.textContent;
+                const t = translations[currentLang];
+                btn.textContent = t.btnCopied;
+                btn.style.background = "#48bb78";
+                setTimeout(() => {
+                    btn.textContent = t.btnCopy;
+                    btn.style.background = "#64ffda";
+                }, 2000);
+            });
+        }
 
-    // Load saved user
-    if (currentUser) {
-        console.log("Welcome back, ", currentUser.first_name);
-        updatePricingLinks();
-    }
+        function shareApp() {
+            const shareUrl = "https://t.me/FreeNetMonsterBot/start";
+            const shareText = "🚀 Пользуюсь FreeNet Monster для доступа к любым сайтам из России! Попробуй бесплатно.";
 
-    // Refresh status from nodes every 60 seconds
-    setInterval(updateGridFromStatus, 60000);
-</script>
+            if (window.Telegram && window.Telegram.WebApp) {
+                const tgLink = `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`;
+                window.Telegram.WebApp.openTelegramLink(tgLink);
+            } else {
+                window.open(`https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`, '_blank');
+            }
+        }
+
+        // THEME LOGIC
+        const themes = ['monster', 'classic', 'panda', 'glitch', 'ghost', 'banana'];
+        let currentThemeIndex = 0;
+
+        function toggleTheme() {
+            currentThemeIndex = (currentThemeIndex + 1) % themes.length;
+            const themeName = themes[currentThemeIndex];
+            document.body.setAttribute('data-theme', themeName);
+            localStorage.setItem('freenet_theme', themeName);
+            localStorage.setItem('freenet_theme_v', '2'); // Versioned reset
+        }
+
+        // Load saved theme (Force reset if old version)
+        const savedThemeV = localStorage.getItem('freenet_theme_v');
+        let savedTheme = localStorage.getItem('freenet_theme');
+
+        if (savedThemeV !== '2') {
+            savedTheme = 'monster';
+            localStorage.setItem('freenet_theme', 'monster');
+            localStorage.setItem('freenet_theme_v', '2');
+        }
+
+        if (themes.includes(savedTheme)) {
+            document.body.setAttribute('data-theme', savedTheme);
+            currentThemeIndex = themes.indexOf(savedTheme);
+        }
+
+        // Load saved user
+        if (currentUser) {
+            console.log("Welcome back, ", currentUser.first_name);
+            updatePricingLinks();
+        }
+
+        // Refresh status from nodes every 60 seconds
+        setInterval(updateGridFromStatus, 60000);
+
+        async function checkSubscriptionStatus(sessionId) {
+            const section = document.getElementById('verifiedSubscriptionSection');
+            const resultDiv = document.getElementById('subStatusResult');
+            if (!section || !resultDiv) return;
+
+            section.style.display = 'block';
+            resultDiv.innerHTML = '<span style="color:#8892b0;"><i class="fas fa-spinner fa-spin"></i> Синхронизация со Stripe...</span>';
+
+            try {
+                const resp = await fetch(`/api/user_status?session_id=${encodeURIComponent(sessionId)}`);
+                const data = await resp.json();
+
+                if (data.error) {
+                    resultDiv.innerHTML = `<span style="color:#f87171;">Ошибка верификации: ${data.error}</span>`;
+                } else {
+                    const badge = data.is_premium
+                        ? '<span style="background:#64ffda;color:#0a0b1e;padding:3px 10px;border-radius:20px;font-size:0.8rem;font-weight:800;">PREMIUM</span>'
+                        : '<span style="background:#8892b0;color:#0a0b1e;padding:3px 10px;border-radius:20px;font-size:0.8rem;font-weight:800;">TRIAL</span>';
+
+                    const expDate = data.expire ? new Date(data.expire * 1000).toLocaleDateString('ru-RU') : 'N/A';
+                    const daysColor = data.days_left > 14 ? '#64ffda' : data.days_left > 3 ? '#fbbf24' : '#f87171';
+
+                    const subUrl = data.sub_url || '';
+                    const subHtml = `
+                        <div style="margin-bottom:15px; min-width: 0;">
+                            <div style="color:#8892b0; font-size:0.75rem; margin-bottom:5px; text-transform:uppercase; letter-spacing:1px;">Ссылка на подписку (V2Box, Shadowrocket, etc)</div>
+                            <div style="display:flex; align-items:center; gap:8px; min-width: 0;">
+                                <code style="flex:1; background:rgba(0,0,0,0.3); padding:10px; border-radius:8px; font-size:0.8rem; color:var(--accent); border:1px solid rgba(0,242,255,0.2); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width: 0;">${subUrl}</code>
+                                <button onclick="copyToClipboard('${subUrl.replace(/'/g, "\\'")}')"
+                                    style="background:var(--accent); border:none; color:#000; padding:10px 20px; border-radius:8px; cursor:pointer; font-weight:800; font-family:'Outfit'; display:flex; align-items:center; gap:8px; white-space:nowrap;">
+                                    <i class="fas fa-copy"></i> COPY
+                                </button>
+                            </div>
+                        </div>
+                    `;
+
+                    let qrHtml = '';
+                    if (subUrl) {
+                        const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(subUrl)}&bgcolor=ffffff&margin=5`;
+                        qrHtml = `<div style="text-align:center;">
+                            <img src="${qrSrc}" style="border-radius:12px; border:4px solid #fff; box-shadow: 0 0 20px rgba(0,242,255,0.2);" />
+                            <div style="color:#8892b0; font-size:0.7rem; margin-top:8px;">Scan to Import</div>
+                        </div>`;
+                    }
+
+                    resultDiv.innerHTML = `
+                        <div style="display:grid; grid-template-columns: 1fr auto; gap:24px; align-items:start; min-width: 0;">
+                            <div style="min-width: 0;">
+                                <div style="margin-bottom:15px; display:flex; align-items:center; gap:10px;">
+                                    ${badge} 
+                                    <b style="color:#fff; font-size:1.1rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${data.email}</b>
+                                </div>
+                                <div style="display:flex; gap:20px; margin-bottom:20px;">
+                                    <div>
+                                        <div style="color:#8892b0; font-size:0.75rem; text-transform:uppercase;">Истекает</div>
+                                        <div style="color:#fff; font-weight:600;">${expDate}</div>
+                                    </div>
+                                    <div>
+                                        <div style="color:#8892b0; font-size:0.75rem; text-transform:uppercase;">Осталось</div>
+                                        <div style="color:${daysColor}; font-weight:600;">${data.days_left} дн.</div>
+                                    </div>
+                                </div>
+                                ${subHtml}
+                                <div style="font-size:0.75rem; color:#8892b0;">
+                                    <i class="fas fa-info-circle"></i> Скопируйте ссылку и вставьте её в ваше приложение для VPN.
+                                </div>
+                            </div>
+                            ${qrHtml}
+                        </div>
+                    `;
+                }
+            } catch (e) {
+                resultDiv.innerHTML = `<span style="color:#f87171;">Ошибка связи: ${e.message}</span>`;
+            }
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Скопировано в буфер обмена');
+            });
+        }
+
+        // Auto-check on load if session_id is present
+        (function () {
+            const params = new URLSearchParams(window.location.search);
+            const sessionId = params.get('session_id');
+            if (sessionId) {
+                setTimeout(() => checkSubscriptionStatus(sessionId), 500);
+            }
+        })();
+    </script>
 </body>
+
 </html>

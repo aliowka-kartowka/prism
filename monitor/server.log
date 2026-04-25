@@ -85,3 +85,14 @@
 2026-04-25 11:15:39,837 - ERROR - Error checking https://freenet.monster (VPN: False): HTTPSConnectionPool(host='freenet.monster', port=443): Read timed out. (read timeout=3.5)
 2026-04-25 11:15:39,927 - WARNING - RKN BLOCK DETECTED!
 2026-04-25 11:25:40,352 - INFO - RKN BLOCK CLEARED.
+127.0.0.1 - - [25/Apr/2026 14:28:30] "GET / HTTP/1.1" 200 -
+2026-04-25 14:38:50,784 - ERROR - Error checking https://freenet.monster (VPN: False): HTTPSConnectionPool(host='freenet.monster', port=443): Read timed out. (read timeout=3.5)
+2026-04-25 14:38:51,137 - WARNING - RKN BLOCK DETECTED!
+2026-04-25 14:48:52,057 - INFO - RKN BLOCK CLEARED.
+2026-04-25 15:48:00,633 - ERROR - Error checking https://freenet.monster (VPN: False): HTTPSConnectionPool(host='freenet.monster', port=443): Read timed out. (read timeout=3.5)
+2026-04-25 15:48:00,974 - WARNING - RKN BLOCK DETECTED!
+2026-04-25 15:58:01,520 - INFO - RKN BLOCK CLEARED.
+2026-04-25 16:48:42,531 - ERROR - Error checking https://freenet.monster (VPN: False): HTTPSConnectionPool(host='freenet.monster', port=443): Max retries exceeded with url: / (Caused by SSLError(SSLEOFError(8, 'EOF occurred in violation of protocol (_ssl.c:1129)')))
+2026-04-25 16:48:42,924 - ERROR - Error in RKN Monitor: HTTPSConnectionPool(host='api.telegram.org', port=443): Max retries exceeded with url: /bot8516762550:AAHcq9hVrsgPRQIe9vUQ6uUXi4GOyOQB-cQ/sendMessage (Caused by SSLError(SSLEOFError(8, 'EOF occurred in violation of protocol (_ssl.c:1129)')))
+2026-04-25 18:40:13,411 - ERROR - Error checking https://freenet.monster (VPN: False): HTTPSConnectionPool(host='freenet.monster', port=443): Max retries exceeded with url: / (Caused by SSLError(SSLEOFError(8, 'EOF occurred in violation of protocol (_ssl.c:1129)')))
+2026-04-25 18:40:13,781 - ERROR - Error in RKN Monitor: HTTPSConnectionPool(host='api.telegram.org', port=443): Max retries exceeded with url: /bot8516762550:AAHcq9hVrsgPRQIe9vUQ6uUXi4GOyOQB-cQ/sendMessage (Caused by SSLError(SSLEOFError(8, 'EOF occurred in violation of protocol (_ssl.c:1129)')))
