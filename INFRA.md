@@ -64,9 +64,9 @@ To ensure maximum resilience against Roskomnadzor (RKN), the platform provides m
 *   **Additive Renewal Logic**: The server calculates new expiration as `max(now, current_expire) + duration + 30_days_gift`.
 *   **Automation**: Automatically updates or **creates** Marzban users with `DEFAULT_INBOUNDS` if they don't exist.
 *   **Pricing Tiers**:
-    *   **Monster Pack**: $4.99 / 30 Days (+ 30 Days Gift).
+    *   **Monster Pack**: $6.99 / 30 Days (+ 30 Days Gift).
     *   **Monster Guard**: $14.99 / 90 Days (+ 30 Days Gift).
-    *   **Monster Legend**: $49.99 / 1 Year (+ 30 Days Gift).
+    *   **Monster Legend**: $44.99 / 1 Year (+ 30 Days Gift).
 
 ---
 
@@ -172,17 +172,20 @@ IS_MOSCOW_NODE=true
 /etc/systemd/system/freenet-monitor.service
 WorkingDirectory=/var/www/monitor
 ExecStart=/usr/bin/python3 /var/www/monitor/server.py
-Environment=STRIPE_SECRET_KEY=sk_...
-Environment=STRIPE_WEBHOOK_SECRET=whsec_...
 ```
 
 ### Moscow Systemd Service
 ```
 /etc/systemd/system/freenet-monitor.service
-WorkingDirectory=/var/www/monitor
-ExecStart=/usr/bin/python3 /var/www/monitor/server.py
-EnvironmentFile=-/var/www/monitor/.env
+WorkingDirectory=/home/aliowka/workspace/monitor
+ExecStart=/usr/bin/python3 /home/aliowka/workspace/monitor/server.py
 ```
+
+### Environment Variables (`.env`)
+Both nodes use a local `.env` file located in the same directory as `server.py`.
+A custom `manual_load_dotenv` function in `server.py` parses this file automatically, removing the dependency on `python-dotenv` or systemd-level environment configurations. This prevents secrets from being committed to Git (caught by GitHub Push Protection).
+*   **Hetzner (`/var/www/monitor/.env`)**: Contains `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET`.
+*   **Moscow (`/home/aliowka/workspace/monitor/.env`)**: Contains `MASTER_URL` and `IS_MOSCOW_NODE=true`.
 
 ### Moscow Xray VPN Client Config
 ```

@@ -92,6 +92,7 @@ FREENET_ADMIN_ID = 1131496447
 CHECK_RESULTS = {}
 NODES = {} # Metadata about nodes
 RESULTS_LOCK = threading.Lock()
+CHECK_SEMAPHORE = threading.Semaphore(20) # Limit concurrent individual /api/check requests
 
 def init_results():
     global CHECK_RESULTS
@@ -142,8 +143,10 @@ class RKNMonitorThread(threading.Thread):
                     return {"target": domain, "is_ok": is_up}
 
                 test_set = ALLOWED_DOMAINS
+                logger.info(f"Starting check batch for {len(test_set)} domains...")
                 with ThreadPoolExecutor(max_workers=10) as executor:
                     results = list(executor.map(run_check, test_set))
+                logger.info(f"Finished check batch for {len(results)} domains.")
                     
                 # Alert logic for critical domains (checking against previous results)
                 for res in results:
@@ -909,7 +912,7 @@ class Handler(BaseHTTPRequestHandler):
                         timeout=20
                     )
                     body = resp.content
-                    self.send_response(200)
+                    self.send_response(resp.status_code)
                     self.send_header('Content-type', 'application/json')
                     self.send_cors()
                     self.end_headers()
@@ -918,14 +921,26 @@ class Handler(BaseHTTPRequestHandler):
                 except Exception as e:
                     logger.error(f"Failed to proxy check to Moscow: {e}. Falling back to local check.")
 
-            # Moscow node (or Hetzner fallback): do the check locally
-            is_up = check_url(target_url, use_vpn=use_vpn)
-            body = json.dumps({'up': is_up, 'status': 'up' if is_up else 'down'}).encode()
-            self.send_response(200)
-            self.send_header('Content-type', 'application/json')
-            self.send_cors()
-            self.end_headers()
-            self.wfile.write(body)
+            # Concurrency limit to prevent OOM
+            if not CHECK_SEMAPHORE.acquire(blocking=False):
+                self.send_response(429)
+                self.send_header('Content-type', 'application/json')
+                self.send_cors()
+                self.end_headers()
+                self.wfile.write(b'{"error": "Too many concurrent checks", "status": "down"}')
+                return
+
+            try:
+                # Moscow node (or Hetzner fallback): do the check locally
+                is_up = check_url(target_url, use_vpn=use_vpn)
+                body = json.dumps({'up': is_up, 'status': 'up' if is_up else 'down'}).encode()
+                self.send_response(200)
+                self.send_header('Content-type', 'application/json')
+                self.send_cors()
+                self.end_headers()
+                self.wfile.write(body)
+            finally:
+                CHECK_SEMAPHORE.release()
 
         elif parsed.path == '/api/logs':
             # Simple security: check for token in query params

@@ -566,7 +566,7 @@
 
                     <!-- 1 Year -->
                     <div class="pricing-card"
-                        style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 15px; padding: 30px; text-align:center; transition: all 0.3s;">
+                        style="display: none !important; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 15px; padding: 30px; text-align:center; transition: all 0.3s;">
                         <div style="font-size: 1.4rem; color: #fff; font-family:'Outfit'; margin-bottom: 15px;">👑
                             Monster Legend</div>
                         <div style="font-size: 3rem; color: var(--accent); font-weight: 800; margin-bottom: 5px;">$44.99
@@ -1418,11 +1418,15 @@
             // If we are looking for global status, try the aggregated API first
             if (mode === "freenet" || mode === "direct") {
                 const ok = await updateGridFromStatus();
+                const statusTextEl = document.getElementById("statusText");
                 if (ok) {
-                    const statusTextEl = document.getElementById("statusText");
                     if (statusTextEl) statusTextEl.textContent = translations[currentLang].standingBy;
-                    return;
+                } else {
+                    // Prevent frontend DDoS: If status is empty, don't fall back to 40 individual checks.
+                    // Just show a waiting message and return.
+                    if (statusTextEl) statusTextEl.textContent = "Initializing monitoring node... please refresh in 30s.";
                 }
+                return; // ALWAYS return to prevent massive concurrent requests to backend
             }
 
             const isVpn = mode === "freenet";
