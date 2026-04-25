@@ -352,7 +352,7 @@
                     box-shadow: 0 0 20px rgba(100, 255, 218, 0.3);
                     animation: pulse 2s infinite;
                 " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
-                     🎁 ПОЛУЧИТЬ 1 МЕСЯЦ БЕСПЛАТНО
+                     🎁 МЕСЯЦ В ПОДАРОК
                 </button>
             </div>
 
@@ -575,7 +575,6 @@ function shareApp() {
 
 const siteCategories = {
     "Sites": [
-        { name: "FreeNet", url: "https://freenet.monster", icon: "shield-check" },
         { name: "Youtube", url: "https://youtube.com", icon: "tv" },
         { name: "Telegram", url: "https://t.me", icon: "users" },
         { name: "Instagram", url: "https://instagram.com", icon: "users" },
@@ -604,6 +603,9 @@ const siteCategories = {
         { name: "RuTube",        url: "https://rutube.ru",           icon: "tv" },
         { name: "Tinkoff",       url: "https://www.tinkoff.ru",      icon: "credit-card" },
         { name: "2GIS",          url: "https://2gis.ru",             icon: "map-pin" }
+    ],
+    "FreeNet": [
+        { name: "FreeNet", url: "https://freenet.monster", icon: "shield-check" }
     ]
 };
 
@@ -834,7 +836,8 @@ function buildGrid() {
 
     const catLabels = {
         "Sites": null,
-        "Российские сайты": { label: "Российские сайты", note: "Прямой доступ — VPN не нужен", color: "rgba(100,200,255,0.12)", border: "rgba(100,200,255,0.3)" }
+        "Российские сайты": { icon: "flag", label: "Российские сайты", note: "Прямой доступ — VPN не нужен", color: "rgba(100,200,255,0.12)", border: "rgba(100,200,255,0.3)" },
+        "FreeNet": { icon: "shield-check", label: "Инфраструктура FreeNet", note: "Наши серверы и сервисы", color: "rgba(100,255,218,0.12)", border: "rgba(100,255,218,0.3)" }
     };
 
     for (const [cat, sites] of Object.entries(siteCategories)) {
@@ -843,6 +846,7 @@ function buildGrid() {
             const header = document.createElement("div");
             header.style.cssText = "display:flex; align-items:center; gap:10px; margin: 28px 0 12px; padding: 12px 16px; border-radius: 10px; background:" + meta.color + "; border: 1px solid " + meta.border + ";";
             header.innerHTML = 
+                (meta.icon ? "<i data-lucide=\"" + meta.icon + "\" style=\"color: " + (meta.border.replace('0.3', '1.0')) + "; width:20px; height:20px;\"></i>" : "") +
                 "<div>" +
                     "<div style='font-weight:700; font-size:1rem; color:#e6f1ff;'>" + meta.label + "</div>" +
                     "<div style='font-size:0.78rem; color:#64ffda; margin-top:2px;'>\u2713 " + meta.note + "</div>" +
@@ -858,6 +862,7 @@ function buildGrid() {
             const faviconUrl = getFavicon(site);
             const card = document.createElement("div");
             card.className = "card";
+            card.id = "card_" + id;
             card.style.cursor = "pointer";
             card.onclick = () => { startGraphForSite(site.url, site.name); };
             card.innerHTML = 
@@ -989,13 +994,11 @@ async function startGraphForSite(url, name, isAuto = false) {
             c.style.borderColor = 'transparent';
         });
         const siteId = name.replace(/[^a-z0-9]/gi, "_");
-        const cards = document.querySelectorAll('.card');
-        cards.forEach(c => {
-            if (c.innerText.includes(name)) {
-                c.style.boxShadow = '0 0 20px rgba(100, 255, 218, 0.4), inset 0 0 10px rgba(100, 255, 218, 0.1)';
-                c.style.borderColor = 'var(--accent)';
-            }
-        });
+        const activeCard = document.getElementById("card_" + siteId);
+        if (activeCard) {
+            activeCard.style.boxShadow = '0 0 20px rgba(100, 255, 218, 0.4), inset 0 0 10px rgba(100, 255, 218, 0.1)';
+            activeCard.style.borderColor = 'var(--accent)';
+        }
         
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -1209,7 +1212,7 @@ function getTitleWithDate(base) {
 buildGrid();
 // Initially open YouTube graph
 setTimeout(() => {
-    startGraphForSite("https://youtube.com", "YouTube");
+    startGraphForSite("https://youtube.com", "Youtube");
 }, 500);
 
 // Initial run: PER USER REQUEST: RUN SIMULTANEOUSLY
@@ -1226,18 +1229,48 @@ if (window.Telegram && window.Telegram.WebApp) {
 }
 
 })();
+// Global User State
+let currentUser = JSON.parse(localStorage.getItem('freenet_user') || 'null');
+
 function onTelegramAuth(user) {
-    console.log('Logged in as ' + user.first_name + ' ' + user.last_name + ' (' + user.id + (user.username ? ', @' + user.username : '') + ')');
+    console.log('Logged in as:', user);
+    currentUser = user;
+    localStorage.setItem('freenet_user', JSON.stringify(user));
+    
+    // Refresh pricing links immediately
+    updatePricingLinks();
+    
+    const progressBar = document.getElementById("progressBar");
+    if(progressBar) progressBar.style.width = "50%";
+    
+    fetch('/api/trial', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(user)
+    })
+    .then(res => res.json())
+    .then(data => {
+        if(progressBar) progressBar.style.width = "100%";
+        if (data.subscription_url) {
+            const qrContent = (data.links && data.links.length > 0) ? data.links[0] : data.subscription_url;
+            const encodedUrl = encodeURIComponent(qrContent);
+            document.getElementById('trialQR').src = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodedUrl}&margin=5&bgcolor=ffffff`;
+            
+            document.getElementById('trialLink').textContent = data.subscription_url;
+            document.getElementById('trialModal').style.display = 'flex';
+        } else {
+            alert(data.error || "TRIAL LIMIT: 1 per 24 hours per Telegram account.");
+        }
+        setTimeout(() => { if(progressBar) progressBar.style.width = "0%"; }, 1000);
+    })
+    .catch(err => {
+        if(progressBar) progressBar.style.width = "0%";
+        alert("Server error. Please try again later.");
+    });
 }
 
-function openPricing() {
-    let username = "unknown";
-    if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe.user) {
-        const user = window.Telegram.WebApp.initDataUnsafe.user;
-        username = `trial_${user.username || user.id}`;
-    }
-    
-    // Update Stripe links with client_reference_id
+function updatePricingLinks() {
+    const username = currentUser ? `tg_${currentUser.id}` : 'unknown';
     const links = {
         'btn-pack': 'https://buy.stripe.com/test_dRm00jeFjemx7v9b5AbbG05',
         'btn-guard': 'https://buy.stripe.com/test_3cI8wPeFj4LXcPtehMbbG03',
@@ -1247,14 +1280,30 @@ function openPricing() {
     for (const [id, url] of Object.entries(links)) {
         const el = document.getElementById(id);
         if (el) {
-            // Stripe payment links support client_reference_id via query param
-            el.onclick = () => {
-                window.location.href = `${url}?client_reference_id=${username}`;
-            };
+            if (username === 'unknown') {
+                el.classList.add('disabled');
+                el.style.opacity = "0.3";
+                el.style.pointerEvents = "none";
+            } else {
+                el.classList.remove('disabled');
+                el.style.opacity = "1";
+                el.style.pointerEvents = "auto";
+                el.onclick = () => {
+                    window.location.href = `${url}?client_reference_id=${username}&success_url=https://freenet.monster`;
+                };
+            }
         }
     }
+}
 
+function openPricing() {
+    updatePricingLinks();
+    const loginWarning = document.getElementById('loginWarning');
+    if (loginWarning) {
+        loginWarning.style.display = currentUser ? 'none' : 'block';
+    }
     document.getElementById('pricingModal').style.display = 'flex';
+}
 }
 function closePricing() {
     document.getElementById('pricingModal').style.display = 'none';
@@ -1338,6 +1387,12 @@ function toggleTheme() {
     if (savedTheme && themes.includes(savedTheme)) {
         document.body.setAttribute('data-theme', savedTheme);
         currentThemeIndex = themes.indexOf(savedTheme);
+    }
+
+    // Load saved user
+    if (currentUser) {
+        console.log("Welcome back, ", currentUser.first_name);
+        updatePricingLinks();
     }
 
     // Refresh status from nodes every 60 seconds

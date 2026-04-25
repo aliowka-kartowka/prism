@@ -27,6 +27,7 @@ logger = logging.getLogger(__name__)
 if stripe:
     stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
 STRIPE_WEBHOOK_SECRET = os.getenv('STRIPE_WEBHOOK_SECRET')
+STRIPE_LOGS = [] # In-memory buffer for Stripe events
 
 # Node Identity & Environment
 IS_MOSCOW_NODE = os.getenv('IS_MOSCOW_NODE', 'false').lower() == 'true'
@@ -247,8 +248,11 @@ def get_marzban_token():
     except Exception as e:
         logger.error(f"Marzban Auth exception: {e}")
     return None
+# Default inbounds for new users
+DEFAULT_INBOUNDS = {"vless": ["VLESS REALITY", "VLESS WS"]}
+DEFAULT_PROXIES = {"vless": {}}
 
-def update_marzban_premium(username, is_active=True):
+def update_marzban_premium(username, is_active=True, days=0):
     token = get_marzban_token()
     if not token:
         return {"error": "Authentication failed"}
@@ -256,25 +260,53 @@ def update_marzban_premium(username, is_active=True):
     headers = {'Authorization': f'Bearer {token}', 'Content-Type': 'application/json'}
     url = f"{MARZBAN_URL}/api/user/{username}"
     
+    # 1. Get current user data to see if we should EXTEND or START new expiration
+    current_expire = None
+    user_exists = False
+    try:
+        get_res = session.get(url, headers=headers, timeout=5)
+        if get_res.status_code == 200:
+            user_data = get_res.json()
+            current_expire = user_data.get('expire')
+            user_exists = True
+        elif get_res.status_code == 404:
+            user_exists = False
+    except Exception as e:
+        logger.error(f"Error fetching user for extension: {e}")
+
+    now = int(time.time())
+    # If user already has expiration in the future, add to it. Otherwise start from now.
+    base_time = max(now, current_expire) if current_expire else now
+    expire_ts = base_time + (days * 86400) if days > 0 else current_expire
+
     # Premium users have no data limit (0) and status 'active'
-    # We also mark them in the note
     status = "active" if is_active else "disabled"
     data = {
+        "username": username,
         "status": status,
         "note": "PREMIUM_USER",
         "data_limit": 0 if is_active else 1 # No limit if active
     }
+    if days > 0:
+        data["expire"] = expire_ts
     
     try:
-        response = session.put(url, headers=headers, json=data, timeout=10)
-        if response.status_code == 200:
-            logger.info(f"Marzban user {username} updated: {status}")
+        if user_exists:
+            response = session.put(url, headers=headers, json=data, timeout=10)
+        else:
+            # Create user if doesn't exist
+            data["inbounds"] = DEFAULT_INBOUNDS
+            data["proxies"] = DEFAULT_PROXIES
+            response = session.post(f"{MARZBAN_URL}/api/user", headers=headers, json=data, timeout=10)
+            
+        if response.status_code in (200, 201):
+            logger.info(f"Marzban user {username} {'updated' if user_exists else 'created'}: {status}, expire: {expire_ts}")
             return response.json()
         else:
-            logger.error(f"Failed to update Marzban user {username}: {response.text}")
+            logger.error(f"Failed to {'update' if user_exists else 'create'} Marzban user {username}: {response.text}")
             return {"error": response.text}
     except Exception as e:
-        logger.error(f"Error updating Marzban user: {e}")
+        logger.error(f"Error managing Marzban user: {e}")
         return {"error": str(e)}
 
 def create_marzban_trial(username):
@@ -292,6 +324,11 @@ def create_marzban_trial(username):
         if get_response.status_code == 200:
             user = get_response.json()
             
+            # CRITICAL: If user is already PREMIUM, do NOT reset them to trial limits!
+            if user.get('note') == 'PREMIUM_USER':
+                logger.info(f"User {username} is already premium. Skipping trial reset.")
+                return map_user_links(user)
+
             # Check if user needs renewal (expired or exhausted data)
             # data_limit is compared against used_traffic
             status = user.get('status', 'active')
@@ -333,8 +370,8 @@ def create_marzban_trial(username):
         "username": username,
         "data_limit": DATA_LIMIT,
         "expire": int(time.time() + 86400), # 1 day from now
-        "proxies": {"vless": {}},
-        "inbounds": {"vless": ["VLESS REALITY", "VLESS WS"]}
+        "proxies": DEFAULT_PROXIES,
+        "inbounds": DEFAULT_INBOUNDS
     }
     
     try:
@@ -523,9 +560,13 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
 
     def handle_stripe_webhook(self):
+        logger.info(f"!!! WEBHOOK CALL FROM {self.client_address} !!!")
         try:
-            payload = self.rfile.read(int(self.headers['Content-Length']))
+            cl = int(self.headers.get('Content-Length', 0))
+            payload = self.rfile.read(cl)
             sig_header = self.headers.get('Stripe-Signature')
+            
+            logger.info(f"Payload length: {cl}, Signature present: {bool(sig_header)}")
 
             if not STRIPE_WEBHOOK_SECRET:
                 logger.error("STRIPE_WEBHOOK_SECRET is not set. Skipping verification.")
@@ -541,15 +582,33 @@ class Handler(BaseHTTPRequestHandler):
             return
 
         # Handle the event
-        logger.info(f"Received Stripe event: {event['type']}")
+        msg = f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Received: {event.get('type')} [ID: {event.get('id')}]"
+        logger.info(msg)
+        STRIPE_LOGS.append(msg)
+        if len(STRIPE_LOGS) > 200: STRIPE_LOGS.pop(0)
         
         try:
             if event['type'] == 'checkout.session.completed':
                 session_obj = event['data']['object']
                 username = session_obj.get('client_reference_id')
+                amount = session_obj.get('amount_total', 0)
+                
                 if username:
-                    logger.info(f"Payment completed for {username}. Activating premium.")
-                    update_marzban_premium(username, is_active=True)
+                    # Determine duration based on amount (in cents)
+                    # $4.99 -> 30 days, $14.99 -> 90 days, $49.99 -> 365 days
+                    days = 30
+                    if amount >= 4500: days = 365
+                    elif amount >= 1400: days = 90
+                    
+                    # Add 1 month gift (30 days) to all purchases
+                    total_days = days + 30
+                    
+                    success_msg = f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] SUCCESS: {username} paid {amount/100}$. Activating {total_days} days."
+                    logger.info(success_msg)
+                    STRIPE_LOGS.append(success_msg)
+                    if len(STRIPE_LOGS) > 200: STRIPE_LOGS.pop(0)
+
+                    update_marzban_premium(username, is_active=True, days=total_days)
             
             elif event['type'] in ('customer.subscription.updated', 'customer.subscription.deleted'):
                 sub = event['data']['object']
@@ -887,6 +946,17 @@ class Handler(BaseHTTPRequestHandler):
             self.send_cors()
             self.end_headers()
             self.wfile.write(json.dumps({"logs": log_content.splitlines()}).encode())
+            
+        elif parsed.path == '/api/stripe/logs':
+            token = urlparse.parse_qs(parsed.query).get('token', [''])[0]
+            if token != ADMIN_PASS:
+                self.send_response(401); self.end_headers(); return
+            
+            self.send_response(200)
+            self.send_header('Content-type', 'application/json')
+            self.send_cors()
+            self.end_headers()
+            self.wfile.write(json.dumps({"logs": STRIPE_LOGS}).encode())
 
         elif parsed.path == '/api/trial':
             # Prioritize X-Real-IP or X-Forwarded-For if behind a proxy

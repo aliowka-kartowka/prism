@@ -11,7 +11,7 @@ The primary management hub and VPN exit point.
 *   **Host**: `178.104.135.156` (Hetzner)
 *   **Core Services**:
     *   **Marzban**: Xray management panel handling users, subscriptions, and protocols.
-    *   **Nginx Reverse Proxy**: Handles SSL termination and protects the backend services. Configured for **WebSocket proxying** on port 443 to support Cloudflare CDN.
+    *   **Nginx Reverse Proxy**: Handles SSL termination and protects the backend services. Configured for **WebSocket proxying** and **Stripe Webhook proxying** (`/webhook/`) to port 8090.
     *   **Cloudflare Proxy**: `vpn.freenet.monster` is proxied via Cloudflare to mask the Hetzner IP.
     *   **Cloudflare WARP**: Local SOCKS5 proxy (`127.0.0.1:40000`) for "clean" IP exits (e.g., for ChatGPT).
 
@@ -45,7 +45,8 @@ To ensure maximum resilience against Roskomnadzor (RKN), the platform provides m
 
 ### ✨ Sing-box Automatic Split-Tunneling
 *   **Configuration**: Automated JSON served via `/api/config/singbox/<username>`.
-*   **Mechanism**: Automatically routes domestic Russian traffic (`geoip:ru`, `geosite:ru`, `.ru` domains) to **Direct** (local ISP), avoiding VPN latency and potential blocks from Russian state sites.
+*   **Mechanism**: Automatically routes domestic Russian traffic (`geoip:ru`, `geosite:ru`, `.ru` domains) to **Direct** (local ISP), avoiding VPN latency.
+*   **User Identification**: Universal format `tg_<telegram_id>` is used for both Trial and Premium to ensure seamless upgrade path.
 
 ---
 
@@ -59,14 +60,13 @@ To ensure maximum resilience against Roskomnadzor (RKN), the platform provides m
 
 ## 💰 Monetization & Subscriptions (Stripe)
 *   **Stripe Integration**: Automated via Stripe Payment Links and Webhooks.
-*   **Webhooks**: `/webhook/stripe` endpoint handles `checkout.session.completed` and `customer.subscription.*` events.
-*   **Automation**: The server automatically updates Marzban users:
-    *   **Activation**: `data_limit = 0` (Unlimited), `status = active`, `note = PREMIUM_USER`.
-    *   **Deactivation**: `status = disabled` on payment failure or cancellation.
+*   **Webhooks**: `/webhook/stripe` endpoint handles `checkout.session.completed` events.
+*   **Additive Renewal Logic**: The server calculates new expiration as `max(now, current_expire) + duration + 30_days_gift`.
+*   **Automation**: Automatically updates or **creates** Marzban users with `DEFAULT_INBOUNDS` if they don't exist.
 *   **Pricing Tiers**:
-    *   **Monster Pack**: $6.99 / 30 Days.
-    *   **Monster Guard**: $14.99 / 90 Days (Popular).
-    *   **Monster Legend**: $49.99 / 1 Year (VIP).
+    *   **Monster Pack**: $4.99 / 30 Days (+ 30 Days Gift).
+    *   **Monster Guard**: $14.99 / 90 Days (+ 30 Days Gift).
+    *   **Monster Legend**: $49.99 / 1 Year (+ 30 Days Gift).
 
 ---
 
@@ -152,7 +152,7 @@ Browser fetchs /api/status on page load
 | Marzban API | `python` | 127.0.0.1:8080 | Internal only |
 | Xray (Marzban's) | `xray` pid≈833092 | 1080, 127.0.0.1:13904 | Shadowsocks TCP + gRPC API |
 | FreeNet Monitor | `python3` | 0.0.0.0:8090 | `/var/www/monitor/server.py` |
-| Stripe Webhook | `/webhook/stripe` | 8090 | Auto-activates Marzban users |
+| Stripe Webhook | `/webhook/stripe` | 8090 | Proxiable via Nginx; Auto-activates users |
 
 ### Moscow (`94.159.117.222`)
 

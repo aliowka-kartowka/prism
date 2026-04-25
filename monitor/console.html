@@ -161,6 +161,7 @@
                 <button class="tab-btn active" onclick="showTab('sys')">System Logs</button>
                 <button class="tab-btn" onclick="showTab('nodes')">Node Status</button>
                 <button class="tab-btn" onclick="showTab('traffic')">User Traffic</button>
+                <button class="tab-btn" onclick="showTab('stripe')">Stripe Monitor</button>
                 <button class="tab-btn" onclick="showTab('xray')">Xray Feed</button>
             </div>
         </div>
@@ -243,6 +244,7 @@
             if (currentTab === 'sys') fetchLogs();
             if (currentTab === 'nodes') fetchNodes();
             if (currentTab === 'traffic') fetchTraffic();
+            if (currentTab === 'stripe') fetchStripeLogs();
             if (currentTab === 'xray') fetchXrayLogs();
         }
 
@@ -303,6 +305,13 @@
             try {
                 const res = await fetch(`/api/marzban/logs?token=${encodeURIComponent(token)}`);
                 updateTerminal('terminal-xray', res);
+            } catch (e) { handleErr(); }
+        }
+
+        async function fetchStripeLogs() {
+            try {
+                const res = await fetch(`/api/stripe/logs?token=${encodeURIComponent(token)}`);
+                updateTerminal('terminal-stripe', res);
             } catch (e) { handleErr(); }
         }
 
