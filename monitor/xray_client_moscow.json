@@ -1,0 +1,63 @@
+{
+    "log": {
+        "loglevel": "warning"
+    },
+    "inbounds": [
+        {
+            "tag": "socks-in",
+            "listen": "127.0.0.1",
+            "port": 1081,
+            "protocol": "socks",
+            "settings": {
+                "auth": "noauth",
+                "udp": false
+            }
+        }
+    ],
+    "outbounds": [
+        {
+            "tag": "freenet-vless",
+            "protocol": "vless",
+            "settings": {
+                "vnext": [
+                    {
+                        "address": "178.104.135.156",
+                        "port": 2053,
+                        "users": [
+                            {
+                                "id": "52c3979d-b387-418f-a766-f3ffd8c55231",
+                                "encryption": "none",
+                                "flow": "xtls-rprx-vision"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "streamSettings": {
+                "network": "tcp",
+                "security": "reality",
+                "realitySettings": {
+                    "publicKey": "eKXMBON087oQUvQUHfOLNWc826olKPunGen-pDC6glY",
+                    "shortId": "61b4a390",
+                    "fingerprint": "chrome",
+                    "serverName": "www.yandex.ru",
+                    "spiderX": ""
+                }
+            }
+        },
+        {
+            "protocol": "freedom",
+            "tag": "direct"
+        }
+    ],
+    "routing": {
+        "domainStrategy": "AsIs",
+        "rules": [
+            {
+                "type": "field",
+                "ip": ["geoip:private"],
+                "outboundTag": "direct"
+            }
+        ]
+    }
+}

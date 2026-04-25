@@ -322,8 +322,10 @@
         </div>
 
         <div class="actions-wrapper" style="display: flex; flex-direction: column; gap: 12px; align-items: flex-end; min-width: 320px;">
-            <div class="trial-row" style="display: flex; align-items: center; gap: 15px; width: 100%; justify-content: flex-end;">
-                <div class="trial-info" style="
+            
+            <!-- Premium Row -->
+            <div class="premium-row" style="display: flex; align-items: center; gap: 15px; width: 100%; justify-content: flex-end;">
+                <div class="premium-info" style="
                     background: rgba(100, 255, 218, 0.05);
                     border: 1px solid rgba(100, 255, 218, 0.2);
                     border-radius: 8px;
@@ -333,24 +335,27 @@
                     gap: 2px;
                 ">
                     <div style="color: #64ffda; font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; gap: 5px;">
-                        <i class="fas fa-bolt"></i> <span id="lblPromoFreeTitle">Free Trial</span>
+                        <i class="fas fa-gift"></i> <span>АКЦИЯ</span>
                     </div>
-                    <div id="lblPromoFreeDesc" style="color: #8892b0; font-size: 0.75rem;">10GB / 24h</div>
+                    <div style="color: #8892b0; font-size: 0.75rem;">+1 Месяц Бесплатно</div>
                 </div>
-                <button class="btn-primary" onclick="window.location.href='https://t.me/FreeNetMonsterBot?start=monitor'" style="
+                <button class="btn-premium" onclick="openPricing()" style="
                     background: var(--accent);
                     color: var(--bg-card);
                     border: none;
-                    padding: 12px 20px;
+                    padding: 15px 25px;
                     border-radius: 8px;
-                    font-weight: 700;
+                    font-weight: 800;
                     cursor: pointer;
                     font-family: 'Outfit';
                     transition: all 0.3s;
-                " onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">
-                     ПОПРОБОВАТЬ БЕСПЛАТНО
+                    box-shadow: 0 0 20px rgba(100, 255, 218, 0.3);
+                    animation: pulse 2s infinite;
+                " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                     🎁 ПОЛУЧИТЬ 1 МЕСЯЦ БЕСПЛАТНО
                 </button>
             </div>
+
             <div style="display: flex; gap: 10px; width: 100%;">
                 <button class="btn-share-wide" onclick="shareApp()" style="
                     flex: 1;
@@ -375,96 +380,59 @@
         </div>
     </header>
 
-    <!-- Trial Modal -->
-    <div id="trialModal" style="
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(10, 25, 47, 0.95);
-        z-index: 9999;
-        justify-content: center;
-        align-items: center;
-        backdrop-filter: blur(8px);
-    ">
-        <div style="
-            background: #112240;
-            padding: 1.5rem;
-            border-radius: 16px;
-            max-width: 400px;
-            width: 90%;
-            max-height: 85vh;
-            overflow-y: auto;
-            border: 1px solid #233554;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
-            text-align: center;
-            position: relative;
-        ">
-            <button onclick="closeTrialModal()" style="
-                position: absolute;
-                top: 15px;
-                right: 15px;
-                background: none;
-                border: none;
-                color: #8892b0;
-                font-size: 1.5rem;
-                padding: 0;
-                line-height: 1;
-                z-index: 10;
-            ">&times;</button>
-            <div style="color: #64ffda; margin-bottom: 1.5rem;">
-                <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M8 12l3 3 5-5"></path></svg>
-            </div>
-            <h2 id="modalTitle" style="color: #e6f1ff; margin-bottom: 0.5rem; font-family: 'Outfit';">Trial Created!</h2>
-            <p id="modalSub" style="color: #8892b0; font-size: 0.9rem; margin-bottom: 1.5rem;">Your 10GB trial subscription is ready.</p>
+    <!-- Pricing Modal -->
+    <div id="pricingModal" class="modal-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(10,11,30,0.95); z-index:2000; align-items:center; justify-content:center; backdrop-filter: blur(10px);">
+        <div class="pricing-container" style="background: var(--bg-card); border: 1px solid rgba(100,255,218,0.2); border-radius: 20px; padding: 40px; max-width: 1000px; width: 90%; position: relative; box-shadow: 0 0 50px rgba(100,255,218,0.1);">
+            <button onclick="closePricing()" style="position:absolute; top:20px; right:20px; background:none; border:none; color: #8892b0; font-size: 1.5rem; cursor:pointer;"><i class="fas fa-times"></i></button>
             
-            <!-- QR code fits to sides by using negative margin to offset modal padding -->
-            <div id="qrcodeCont" style="background: white; padding: 15px; width: calc(100% + 3rem); margin-left: -1.5rem; margin-right: -1.5rem; box-sizing: border-box; display: flex; justify-content: center; margin-bottom: 1.5rem; box-shadow: inset 0 0 10px rgba(0,0,0,0.1);">
-                <img id="trialQR" src="" alt="QR Code" style="max-width: 240px; width: 100%; height: auto; display: block;">
-            </div>
-            
-            <div style="
-                background: rgba(0,0,0,0.3);
-                padding: 1rem;
-                border-radius: 8px;
-                border: 1px solid #233554;
-                font-family: var(--font-mono);
-                font-size: 0.8rem;
-                color: #64ffda;
-                word-break: break-all;
-                margin-bottom: 1.5rem;
-                text-align: left;
-            " id="trialLink">---</div>
-            
-            <button onclick="copyTrialLink()" id="btnCopy" style="
-                width: 100%;
-                background: #64ffda;
-                color: #0a192f;
-                border: none;
-                padding: 0.8rem;
-                border-radius: 6px;
-                font-weight: 700;
-                text-transform: uppercase;
-                letter-spacing: 1px;
-                margin-bottom: 1.5rem;
-                cursor: pointer;
-            ">Copy Link</button>
+            <h2 style="text-align:center; font-family:'Outfit'; font-size: 2.5rem; color:#fff; margin-bottom: 10px;">Выберите ваш уровень <span style="color:var(--accent);">Monster</span></h2>
+            <p style="text-align:center; color:var(--accent); font-weight:700; font-size:1.2rem; margin-bottom: 30px; text-transform: uppercase; letter-spacing: 1px;">🎁 Акция: 1 МЕСЯЦ БЕСПЛАТНО при покупке любого тарифа!</p>
 
-            <div style="text-align: left; background: rgba(0,0,0,0.2); padding: 1.2rem; border-radius: 8px; margin-bottom: 1.5rem; border: 1px solid rgba(100,255,218,0.1);">
-                <h4 id="howToUseTitle" style="color: #ccd6f6; margin: 0 0 10px 0; font-size: 0.9rem; font-family: 'Outfit';">How to use:</h4>
-                <ul style="color: #8892b0; font-size: 0.8rem; padding-left: 1.2rem; margin: 0; line-height: 1.6; font-family: 'Inter';">
-                    <li id="howToUseStep1">1. Copy the link above.</li>
-                    <li id="howToUseStep2">2. Install a VPN client (v2rayNG, Streisand, or Shadowrocket).</li>
-                    <li id="howToUseStep3">3. Add the link as a "Subscription" or "Import from Clipboard".</li>
-                    <li id="howToUseStep4">4. Update the server list and connect.</li>
-                </ul>
+            <div class="pricing-grid" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px;">
+                <!-- 1 Month -->
+                <div class="pricing-card" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 15px; padding: 30px; text-align:center; transition: all 0.3s;">
+                    <div style="font-size: 1.5rem; color: #fff; font-family:'Outfit'; margin-bottom: 15px;">Monster Pack</div>
+                    <div style="font-size: 3rem; color: var(--accent); font-weight: 800; margin-bottom: 5px;">$6.99</div>
+                    <div style="color: #8892b0; margin-bottom: 25px;">30 Дней</div>
+                    <ul style="list-style:none; padding:0; margin:0 0 30px 0; color:#ccd6f6; text-align:left; font-size: 0.9rem;">
+                        <li style="margin-bottom: 10px; color:var(--accent); font-weight:700;"><i class="fas fa-gift" style="margin-right:10px;"></i> +1 МЕСЯЦ БЕСПЛАТНО</li>
+                        <li style="margin-bottom: 10px;"><i class="fas fa-check" style="color:var(--accent); margin-right:10px;"></i> Безлимитный трафик</li>
+                        <li style="margin-bottom: 10px;"><i class="fas fa-check" style="color:var(--accent); margin-right:10px;"></i> Все локации</li>
+                    </ul>
+                    <button id="btn-pack" style="width:100%; padding:12px; border-radius:8px; border:1px solid var(--accent); background:transparent; color:var(--accent); font-weight:700; cursor:pointer; transition:0.3s;" onmouseover="this.style.background='var(--accent)'; this.style.color='var(--bg-card)'" onmouseout="this.style.background='transparent'; this.style.color='var(--accent)'">ВЫБРАТЬ</button>
+                </div>
+
+                <!-- 90 Days -->
+                <div class="pricing-card popular" style="background: rgba(100,255,218,0.05); border: 2px solid var(--accent); border-radius: 15px; padding: 30px; text-align:center; transform: scale(1.05); position:relative; transition: all 0.3s;">
+                    <div style="position:absolute; top:-15px; left:50%; transform:translateX(-50%); background:var(--accent); color:var(--bg-card); padding:5px 15px; border-radius:20px; font-size:0.8rem; font-weight:800;">ПОПУЛЯРНЫЙ</div>
+                    <div style="font-size: 1.5rem; color: #fff; font-family:'Outfit'; margin-bottom: 15px;">Monster Guard</div>
+                    <div style="font-size: 3rem; color: var(--accent); font-weight: 800; margin-bottom: 5px;">$14.99</div>
+                    <div style="color: #8892b0; margin-bottom: 25px;">90 Дней</div>
+                    <ul style="list-style:none; padding:0; margin:0 0 30px 0; color:#ccd6f6; text-align:left; font-size: 0.9rem;">
+                        <li style="margin-bottom: 10px; color:var(--accent); font-weight:700;"><i class="fas fa-gift" style="margin-right:10px;"></i> +1 МЕСЯЦ БЕСПЛАТНО</li>
+                        <li style="margin-bottom: 10px;"><i class="fas fa-check" style="color:var(--accent); margin-right:10px;"></i> Все преимущества Pack</li>
+                        <li style="margin-bottom: 10px;"><i class="fas fa-check" style="color:var(--accent); margin-right:10px;"></i> Приоритетный канал</li>
+                        <li style="margin-bottom: 10px;"><i class="fas fa-check" style="color:var(--accent); margin-right:10px;"></i> Экономия 15%</li>
+                    </ul>
+                    <button id="btn-guard" style="width:100%; padding:15px; border-radius:8px; border:none; background:var(--accent); color:var(--bg-card); font-weight:800; cursor:pointer; transition:0.3s; box-shadow: 0 0 20px rgba(100,255,218,0.3);" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">КУПИТЬ СЕЙЧАС</button>
+                </div>
+
+                <!-- 1 Year -->
+                <div class="pricing-card" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 15px; padding: 30px; text-align:center; transition: all 0.3s;">
+                    <div style="font-size: 1.5rem; color: #fff; font-family:'Outfit'; margin-bottom: 15px;">Monster Legend</div>
+                    <div style="font-size: 3rem; color: var(--accent); font-weight: 800; margin-bottom: 5px;">$49.99</div>
+                    <div style="color: #8892b0; margin-bottom: 25px;">1 Год</div>
+                    <ul style="list-style:none; padding:0; margin:0 0 30px 0; color:#ccd6f6; text-align:left; font-size: 0.9rem;">
+                        <li style="margin-bottom: 10px; color:var(--accent); font-weight:700;"><i class="fas fa-gift" style="margin-right:10px;"></i> +1 МЕСЯЦ БЕСПЛАТНО</li>
+                        <li style="margin-bottom: 10px;"><i class="fas fa-check" style="color:var(--accent); margin-right:10px;"></i> VIP Статус</li>
+                        <li style="margin-bottom: 10px;"><i class="fas fa-check" style="color:var(--accent); margin-right:10px;"></i> Выделенный IP</li>
+                    </ul>
+                    <button id="btn-legend" style="width:100%; padding:12px; border-radius:8px; border:1px solid var(--accent); background:transparent; color:var(--accent); font-weight:700; cursor:pointer; transition:0.3s;" onmouseover="this.style.background='var(--accent)'; this.style.color='var(--bg-card)'" onmouseout="this.style.background='transparent'; this.style.color='var(--accent)'">ВЫБРАТЬ</button>
+                </div>
             </div>
-            
-            <p id="limitText" style="color: #8892b0; font-size: 0.75rem;">Limit: 10GB per user. Accounts expire after data usage.</p>
         </div>
     </div>
+
 
     <style>
         @keyframes pulse {
@@ -711,7 +679,7 @@ function initLatencyChart() {
                     grid: { color: 'rgba(255,255,255,0.05)' },
                     ticks: { color: '#8892b0', font: { family: 'JetBrains Mono', size: 10 } },
                     beginAtZero: true,
-                    title: { display: true, text: 'Latency (ms)', color: '#8892b0', font: { family: 'Outfit' } }
+                    title: { display: true, text: 'Lag (ms)', color: '#8892b0', font: { family: 'Outfit' } }
                 }
             },
             plugins: {
@@ -866,7 +834,7 @@ function buildGrid() {
 
     const catLabels = {
         "Sites": null,
-        "Российские сайты": { icon: "\uD83C\uDDF7\uD83C\uDDFA", label: "Российские сайты", note: "Прямой доступ — VPN не нужен", color: "rgba(100,200,255,0.12)", border: "rgba(100,200,255,0.3)" }
+        "Российские сайты": { label: "Российские сайты", note: "Прямой доступ — VPN не нужен", color: "rgba(100,200,255,0.12)", border: "rgba(100,200,255,0.3)" }
     };
 
     for (const [cat, sites] of Object.entries(siteCategories)) {
@@ -875,7 +843,6 @@ function buildGrid() {
             const header = document.createElement("div");
             header.style.cssText = "display:flex; align-items:center; gap:10px; margin: 28px 0 12px; padding: 12px 16px; border-radius: 10px; background:" + meta.color + "; border: 1px solid " + meta.border + ";";
             header.innerHTML = 
-                "<span style='font-size:1.5rem;'>" + meta.icon + "</span>" +
                 "<div>" +
                     "<div style='font-weight:700; font-size:1rem; color:#e6f1ff;'>" + meta.label + "</div>" +
                     "<div style='font-size:0.78rem; color:#64ffda; margin-top:2px;'>\u2713 " + meta.note + "</div>" +
@@ -1005,10 +972,30 @@ async function startGraphForSite(url, name, isAuto = false) {
         document.getElementById('freenetPctBig').textContent = '--%';
         
         const titleEl = document.getElementById('chartTitle');
-        if(titleEl) titleEl.textContent = `Monitoring: ${name}`;
+        if(titleEl) {
+            const favicon = getFavicon({url: url, name: name});
+            titleEl.innerHTML = `<div style="display:flex; align-items:center; gap:10px;">
+                <img src="${favicon}" style="width:24px; height:24px; border-radius:4px;" onerror="this.style.display='none'">
+                <span>${name}</span>
+            </div>`;
+        }
         
         const chartCont = document.getElementById('chartContainer');
         if(chartCont) chartCont.style.display = 'block';
+
+        // Highlight selected card
+        document.querySelectorAll('.card').forEach(c => {
+            c.style.boxShadow = 'none';
+            c.style.borderColor = 'transparent';
+        });
+        const siteId = name.replace(/[^a-z0-9]/gi, "_");
+        const cards = document.querySelectorAll('.card');
+        cards.forEach(c => {
+            if (c.innerText.includes(name)) {
+                c.style.boxShadow = '0 0 20px rgba(100, 255, 218, 0.4), inset 0 0 10px rgba(100, 255, 218, 0.1)';
+                c.style.borderColor = 'var(--accent)';
+            }
+        });
         
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -1049,7 +1036,7 @@ async function startGraphForSite(url, name, isAuto = false) {
         const host = new URL(url).hostname;
         latencyHistory.labels.push(new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'}));
         
-        const MAX_SAMPLES = 20;
+        const MAX_SAMPLES = 10;
         if (latencyHistory.labels.length > MAX_SAMPLES) {
             latencyHistory.labels.shift();
             latencyHistory.direct.shift();
@@ -1220,6 +1207,10 @@ function getTitleWithDate(base) {
     if(langBtn) langBtn.addEventListener("click", toggleLanguage);
 
 buildGrid();
+// Initially open YouTube graph
+setTimeout(() => {
+    startGraphForSite("https://youtube.com", "YouTube");
+}, 500);
 
 // Initial run: PER USER REQUEST: RUN SIMULTANEOUSLY
 (async () => {
@@ -1235,6 +1226,40 @@ if (window.Telegram && window.Telegram.WebApp) {
 }
 
 })();
+function onTelegramAuth(user) {
+    console.log('Logged in as ' + user.first_name + ' ' + user.last_name + ' (' + user.id + (user.username ? ', @' + user.username : '') + ')');
+}
+
+function openPricing() {
+    let username = "unknown";
+    if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe.user) {
+        const user = window.Telegram.WebApp.initDataUnsafe.user;
+        username = `trial_${user.username || user.id}`;
+    }
+    
+    // Update Stripe links with client_reference_id
+    const links = {
+        'btn-pack': 'https://buy.stripe.com/test_dRm00jeFjemx7v9b5AbbG05',
+        'btn-guard': 'https://buy.stripe.com/test_3cI8wPeFj4LXcPtehMbbG03',
+        'btn-legend': 'https://buy.stripe.com/test_6oU8wP1Sx2DP9DhehMbbG04'
+    };
+    
+    for (const [id, url] of Object.entries(links)) {
+        const el = document.getElementById(id);
+        if (el) {
+            // Stripe payment links support client_reference_id via query param
+            el.onclick = () => {
+                window.location.href = `${url}?client_reference_id=${username}`;
+            };
+        }
+    }
+
+    document.getElementById('pricingModal').style.display = 'flex';
+}
+function closePricing() {
+    document.getElementById('pricingModal').style.display = 'none';
+}
+
 function onTelegramAuth(user) {
     const progressBar = document.getElementById("progressBar");
     if(progressBar) progressBar.style.width = "50%";

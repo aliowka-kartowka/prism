@@ -107,40 +107,11 @@ def create_user(username, data_limit=10737418240, expire_days=1):
     try:
         check_resp = requests.get(user_url, headers=headers, timeout=10)
         if check_resp.status_code == 200:
-            user = check_resp.json()
-            
-            # Automatic Renewal: If user is expired or nearly expired, refresh them
-            # Also reset data usage if it's exhausted
-            now = int(time.time())
-            needs_update = False
-            update_data = {}
-            
-            if user.get('expire') and (user['expire'] < now + 3600): # Expired or expiring in 1h
-                update_data['expire'] = now + (expire_days * 86400)
-                update_data['data_limit'] = 10737418240 # Ensure 10GB on renewal
-                update_data['status'] = 'active'
-                needs_update = True
-                
-            if user.get('used_traffic', 0) >= user.get('data_limit', 0):
-                # Reset usage by setting to 0? Marzban PUT /user doesn't reset usage directly,
-                # but we can increase the limit or recreate. 
-                # Actually, most agents prefer resetting via 'reset' endpoint.
-                try:
-                    requests.post(f"{MARZBAN_URL}/api/user/{username}/reset", headers=headers, timeout=10)
-                except: pass
-                needs_update = True
-
-            if needs_update:
-                requests.put(user_url, headers=headers, json=update_data, timeout=10)
-                # Fetch fresh data after update
-                check_resp = requests.get(user_url, headers=headers, timeout=10)
-                user = check_resp.json()
-                
-            return map_user_links(user)
+            return map_user_links(check_resp.json())
     except Exception as e:
-        print(f"Check user error: {e}")
+        logger.error(f"Check user error: {e}")
     
-    # Create new user if not exists
+    # Create new user if not exists (Trial)
     url = f"{MARZBAN_URL}/api/user"
     user_data = {
         "username": username,
@@ -160,124 +131,166 @@ def create_user(username, data_limit=10737418240, expire_days=1):
 
 def get_detailed_stats():
     token = get_token()
-    if not token:
-        return None
-    
+    if not token: return None
     headers = {'Authorization': f'Bearer {token}'}
     try:
         users_resp = requests.get(f"{MARZBAN_URL}/api/users", headers=headers, timeout=15)
-        if users_resp.status_code != 200:
-            return None
-        
+        if users_resp.status_code != 200: return None
         users = users_resp.json()
         now = datetime.now(timezone.utc)
-        
         total_users = len(users)
-        active_accounts = 0
+        active_accounts = sum(1 for u in users if u.get('status') == 'active')
         online_now = 0
-        
         for u in users:
-            if u.get('status') == 'active':
-                active_accounts += 1
-            
             online_at = u.get('online_at')
             if online_at:
                 try:
                     dt = datetime.fromisoformat(online_at.replace('Z', '+00:00'))
-                    diff = (now - dt).total_seconds()
-                    if diff < 300: # 5 minutes
-                        online_now += 1
-                except:
-                    pass
-        
-        return {
-            "total": total_users,
-            "active": active_accounts,
-            "online": online_now
-        }
+                    if (now - dt).total_seconds() < 300: online_now += 1
+                except: pass
+        return {"total": total_users, "active": active_accounts, "online": online_now}
+    except: return None
+
+# Crypto Pay Configuration
+CRYPTOPAY_TOKEN = os.getenv('CRYPTOPAY_TOKEN')
+PREMIUM_PRICE_USD = 5.0
+PREMIUM_DAYS = 30
+
+def create_crypto_invoice(amount_usd, description):
+    if not CRYPTOPAY_TOKEN: return None
+    url = "https://pay.crypt.bot/api/createInvoice"
+    headers = {"Crypto-Pay-API-Token": CRYPTOPAY_TOKEN}
+    data = {
+        "asset": "USDT",
+        "amount": str(amount_usd),
+        "description": description,
+        "currency_type": "fiat",
+        "fiat": "USD"
+    }
+    try:
+        resp = requests.post(url, headers=headers, json=data, timeout=10)
+        if resp.status_code == 200:
+            return resp.json().get('result')
     except:
         return None
+    return None
+
+def check_crypto_invoice(invoice_id):
+    if not CRYPTOPAY_TOKEN: return False
+    url = f"https://pay.crypt.bot/api/getInvoices?invoice_ids={invoice_id}"
+    headers = {"Crypto-Pay-API-Token": CRYPTOPAY_TOKEN}
+    try:
+        resp = requests.get(url, headers=headers, timeout=10)
+        if resp.status_code == 200:
+            invoices = resp.json().get('result', {}).get('items', [])
+            if invoices and invoices[0].get('status') == 'paid':
+                return True
+    except: pass
+    return False
+
+def upgrade_to_premium(username):
+    token = get_token()
+    if not token: return False
+    headers = {'Authorization': f'Bearer {token}', 'Content-Type': 'application/json'}
+    user_url = f"{MARZBAN_URL}/api/user/{username}"
+    now = int(time.time())
+    update_data = {
+        "data_limit": 0,
+        "expire": now + (PREMIUM_DAYS * 86400),
+        "status": "active",
+        "note": "PREMIUM_USER"
+    }
+    try:
+        requests.post(f"{MARZBAN_URL}/api/user/{username}/reset", headers=headers, timeout=10)
+        resp = requests.put(user_url, headers=headers, json=update_data, timeout=10)
+        return resp.status_code == 200
+    except: return False
+
+@bot.callback_query_handler(func=lambda call: call.data == "buy_premium")
+def handle_buy_premium(call):
+    is_direct = hasattr(call, 'id') and call.id == "direct_buy"
+    if not is_direct:
+        bot.answer_callback_query(call.id)
+    
+    invoice = create_crypto_invoice(PREMIUM_PRICE_USD, "FreeNet Premium (1 month)")
+    if invoice:
+        pay_url = invoice.get('pay_url')
+        invoice_id = invoice.get('invoice_id')
+        text = (
+            "✅ <b>Счёт в CryptoBot выставлен!</b>\n\n"
+            "Оплатите покупку по ссылке ниже. После оплаты нажмите кнопку для проверки."
+        )
+        keyboard = types.InlineKeyboardMarkup()
+        keyboard.add(types.InlineKeyboardButton(text="🔗 ОПЛАТИТЬ В CRYPTOBOT", url=pay_url))
+        keyboard.add(types.InlineKeyboardButton(text="🔄 ПРОВЕРИТЬ ОПЛАТУ", callback_data=f"check_pay:{invoice_id}"))
+        
+        if is_direct:
+            bot.send_message(call.message.chat.id, text, parse_mode='HTML', reply_markup=keyboard)
+        else:
+            bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=keyboard)
+    else:
+        bot.send_message(call.message.chat.id, "❌ Ошибка создания счёта. Попробуйте позже.")
 
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
     logger.info(f"DEBUG: Received /start from {message.from_user.id}")
     try:
-        # Prefix with 'trial_' for better organization in Marzban
+        # Check for deep linking parameters
+        start_param = message.text.split()[1] if len(message.text.split()) > 1 else None
+        
         raw_username = message.from_user.username or f"{message.from_user.id}"
         tg_username = f"trial_{raw_username}"
         
-        welcome_text = (
-            f"🚀 <b>Добро пожаловать в FreeNet Monster!</b>\n\n"
-            f"Мы подготовили для вас персональный защищенный туннель для аккаунта: <code>{tg_username}</code>\n\n"
-            f"🛡 <b>Почему выбирают нас?</b>\n"
-            f"• <b>10 ГБ бесплатно</b>: Полноценный тест на 24 часа.\n"
-            f"• <b>Скрытный протокол</b>: Используем VLESS + Reality (невидим для РКН).\n"
-            f"• <b>Полная анонимность</b>: Никаких регистраций и логов.\n"
-            f"• <b>Статус 24/7</b>: Следите за доступностью сайтов через наш <a href='https://t.me/FreeNetMonsterBot/start'>Мониторинг</a>.\n\n"
-            f"⌛ <i>Настройка подключения...</i>"
-        )
-        bot.reply_to(message, welcome_text, parse_mode='HTML', disable_web_page_preview=True)
-        
+        # Check if user already exists
         user = create_user(tg_username)
-        if user and 'subscription_url' in user:
-            sub_url = user['subscription_url']
-            mirror_url = user.get('mirror_subscription_url', 'http://94.159.117.222/sub/' + sub_url.split('/')[-1])
-            
-            # Use first config link for QR if available
-            qr_content = user['links'][0] if (user.get('links') and len(user['links']) > 0) else sub_url
-            qr_url = f"https://api.qrserver.com/v1/create-qr-code/?size=400x400&data={qr_content}&margin=10&bgcolor=ffffff"
-            
-            # Generate Base64 for the first link to allow "Import from Clipboard"
-            config_text = user['links'][0] if user.get('links') else sub_url
-            
-            # Create interactive keyboard
-            keyboard = types.InlineKeyboardMarkup()
-            url_button = types.InlineKeyboardButton(text="🔗 Подписка (Основая)", url=sub_url)
-            mirror_button = types.InlineKeyboardButton(text="⚡ Зеркало (РФ)", url=mirror_url)
-            # We can't actually "copy to clipboard" with a button in TG directly without a webview or specific client support, 
-            # but we can provide a button that triggers a message with the mono-spaced text for easy tapping.
-            copy_button = types.InlineKeyboardButton(text="📋 Скопировать код", callback_data=f"copy_cfg:{tg_username}")
-            keyboard.add(url_button, mirror_button)
-            keyboard.add(copy_button)
+        if "error" in user:
+            bot.send_message(message.chat.id, f"❌ Ошибка: {user['error']}")
+            return
 
-            caption = (
-                f"✅ <b>Ваш доступ готов!</b>\n\n"
-                f"🔗 <b>Основная ссылка:</b>\n<code>{sub_url}</code>\n"
-                f"⚡ <b>Зеркало (если не грузит):</b>\n<code>{mirror_url}</code>\n\n"
-                f"📝 <b>Код для вставки (нажми, чтобы скопировать):</b>\n<code>{config_text}</code>\n\n"
-                f"📖 <b>Быстрая настройка:</b>\n"
-                f"1️⃣ Нажмите на <b>Код для вставки</b> выше.\n"
-                f"2️⃣ В приложении нажмите <b>'+'</b> -> <b>'Import from Clipboard'</b>.\n"
-                f"3️⃣ Всё готово! Пользуйтесь свободой. 🌍"
+        if start_param == 'buy':
+            # Jump straight to checkout
+            class MockCall:
+                def __init__(self, message, id):
+                    self.message = message
+                    self.id = id
+            handle_buy_premium(MockCall(message, "direct_buy"))
+            return
+
+        is_premium = user.get('note') == "PREMIUM_USER"
+        now = int(time.time())
+        is_expired = user.get('expire') and (user['expire'] < now)
+        is_exhausted = not is_premium and (user.get('used_traffic', 0) >= user.get('data_limit', 0) and user.get('data_limit', 0) > 0)
+
+        if (is_expired or is_exhausted) and not is_premium:
+            text = (
+                "⌛ <b>Ваш пробный период окончен!</b>\n\n"
+                "Чтобы продолжить пользоваться VPN без ограничений, переходите на <b>Premium</b>.\n\n"
+                "💎 <b>Premium Пакет:</b>\n"
+                "• <b>Безлимитный</b> трафик\n"
+                "• Срок: <b>30 дней</b>\n"
+                "• Цена: <b>$5 USD</b> (в TON/USDT)\n\n"
+                "Нажмите кнопку ниже, чтобы оплатить через <b>CryptoBot</b>:"
             )
-            
-            try:
-                bot.send_photo(message.chat.id, qr_url, caption=caption, parse_mode='HTML', reply_markup=keyboard)
-            except Exception as e:
-                logger.error(f"Error sending photo: {e}")
-                bot.send_message(message.chat.id, caption, parse_mode='HTML', reply_markup=keyboard)
-        else:
-            error_msg = user.get('error', 'Unknown error') if isinstance(user, dict) else 'Unknown error'
-            bot.send_message(message.chat.id, f"❌ Ошибка подключения: {error_msg}. Попробуйте еще раз через минуту.")
-    except Exception as e:
-        error_trace = traceback.format_exc()
-        logger.error(f"Error in send_welcome: {error_trace}")
-        # Send error to admin
-        if ADMIN_ID:
-            try:
-                bot.send_message(ADMIN_ID, f"🚫 <b>Error in /start handler:</b>\n<code>{error_trace[:3500]}</code>", parse_mode='HTML')
-            except: pass
+            keyboard = types.InlineKeyboardMarkup()
+            pay_button = types.InlineKeyboardButton(text="🔥 КУПИТЬ ПРЕМИУМ ($5)", callback_data="buy_premium")
+            keyboard.add(pay_button)
+            bot.send_message(message.chat.id, text, parse_mode='HTML', reply_markup=keyboard)
+            return
 
-@bot.callback_query_handler(func=lambda call: call.data.startswith('copy_cfg:'))
-def callback_copy_config(call):
-    username = call.data.split(':')[-1]
-    user = create_user(username)
-    if user and user.get('links'):
-        config_text = user['links'][0]
-        bot.answer_callback_query(call.id, "Код отправлен ниже!")
-        bot.send_message(call.message.chat.id, f"<code>{config_text}</code>", parse_mode='HTML')
-    else:
-        bot.answer_callback_query(call.id, "Ошибка получения конфига", show_alert=True)
+        # Normal Flow
+        sub_url = user['subscription_url']
+        qr_url = f"https://api.qrserver.com/v1/create-qr-code/?size=400x400&data={sub_url}&margin=10&bgcolor=ffffff"
+        status_text = "💎 <b>Ваш Premium активен!</b>" if is_premium else "🚀 <b>Ваш пробный доступ готов!</b>"
+        
+        caption = (
+            f"{status_text}\n\n"
+            f"🔗 <b>Ссылка на подписку:</b>\n<code>{sub_url}</code>\n\n"
+            f"📖 Скопируйте ссылку и добавьте её в v2rayNG или Shadowrocket."
+        )
+        bot.send_photo(message.chat.id, qr_url, caption=caption, parse_mode='HTML')
+
+    except Exception as e:
+        logger.error(f"Error in send_welcome: {traceback.format_exc()}")
 
 @bot.message_handler(commands=['status'])
 def send_status(message):
@@ -294,34 +307,8 @@ def send_status(message):
     else:
         bot.send_message(message.chat.id, "❌ Не удалось получить статистику серверов.")
 
-@bot.inline_handler(lambda query: True)
-def query_text(inline_query):
-    try:
-        # Create a beautiful shareable result
-        r = types.InlineQueryResultArticle(
-            '1',
-            '🌐 FreeNet Monster: Статус и VPN',
-            types.InputTextMessageContent(
-                "🚀 **FreeNet Monster: Ваш ключ к свободному интернету!**\n\n"
-                "📊 **Статус систем**: Все узлы работают стабильно (РФ/Global).\n\n"
-                "🛡 **Что вы получаете:**\n"
-                "• 10 ГБ бесплатного VPN (Reality/VLESS)\n"
-                "• Мониторинг блокировок сайтов\n\n"
-                "👇 **Открыть Мониторинг & VPN:**\n"
-                "https://t.me/FreeNetMonsterBot/start",
-                parse_mode='Markdown'
-            ),
-            description="Поделиться мониторингом и ссылкой на 10 ГБ VPN",
-            thumbnail_url="https://freenet.monster/app_icon.png" # Assuming this works
-        )
-        bot.answer_inline_query(inline_query.id, [r], cache_time=1)
-    except Exception as e:
-        logger.error(f"Inline query error: {e}")
-
 if __name__ == '__main__':
-    pid = os.getpid()
-    print(f'🚀 FreeNet Bot is starting (PID: {pid})...')
-    logger.info(f'Bot process started with PID: {pid}')
+    logger.info(f'Bot process started...')
     bot.set_my_commands([
         telebot.types.BotCommand("start", "Запустить прокси и мониторинг"),
         telebot.types.BotCommand("status", "Проверить статус системы")

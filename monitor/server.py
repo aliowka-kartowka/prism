@@ -1,3 +1,7 @@
+try:
+    import stripe
+except ImportError:
+    stripe = None
 from http.server import HTTPServer, BaseHTTPRequestHandler, ThreadingHTTPServer
 import urllib.parse as urlparse
 import json
@@ -13,10 +17,22 @@ import hashlib
 import hmac
 import re
 import base64
+import traceback
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
+
+# Stripe Configuration
+if stripe:
+    stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
+STRIPE_WEBHOOK_SECRET = os.getenv('STRIPE_WEBHOOK_SECRET')
+
+# Node Identity & Environment
+IS_MOSCOW_NODE = os.getenv('IS_MOSCOW_NODE', 'false').lower() == 'true'
+MASTER_URL = os.getenv('MASTER_URL') # Used by workers to report to master
+MOSCOW_API = os.getenv('MOSCOW_API', 'http://94.159.117.222:8090') # Used by master to proxy checks
+XRAY_SOCKS_PROXY = 'socks5h://127.0.0.1:1081'
 
 # Create a global Session for efficient connection pooling
 session = requests.Session()
@@ -71,7 +87,10 @@ class RKNMonitorThread(threading.Thread):
         self.master_url = os.getenv('MASTER_URL')
     
     def run(self):
-        logger.info("RKN Monitor Thread started...")
+        if not IS_MOSCOW_NODE:
+            logger.info("RKN Monitor Thread: This is not the Moscow node. Exiting background monitor.")
+            return
+        logger.info("RKN Monitor Thread started on Moscow node...")
         # Dictionary to track last status of each domain for alerting
         # Only alert for freenet.monster for now to avoid spam
         critical_domains = {'freenet.monster', 'www.freenet.monster'}
@@ -79,24 +98,25 @@ class RKNMonitorThread(threading.Thread):
         
         while True:
             try:
-                results = []
-                # Check a subset or all ALLOWED_DOMAINS
-                # To avoid long loops, we check the most important ones + some random ones
-                priority_domains = {'freenet.monster', 'google.com', 'youtube.com', 'instagram.com', 'yandex.ru'}
-                test_set = priority_domains.union(set(random.sample(list(ALLOWED_DOMAINS), min(10, len(ALLOWED_DOMAINS)))))
+                from concurrent.futures import ThreadPoolExecutor
                 
-                for domain in test_set:
-                    # Prepend https:// if not present
+                def run_check(domain):
                     url = f"https://{domain}" if not domain.startswith('http') else domain
                     is_up = check_url(url, use_vpn=False)
-                    results.append({"target": domain, "is_ok": is_up})
+                    return {"target": domain, "is_ok": is_up}
+
+                test_set = ALLOWED_DOMAINS
+                with ThreadPoolExecutor(max_workers=10) as executor:
+                    results = list(executor.map(run_check, test_set))
                     
-                    # Alert logic for critical domains
+                # Alert logic for critical domains (checking against previous results)
+                for res in results:
+                    domain = res['target']
+                    is_up = res['is_ok']
                     if domain in last_statuses and is_up != last_statuses[domain]:
                         if not is_up:
                             msg = f"🔴 **ALERT: {domain} BLOCKED in Russia!**"
                             send_telegram_alert(msg)
-                            logger.warning(f"RKN BLOCK DETECTED for {domain}!")
                         else:
                             msg = f"🟢 **RECOVERY: {domain} RESTORED!**"
                             send_telegram_alert(msg)
@@ -107,19 +127,12 @@ class RKNMonitorThread(threading.Thread):
                 with RESULTS_LOCK:
                     global CHECK_RESULTS
                     # Update or add local results
-                    # If we are Moscow node, we'll label it as such in the master post
-                    # But locally we just keep them
+                    if 'moscow' not in CHECK_RESULTS:
+                        CHECK_RESULTS['moscow'] = {"timestamp": time.time(), "results": {}}
+                    CHECK_RESULTS['moscow']['timestamp'] = time.time()
                     for res in results:
-                        # Update existing or append
-                        found = False
-                        for existing in CHECK_RESULTS:
-                            if existing.get('target') == res['target'] and existing.get('node') == 'Moscow (Russia)':
-                                existing['is_ok'] = res['is_ok']
-                                found = True
-                                break
-                        if not found:
-                            res['node'] = 'Moscow (Russia)'
-                            CHECK_RESULTS.append(res)
+                        url = f"https://{res['target']}" if not res['target'].startswith('http') else res['target']
+                        CHECK_RESULTS['moscow']['results'][url] = "up" if res['is_ok'] else "down"
 
                 # If we have a master URL, push the full report
                 if self.master_url:
@@ -141,7 +154,6 @@ except ImportError: from requests.packages import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 STATIC_DIR = os.path.dirname(os.path.abspath(__file__))
-XRAY_SOCKS_PROXY = 'socks5h://127.0.0.1:1081'
 
 ALLOWED_DOMAINS = {
     'freenet.monster', 'www.freenet.monster',
@@ -166,36 +178,62 @@ ALLOWED_DOMAINS = {
     'usps.com', 'huffpost.com', 'dailymotion.com', 'soundcloud.com',
     'flickr.com', 'yelp.com', 'pandora.com', 'foxnews.com',
     'forbes.com', 'businessinsider.com',
-    'www.pornhub.com', 'www.xvideos.com', 'www.youporn.com'
+    'www.pornhub.com', 'www.xvideos.com', 'www.youporn.com',
+    'vk.com', 'yandex.ru', 'mail.ru', 'www.mail.ru', 'gosuslugi.ru', 'www.gosuslugi.ru',
+    'sber.ru', 'www.sber.ru', 'avito.ru', 'www.avito.ru', 'ozon.ru', 'www.ozon.ru',
+    'rutube.ru', 'tinkoff.ru', 'www.tinkoff.ru', '2gis.ru'
 }
+
+MAX_CHECK_RETRIES = 3
 
 def check_url(url, use_vpn=False):
     proxies = None
     if use_vpn:
         proxies = {'http': XRAY_SOCKS_PROXY, 'https': XRAY_SOCKS_PROXY}
-    try:
-        # Use a longer timeout for VPN but keep direct checks relatively snappy
-        to = 10.0 if use_vpn else 7.0
-        
-        # Avoid downloading entire payloads initially.
-        resp = session.get(url, proxies=proxies, timeout=to, verify=False, allow_redirects=True, stream=True, headers={'User-Agent': 'Mozilla/5.0'})
-        
-        # Robust check: If we are checking freenet.monster, verify the server is Cloudflare
-        # ISP splash pages usually have their own server headers (nginx, microhttpd, etc.)
-        if 'freenet.monster' in url:
+    # Use a longer timeout for VPN but keep direct checks relatively snappy
+    to = 3.0
+
+    for attempt in range(1, MAX_CHECK_RETRIES + 1):
+        try:
+            # Avoid downloading entire payloads initially.
+            resp = session.get(url, proxies=proxies, timeout=to, verify=False, allow_redirects=True, stream=True, headers={'User-Agent': 'Mozilla/5.0'})
+
+            # Robust check: Verify server headers to detect ISP splash pages/interception
             server_header = resp.headers.get('Server', '').lower()
-            if 'cloudflare' not in server_header:
-                logger.warning(f"ISP Interception detected for {url}! Server header: {server_header}")
-                resp.close()
-                return False
-        
-        is_ok = resp.status_code < 400
-        resp.close()
-        return is_ok
-    except Exception as e:
-        # If it's a timeout, it's definitely a block/slowdown
-        logger.error(f'Error checking {url} (VPN: {use_vpn}): {e}')
-        return False
+            
+            if 'freenet.monster' in url:
+                if 'cloudflare' not in server_header:
+                    logger.warning(f"ISP Interception detected for {url}! Server: {server_header}")
+                    resp.close()
+                    return False
+            
+            elif 'google' in url or 'youtube' in url:
+                if not any(x in server_header for x in ['gws', 'ghs', 'esf', 'youtube']):
+                    logger.warning(f"ISP Interception detected for {url}! Server: {server_header}")
+                    resp.close()
+                    return False
+            
+            elif 'facebook' in url or 'instagram' in url:
+                if 'facebook' not in server_header:
+                    logger.warning(f"ISP Interception detected for {url}! Server: {server_header}")
+                    resp.close()
+                    return False
+
+            elif 't.me' in url or 'telegram.org' in url:
+                if 'nginx' not in server_header: # Telegram usually uses nginx
+                    # This is tricky as many use nginx, but better than nothing
+                    pass
+
+            is_ok = resp.status_code < 400
+            resp.close()
+            return is_ok
+        except Exception as e:
+            logger.warning(f'Check failed for {url} (VPN: {use_vpn}), attempt {attempt}/{MAX_CHECK_RETRIES}: {e}')
+            if attempt < MAX_CHECK_RETRIES:
+                time.sleep(1)
+
+    logger.error(f'All {MAX_CHECK_RETRIES} attempts failed for {url} (VPN: {use_vpn})')
+    return False
 
 def get_marzban_token():
     url = f"{MARZBAN_URL}/api/admin/token"
@@ -209,6 +247,35 @@ def get_marzban_token():
     except Exception as e:
         logger.error(f"Marzban Auth exception: {e}")
     return None
+
+def update_marzban_premium(username, is_active=True):
+    token = get_marzban_token()
+    if not token:
+        return {"error": "Authentication failed"}
+    
+    headers = {'Authorization': f'Bearer {token}', 'Content-Type': 'application/json'}
+    url = f"{MARZBAN_URL}/api/user/{username}"
+    
+    # Premium users have no data limit (0) and status 'active'
+    # We also mark them in the note
+    status = "active" if is_active else "disabled"
+    data = {
+        "status": status,
+        "note": "PREMIUM_USER",
+        "data_limit": 0 if is_active else 1 # No limit if active
+    }
+    
+    try:
+        response = session.put(url, headers=headers, json=data, timeout=10)
+        if response.status_code == 200:
+            logger.info(f"Marzban user {username} updated: {status}")
+            return response.json()
+        else:
+            logger.error(f"Failed to update Marzban user {username}: {response.text}")
+            return {"error": response.text}
+    except Exception as e:
+        logger.error(f"Error updating Marzban user: {e}")
+        return {"error": str(e)}
 
 def create_marzban_trial(username):
     token = get_marzban_token()
@@ -455,10 +522,58 @@ class Handler(BaseHTTPRequestHandler):
         self.send_cors()
         self.end_headers()
 
+    def handle_stripe_webhook(self):
+        try:
+            payload = self.rfile.read(int(self.headers['Content-Length']))
+            sig_header = self.headers.get('Stripe-Signature')
+
+            if not STRIPE_WEBHOOK_SECRET:
+                logger.error("STRIPE_WEBHOOK_SECRET is not set. Skipping verification.")
+                event = json.loads(payload)
+            else:
+                event = stripe.Webhook.construct_event(
+                    payload, sig_header, STRIPE_WEBHOOK_SECRET
+                )
+        except Exception as e:
+            logger.error(f"Webhook error: {e}")
+            self.send_response(400)
+            self.end_headers()
+            return
+
+        # Handle the event
+        logger.info(f"Received Stripe event: {event['type']}")
+        
+        try:
+            if event['type'] == 'checkout.session.completed':
+                session_obj = event['data']['object']
+                username = session_obj.get('client_reference_id')
+                if username:
+                    logger.info(f"Payment completed for {username}. Activating premium.")
+                    update_marzban_premium(username, is_active=True)
+            
+            elif event['type'] in ('customer.subscription.updated', 'customer.subscription.deleted'):
+                sub = event['data']['object']
+                status = sub.get('status')
+                # If subscription is past_due, canceled, or unpaid, deactivate
+                if status in ('past_due', 'canceled', 'unpaid', 'incomplete_expired'):
+                    # We need to find the username. Since metadata might be empty,
+                    # ideally we saved it during checkout or we search in Marzban for users
+                    # with a specific note containing the stripe customer ID.
+                    pass 
+
+            self.send_response(200)
+            self.end_headers()
+        except Exception as e:
+            logger.error(f"Error processing webhook: {e}\n{traceback.format_exc()}")
+            self.send_response(500)
+            self.end_headers()
+
     def do_POST(self):
         parsed = urlparse.urlparse(self.path)
 
-        if parsed.path == '/api/trial':
+        if parsed.path == '/webhook/stripe':
+            self.handle_stripe_webhook()
+        elif parsed.path == '/api/trial':
             content_length = int(self.headers.get('Content-Length', 0))
             if content_length == 0:
                 self.send_response(400)
@@ -494,12 +609,12 @@ class Handler(BaseHTTPRequestHandler):
                 # data is expected to be a list of results: [{"target": "...", "is_ok": bool, "node": "..."}]
                 with RESULTS_LOCK:
                     global CHECK_RESULTS
-                    # Filter out old Moscow results and append new ones
-                    new_results = [r for r in CHECK_RESULTS if r.get('node') != 'Moscow (Russia)']
-                    for item in data:
-                        item['node'] = 'Moscow (Russia)' # Ensure node label is correct
-                        new_results.append(item)
-                    CHECK_RESULTS = new_results
+                    if 'moscow' not in CHECK_RESULTS:
+                        CHECK_RESULTS['moscow'] = {"timestamp": time.time(), "results": {}}
+                    CHECK_RESULTS['moscow']['timestamp'] = time.time()
+                    for res in data:
+                        url = f"https://{res['target']}" if not res['target'].startswith('http') else res['target']
+                        CHECK_RESULTS['moscow']['results'][url] = "up" if res['is_ok'] else "down"
                 
                 self.send_response(200)
                 self.send_header('Content-type', 'application/json')
@@ -640,10 +755,31 @@ class Handler(BaseHTTPRequestHandler):
                 self.end_headers()
                 return
 
+            # If this is the Hetzner node, proxy the check to the Moscow node.
+            # Moscow has the Russian ISP connection (direct) and Xray VPN client (vpn).
+            if not IS_MOSCOW_NODE:
+                try:
+                    resp = session.get(
+                        f"{MOSCOW_API}/api/check",
+                        params={'url': target_url, 'use_vpn': str(use_vpn).lower()},
+                        timeout=20
+                    )
+                    body = resp.content
+                    self.send_response(200)
+                    self.send_header('Content-type', 'application/json')
+                    self.send_cors()
+                    self.end_headers()
+                    self.wfile.write(body)
+                    return
+                except Exception as e:
+                    logger.error(f"Failed to proxy check to Moscow: {e}. Falling back to local check.")
+
+            # Moscow node (or Hetzner fallback): do the check locally
             is_up = check_url(target_url, use_vpn=use_vpn)
             body = json.dumps({'up': is_up, 'status': 'up' if is_up else 'down'}).encode()
             self.send_response(200)
             self.send_header('Content-type', 'application/json')
+            self.send_cors()
             self.end_headers()
             self.wfile.write(body)
 
@@ -714,36 +850,41 @@ class Handler(BaseHTTPRequestHandler):
             
             m_token = get_marzban_token()
             
-            # Try to fetch from API first
-            log_content = ""
-            if m_token:
-                headers = {'Authorization': f'Bearer {m_token}'}
-                # Try multiple possible endpoints for Marzban logs
-                for endpoint in ['/api/core/logs', '/api/system/logs']:
-                    try:
-                        resp = session.get(f"{MARZBAN_URL}{endpoint}", headers=headers, timeout=5)
-                        logger.info(f"Marzban fetch {endpoint}: {resp.status_code}")
-                        if resp.status_code == 200:
-                            log_content = resp.json().get('logs', "")
-                            if log_content: break
-                    except Exception as e:
-                        logger.error(f"Error fetching Marzban logs from {endpoint}: {e}")
-
-            # Fallback: if API failed or empty, try Docker logs directly (if on Hetzner)
-            if not log_content:
-                logger.info("Attempting fallback to Docker logs for Marzban")
+            # Prioritize Docker logs on Hetzner (not Moscow)
+            if not IS_MOSCOW_NODE:
                 try:
                     import subprocess
                     # Fetch last 150 lines from docker
                     res = subprocess.run(["sudo", "docker", "logs", "--tail", "150", "marzban"], 
                                          capture_output=True, text=True, timeout=5)
-                    log_content = res.stdout + "\n" + res.stderr
+                    if res.returncode == 0:
+                        log_content = res.stdout + "\n" + res.stderr
                 except Exception as e:
-                    log_content = f"Error: Could not fetch Marzban logs via API or Docker. {e}"
-                    logger.error(log_content)
+                    logger.debug(f"Docker logs fetch failed: {e}")
+
+            # If Docker logs failed or we are on Moscow, try the API
+            if not log_content and m_token:
+                headers = {'Authorization': f'Bearer {m_token}'}
+                # Try multiple possible endpoints for Marzban logs
+                for endpoint in ['/api/core/logs', '/api/system/logs']:
+                    try:
+                        resp = session.get(f"{MARZBAN_URL}{endpoint}", headers=headers, timeout=5)
+                        if resp.status_code == 200:
+                            log_content = resp.json().get('logs', "")
+                            if log_content: 
+                                logger.info(f"Fetched Marzban logs via API {endpoint}")
+                                break
+                        else:
+                            logger.debug(f"Marzban fetch {endpoint}: {resp.status_code}")
+                    except Exception as e:
+                        logger.debug(f"Error fetching Marzban logs from {endpoint}: {e}")
+
+            if not log_content:
+                log_content = "Error: Could not fetch Marzban logs via Docker or API."
 
             self.send_response(200)
             self.send_header('Content-type', 'application/json')
+            self.send_cors()
             self.end_headers()
             self.wfile.write(json.dumps({"logs": log_content.splitlines()}).encode())
 
@@ -861,9 +1002,12 @@ class Handler(BaseHTTPRequestHandler):
             self.end_headers()
 
 if __name__ == '__main__':
-    # Start RKN Monitor
-    rkn_thread = RKNMonitorThread(admin_id=1131496447)
-    rkn_thread.start()
+    # Start RKN Monitor ONLY on the Moscow node
+    if IS_MOSCOW_NODE:
+        rkn_thread = RKNMonitorThread(admin_id=FREENET_ADMIN_ID)
+        rkn_thread.start()
+    else:
+        logger.info("Master node detected. Waiting for updates from workers...")
 
     ThreadingHTTPServer.allow_reuse_address = True
     server = ThreadingHTTPServer(('0.0.0.0', 8090), Handler)
