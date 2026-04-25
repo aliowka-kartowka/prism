@@ -446,10 +446,8 @@
             <div class="actions-wrapper"
                 style="display: flex; flex-direction: column; gap: 12px; align-items: flex-end; min-width: 320px;">
 
-                <!-- Premium Row -->
-                <div class="premium-row"
-                    style="display: flex; align-items: center; gap: 15px; width: 100%; justify-content: flex-end;">
-                    <div class="premium-info" style="
+                <!-- Premium Info Row -->
+                <div class="premium-info" style="
                     background: rgba(100, 255, 218, 0.05);
                     border: 1px solid rgba(100, 255, 218, 0.2);
                     border-radius: 8px;
@@ -457,29 +455,71 @@
                     display: flex;
                     flex-direction: column;
                     gap: 2px;
+                    width: 100%;
+                    align-items: center;
+                    text-align: center;
                 ">
-                        <div
-                            style="color: var(--accent); font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 5px; text-transform: uppercase;">
-                            <i class="fas fa-gift"></i> <span>5$ в месяц</span>
-                        </div>
-                        <div style="color: #fff; font-size: 0.8rem; font-weight: 600;">+1 Месяц Бесплатно</div>
-                        <div style="color: #8892b0; font-size: 0.7rem;">на любую подписку</div>
+                    <div
+                        style="color: var(--accent); font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 5px; text-transform: uppercase;">
+                        <i class="fas fa-gift"></i> <span>5$ в месяц</span>
                     </div>
+                    <div style="color: #fff; font-size: 0.8rem; font-weight: 600;">+1 Месяц Бесплатно</div>
+                    <div style="color: #8892b0; font-size: 0.7rem;">на любую подписку</div>
+                </div>
+
+                <!-- Premium Buttons Row -->
+                <div class="premium-row"
+                    style="display: flex; align-items: stretch; gap: 15px; width: 100%;">
+                    
                     <button class="btn-premium" onclick="openPricing()" style="
-                    background: var(--accent);
-                    color: var(--bg-card);
-                    border: none;
-                    padding: 15px 25px;
+                    flex: 1;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 8px;
+                    background: transparent;
+                    color: var(--accent);
+                    border: 1px solid var(--accent);
+                    padding: 12px 10px;
                     border-radius: 8px;
                     font-weight: 800;
                     cursor: pointer;
                     font-family: 'Outfit';
                     transition: all 0.3s;
-                    box-shadow: 0 0 20px rgba(100, 255, 218, 0.3);
-                    animation: pulse 2s infinite;
-                " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
-                        🎁 МЕСЯЦ В ПОДАРОК
+                    font-size: 0.85rem;
+                " onmouseover="this.style.background='var(--accent)'; this.style.color='var(--bg-card)';" onmouseout="this.style.background='transparent'; this.style.color='var(--accent)';">
+                        <div style="display: flex; gap: 4px;">
+                            <i class="fab fa-cc-visa" style="font-size: 1.2em;"></i>
+                            <i class="fab fa-cc-mastercard" style="font-size: 1.2em;"></i>
+                        </div>
+                        <span style="text-align: left; line-height: 1.2;">Оплата<br>картой</span>
                     </button>
+
+                    <!-- Telegram Payment Button (Temporarily hidden for Compliance) -->
+                    <!--
+                    <button class="btn-crypto" onclick="window.open('https://t.me/FreeNetMonsterBot', '_blank')" style="
+                    flex: 1;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 8px;
+                    background: #2AABEE;
+                    color: #fff;
+                    border: none;
+                    padding: 12px 10px;
+                    border-radius: 8px;
+                    font-weight: 800;
+                    cursor: pointer;
+                    font-family: 'Outfit';
+                    transition: all 0.3s;
+                    box-shadow: 0 0 20px rgba(42, 171, 238, 0.3);
+                    animation: pulse 2s infinite;
+                    font-size: 0.85rem;
+                " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                        <i class="fab fa-telegram" style="font-size: 1.4em;"></i> 
+                        <span style="text-align: left; line-height: 1.2;">Оплата через<br>Telegram</span>
+                    </button>
+                    -->
                 </div>
             </div>
         </header>

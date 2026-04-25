@@ -244,7 +244,7 @@
             <img src="assets/icon/logo.png" alt="Logo" class="header-logo">
             <div style="display: flex; flex-direction: column;">
                 <h1 id="pageTitle" style="margin: 0;">Честный Мониторинг</h1>
-                <span style="color: #8892b0; font-size: 0.9rem; margin-top: 5px; font-family: 'Inter', sans-serif;">Powered by FreeNet Monster VPN</span>
+                <span style="color: #8892b0; font-size: 0.9rem; margin-top: 5px; font-family: 'Inter', sans-serif;">Powered by FreeNet Monster</span>
             </div>
         </div>
 
