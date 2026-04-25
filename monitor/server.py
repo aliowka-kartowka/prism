@@ -1,20 +1,7 @@
-try:
-    from dotenv import load_dotenv
-    load_dotenv() # Load variables from .env
-except ImportError:
-    pass
-
-try:
-    import stripe
-except ImportError:
-    stripe = None
-from http.server import HTTPServer, BaseHTTPRequestHandler, ThreadingHTTPServer
-import urllib.parse as urlparse
+import os
+import logging
 import json
 import requests
-import logging
-import os
-import mimetypes
 import time
 import threading
 import random
@@ -25,16 +12,44 @@ import re
 import base64
 import traceback
 import smtplib
+import urllib.parse as urlparse
+import mimetypes
+from http.server import HTTPServer, BaseHTTPRequestHandler, ThreadingHTTPServer
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
-# Configure logging
+# Configure logging early
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
+
+# Manual .env loader to avoid dependency issues
+def manual_load_dotenv(path=".env"):
+    if os.path.exists(path):
+        try:
+            with open(path) as f:
+                for line in f:
+                    line = line.strip()
+                    if line and not line.startswith('#') and '=' in line:
+                        key, value = line.split('=', 1)
+                        os.environ[key.strip()] = value.strip().strip('"').strip("'")
+            logger.info(f"Loaded environment from {path}")
+        except Exception as e:
+            logger.error(f"Failed to load {path}: {e}")
+
+manual_load_dotenv()
+# Also try parent dir if we are in a subfolder
+manual_load_dotenv("../.env")
+
+try:
+    import stripe
+except ImportError:
+    stripe = None
 
 # Stripe Configuration
 if stripe:
     stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
+    if not stripe.api_key:
+        logger.error("STRIPE_SECRET_KEY not found in environment!")
 STRIPE_WEBHOOK_SECRET = os.getenv('STRIPE_WEBHOOK_SECRET')
 STRIPE_LOGS = [] # In-memory buffer for Stripe events
 
@@ -607,6 +622,8 @@ class Handler(BaseHTTPRequestHandler):
                 logger.error("STRIPE_WEBHOOK_SECRET is not set. Skipping verification.")
                 event = json.loads(payload)
             else:
+                masked_secret = f"{STRIPE_WEBHOOK_SECRET[:8]}...{STRIPE_WEBHOOK_SECRET[-4:]}"
+                logger.info(f"Verifying webhook with secret: {masked_secret}")
                 event = stripe.Webhook.construct_event(
                     payload, sig_header, STRIPE_WEBHOOK_SECRET
                 )
@@ -1044,11 +1061,15 @@ class Handler(BaseHTTPRequestHandler):
                         self.wfile.write(b'{"error": "Invalid session"}'); return
                 except Exception as e:
                     logger.error(f"Stripe session check failed: {e}")
-                    self.send_response(403); self.send_cors(); self.end_headers()
-                    self.wfile.write(b'{"error": "Session verification failed"}'); return
+                    self.send_response(403); self.send_cors()
+                    self.send_header('Content-Type', 'application/json')
+                    self.end_headers()
+                    self.wfile.write(json.dumps({"error": f"Session verification failed: {str(e)}"}).encode()); return
             elif not session_id:
                 # OPTIONAL: if you want to allow ONLY session-based lookups
-                self.send_response(401); self.send_cors(); self.end_headers()
+                self.send_response(401); self.send_cors()
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
                 self.wfile.write(b'{"error": "Authentication required (session_id)"}'); return
 
             if not email:

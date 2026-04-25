@@ -1545,21 +1545,22 @@
 
         function updatePricingLinks() {
             const username = currentUser ? `tg_${currentUser.id}` : '';
-            const links = {
-                'btn-pack': 'https://buy.stripe.com/test_fZu7sN3PjecC2r4e8B7ss02',
+            const stripeLinks = {
+                'btn-pack': 'https://buy.stripe.com/test_5kQ6oJadH5G68Ps9Sl7ss00',
                 'btn-guard': 'https://buy.stripe.com/test_00wfZjclP9Wm7Lo8Oh7ss01',
                 'btn-legend': 'https://buy.stripe.com/test_fZu7sN3PjecC2r4e8B7ss02'
             };
 
-            for (const [id, url] of Object.entries(links)) {
+            for (const [id, url] of Object.entries(stripeLinks)) {
                 const el = document.getElementById(id);
                 if (el) {
+                    console.log(`Assigning ${url} to ${id}`);
                     el.classList.remove('disabled');
                     el.style.opacity = "1";
                     el.style.pointerEvents = "auto";
                     el.onclick = () => {
-                        // Pass username (email or tg_id) only if available
                         const finalUrl = username ? `${url}?client_reference_id=${username}` : url;
+                        console.log(`Redirecting to: ${finalUrl}`);
                         window.location.href = finalUrl;
                     };
                 }
