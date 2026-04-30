@@ -59,14 +59,15 @@ To ensure maximum resilience against Roskomnadzor (RKN), the platform provides m
 ---
 
 ## 💰 Monetization & Subscriptions (Stripe)
-*   **Stripe Integration**: Automated via Stripe Payment Links and Webhooks.
+*   **Stripe Integration**: Automated via Stripe Payment Links and Webhooks. Now operating in **Live Mode** (`sk_live_...`).
 *   **Webhooks**: `/webhook/stripe` endpoint handles `checkout.session.completed` events.
 *   **Additive Renewal Logic**: The server calculates new expiration as `max(now, current_expire) + duration + 30_days_gift`.
 *   **Automation**: Automatically updates or **creates** Marzban users with `DEFAULT_INBOUNDS` if they don't exist.
+*   **Email Delivery**: Automatically sends an HTML email (via Namecheap PrivateEmail SMTP) with the V2Box/Sing-box subscription URL to the customer the moment payment succeeds.
 *   **Pricing Tiers**:
-    *   **Monster Pack**: $6.99 / 30 Days (+ 30 Days Gift).
-    *   **Monster Guard**: $14.99 / 90 Days (+ 30 Days Gift).
-    *   **Monster Legend**: $44.99 / 1 Year (+ 30 Days Gift).
+    *   **Monster Solo**: $6.99 / 30 Days (2 devices).
+    *   **Monster Duo**: $14.99 / 90 Days (4 devices).
+    *   **Monster Family**: $44.99 / 1 Year (10 devices, highlighted as "Best Choice").
 
 ---
 
@@ -148,6 +149,7 @@ Browser fetchs /api/status on page load
 | Service | Process | Port | Notes |
 |---------|---------|------|-------|
 | Nginx (reverse proxy) | `nginx` | 80, 443 | SSL termination, WebSocket proxy |
+| Netdata | `netdata` | 19999 | Live infrastructure/bandwidth monitoring |
 | Marzban (via Docker) | `xray` in Docker | host network | Panel at `vpn.freenet.monster/dashboard` |
 | Marzban API | `python` | 127.0.0.1:8080 | Internal only |
 | Xray (Marzban's) | `xray` pid≈833092 | 1080, 127.0.0.1:13904 | Shadowsocks TCP + gRPC API |
@@ -184,8 +186,9 @@ ExecStart=/usr/bin/python3 /home/aliowka/workspace/monitor/server.py
 ### Environment Variables (`.env`)
 Both nodes use a local `.env` file located in the same directory as `server.py`.
 A custom `manual_load_dotenv` function in `server.py` parses this file automatically, removing the dependency on `python-dotenv` or systemd-level environment configurations. This prevents secrets from being committed to Git (caught by GitHub Push Protection).
-*   **Hetzner (`/var/www/monitor/.env`)**: Contains `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET`.
-*   **Moscow (`/home/aliowka/workspace/monitor/.env`)**: Contains `MASTER_URL` and `IS_MOSCOW_NODE=true`.
+*   **Hetzner (`/var/www/monitor/.env`)**: Contains `STRIPE_SECRET_KEY` (Live), `STRIPE_WEBHOOK_SECRET` (Live), and SMTP credentials.
+*   **Moscow (`/home/aliowka/workspace/monitor/.env`)**: Contains `MASTER_URL`, `IS_MOSCOW_NODE=true`, and SMTP credentials.
+*   **SMTP Config (Both)**: `SMTP_HOST=mail.privateemail.com`, `SMTP_PORT=465`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM`.
 
 ### Moscow Xray VPN Client Config
 ```

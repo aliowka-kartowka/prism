@@ -116,6 +116,60 @@ def send_telegram_alert(message):
     except Exception as e:
         logger.error(f"Failed to send TG alert: {e}")
 
+# --- Email Sending ---
+def send_subscription_email(to_email, sub_url, plan_name, exp_date):
+    if not SMTP_USER or not SMTP_PASS:
+        logger.warning("SMTP credentials not configured. Skipping email.")
+        return False
+        
+    try:
+        from email.mime.text import MIMEText
+        from email.mime.multipart import MIMEMultipart
+        import smtplib
+        
+        msg = MIMEMultipart('alternative')
+        msg['Subject'] = f"Ваша подписка на FreeNet Monster ({plan_name})"
+        msg['From'] = f"FreeNet Support <{SMTP_USER}>"
+        msg['To'] = to_email
+        
+        text = f"Спасибо за покупку!\nВаша ссылка для подписки:\n{sub_url}\n\nСкопируйте эту ссылку и вставьте её в приложение для VPN (V2Box, Sing-box, v2rayNG и т.д.).\nПодписка активна до: {exp_date}\n\nЕсли у вас есть вопросы, ответьте на это письмо."
+        
+        html = f"""\
+        <html>
+          <body style="font-family: Arial, sans-serif; color: #333; line-height: 1.6;">
+            <h2>Добро пожаловать в FreeNet Monster! 🐲</h2>
+            <p>Спасибо за оплату подписки <b>{plan_name}</b>.</p>
+            <p>Ваша ссылка для подписки:</p>
+            <div style="background: #f4f4f5; padding: 15px; border-radius: 8px; margin: 20px 0; word-break: break-all; font-family: monospace;">
+                {sub_url}
+            </div>
+            <p><strong>Инструкция:</strong><br>
+            Скопируйте ссылку выше и вставьте её в приложение для VPN <i>(например: V2Box, Sing-box, v2rayNG, Shadowrocket)</i>.</p>
+            <p>Ваш доступ активен до: <b>{exp_date}</b></p>
+            <hr style="border: none; border-top: 1px solid #eaeaea; margin: 30px 0;">
+            <p style="font-size: 12px; color: #888;">Если у вас возникли вопросы, просто ответьте на это письмо, и наша поддержка вам поможет.</p>
+          </body>
+        </html>
+        """
+        
+        msg.attach(MIMEText(text, 'plain'))
+        msg.attach(MIMEText(html, 'html'))
+        
+        if SMTP_PORT == 465:
+            server = smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT, timeout=10)
+        else:
+            server = smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=10)
+            server.starttls()
+            
+        server.login(SMTP_USER, SMTP_PASS)
+        server.sendmail(SMTP_USER, to_email, msg.as_string())
+        server.quit()
+        logger.info(f"Subscription email sent to {to_email}")
+        return True
+    except Exception as e:
+        logger.error(f"Failed to send email to {to_email}: {e}")
+        return False
+
 class RKNMonitorThread(threading.Thread):
     def __init__(self, admin_id):
         super().__init__(daemon=True)
@@ -698,6 +752,21 @@ class Handler(BaseHTTPRequestHandler):
                     STRIPE_LOGS.append(success_msg)
 
                     result = update_marzban_premium(username, is_active=True, days=total_days, note=new_note, ip_limit=ip_limit)
+                    
+                    # --- Send Email with Sub URL ---
+                    try:
+                        mapped_user = map_user_links(result)
+                        sub_url = mapped_user.get('sub_url', '')
+                        if sub_url:
+                            exp_date = time.strftime('%d.%m.%Y', time.localtime(mapped_user.get('expire', 0))) if mapped_user.get('expire') else 'Безлимит'
+                            
+                            plan_name = "Monster Solo"
+                            if days == 90: plan_name = "Monster Duo"
+                            elif days == 365: plan_name = "Monster Family"
+                            
+                            threading.Thread(target=send_subscription_email, args=(email, sub_url, plan_name, exp_date)).start()
+                    except Exception as e:
+                        logger.error(f"Error scheduling sub email: {e}")
                     result_msg = f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Marzban result for {username}: {result.get('status', result.get('error', 'ok'))}"
                     logger.info(result_msg)
                     STRIPE_LOGS.append(result_msg)
