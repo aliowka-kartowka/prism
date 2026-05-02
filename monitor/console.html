@@ -319,6 +319,7 @@
             if (activeBtn) activeBtn.classList.add('active');
             document.getElementById('terminal-' + id).classList.add('active');
             fetchData();
+            restartInterval(); // Adjust polling speed for new tab
         }
 
         function login() {
@@ -330,9 +331,19 @@
             startStream();
         }
 
+        let intervalHandle = null;
+        const INTERVALS = { traffic: 1000, sys: 3000, nodes: 3000, stripe: 5000, xray: 3000 };
+
+        function getInterval() { return INTERVALS[currentTab] || 3000; }
+
+        function restartInterval() {
+            if (intervalHandle) clearInterval(intervalHandle);
+            intervalHandle = setInterval(fetchData, getInterval());
+        }
+
         function startStream() {
             fetchData();
-            setInterval(fetchData, refreshInterval);
+            restartInterval();
             document.getElementById('dot').classList.add('active');
             document.getElementById('statusText').textContent = 'CONNECTED';
         }

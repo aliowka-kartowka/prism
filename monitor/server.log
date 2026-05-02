@@ -121,3 +121,9 @@
 2026-04-30 09:39:56,076 - ERROR - Error checking https://freenet.monster (VPN: False): HTTPSConnectionPool(host='freenet.monster', port=443): Read timed out. (read timeout=3.5)
 2026-04-30 09:39:56,579 - WARNING - RKN BLOCK DETECTED!
 2026-04-30 09:49:57,301 - INFO - RKN BLOCK CLEARED.
+2026-04-30 12:06:20,684 - ERROR - Error in RKN Monitor: HTTPSConnectionPool(host='api.telegram.org', port=443): Max retries exceeded with url: /bot8516762550:AAHcq9hVrsgPRQIe9vUQ6uUXi4GOyOQB-cQ/sendMessage (Caused by SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: self signed certificate in certificate chain (_ssl.c:1129)')))
+2026-04-30 17:27:24,855 - ERROR - Error in RKN Monitor: HTTPSConnectionPool(host='api.telegram.org', port=443): Max retries exceeded with url: /bot8516762550:AAHcq9hVrsgPRQIe9vUQ6uUXi4GOyOQB-cQ/sendMessage (Caused by SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: self signed certificate in certificate chain (_ssl.c:1129)')))
+2026-05-01 14:25:41,900 - ERROR - Error checking https://freenet.monster (VPN: False): HTTPSConnectionPool(host='freenet.monster', port=443): Read timed out. (read timeout=3.5)
+2026-05-01 14:40:58,878 - WARNING - RKN BLOCK DETECTED!
+2026-05-02 10:55:06,215 - ERROR - Error in RKN Monitor: HTTPSConnectionPool(host='api.telegram.org', port=443): Read timed out. (read timeout=10)
+2026-05-02 11:05:06,930 - INFO - RKN BLOCK CLEARED.

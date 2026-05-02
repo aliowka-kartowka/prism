@@ -117,7 +117,7 @@ def send_telegram_alert(message):
         logger.error(f"Failed to send TG alert: {e}")
 
 # --- Email Sending ---
-def send_subscription_email(to_email, sub_url, plan_name, exp_date):
+def send_subscription_email(to_email, sub_url, plan_name, exp_date, singbox_url=''):
     if not SMTP_USER or not SMTP_PASS:
         logger.warning("SMTP credentials not configured. Skipping email.")
         return False
@@ -136,7 +136,10 @@ def send_subscription_email(to_email, sub_url, plan_name, exp_date):
         
         html = f"""\
         <html>
-          <body style="font-family: Arial, sans-serif; color: #333; line-height: 1.6;">
+          <body style="font-family: Arial, sans-serif; color: #333; line-height: 1.6; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <div style="text-align: center; margin-bottom: 20px; background: #0a0b1e; padding: 20px; border-radius: 12px;">
+                <img src="https://freenet.monster/assets/icon/logo_white.png" alt="FreeNet Monster" style="max-width: 200px; height: auto;">
+            </div>
             <h2>Добро пожаловать в FreeNet Monster! 🐲</h2>
             <p>Спасибо за оплату подписки <b>{plan_name}</b>.</p>
             <p>Ваша ссылка для подписки:</p>
@@ -144,10 +147,11 @@ def send_subscription_email(to_email, sub_url, plan_name, exp_date):
                 {sub_url}
             </div>
             <p><strong>Инструкция:</strong><br>
-            Скопируйте ссылку выше и вставьте её в приложение для VPN <i>(например: V2Box, Sing-box, v2rayNG, Shadowrocket)</i>.</p>
+            Скопируйте ссылку выше и вставьте её в приложение для VPN <i>(V2Box, v2rayNG, Shadowrocket)</i>.</p>
+            {'<p><strong>Для Sing-box (умная маршрутизация .ru):</strong><br>Импортируйте профиль по ссылке: <a href="' + singbox_url + '">' + singbox_url + '</a></p>' if singbox_url else ''}
             <p>Ваш доступ активен до: <b>{exp_date}</b></p>
             <hr style="border: none; border-top: 1px solid #eaeaea; margin: 30px 0;">
-            <p style="font-size: 12px; color: #888;">Если у вас возникли вопросы, просто ответьте на это письмо, и наша поддержка вам поможет.</p>
+            <p style="font-size: 12px; color: #888; text-align: center;">Если у вас возникли вопросы, просто ответьте на это письмо, и наша поддержка вам поможет.</p>
           </body>
         </html>
         """
@@ -277,14 +281,13 @@ ALLOWED_DOMAINS = {
     'rutube.ru', 'tinkoff.ru', 'www.tinkoff.ru', '2gis.ru'
 }
 
-MAX_CHECK_RETRIES = 3
+MAX_CHECK_RETRIES = 2
 
 def check_url(url, use_vpn=False):
     proxies = None
     if use_vpn:
         proxies = {'http': XRAY_SOCKS_PROXY, 'https': XRAY_SOCKS_PROXY}
-    # Use a longer timeout for VPN but keep direct checks relatively snappy
-    to = 3.0
+    to = 2.0  # 2s timeout per attempt
 
     for attempt in range(1, MAX_CHECK_RETRIES + 1):
         try:
@@ -323,7 +326,7 @@ def check_url(url, use_vpn=False):
         except Exception as e:
             logger.warning(f'Check failed for {url} (VPN: {use_vpn}), attempt {attempt}/{MAX_CHECK_RETRIES}: {e}')
             if attempt < MAX_CHECK_RETRIES:
-                time.sleep(1)
+                time.sleep(0.5)
 
     logger.error(f'All {MAX_CHECK_RETRIES} attempts failed for {url} (VPN: {use_vpn})')
     return False
@@ -438,7 +441,7 @@ def create_marzban_trial(username):
             # data_limit is compared against used_traffic
             status = user.get('status', 'active')
             used = user.get('used_traffic', 0)
-            limit = user.get('data_limit', 0)
+            limit = user.get('data_limit') or 0
             
             if status != 'active' or (limit > 0 and used >= limit):
                 logger.info(f"Renewing trial for user {username}")
@@ -623,31 +626,98 @@ def generate_singbox_config(user):
 
     # 2. Add system outbounds
     outbounds.append({"type": "direct", "tag": "direct"})
-    outbounds.append({"type": "dns", "tag": "dns-out"})
     outbounds.append({"type": "block", "tag": "block"})
 
-    # 3. Construct full config
+    # Russian IP ranges (major allocations to RU ISPs/orgs)
+    RU_IP_CIDRS = [
+        # Private / loopback (always direct)
+        "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16",
+        "fc00::/7", "fe80::/10", "127.0.0.0/8",
+        # Yandex
+        "5.45.192.0/18", "37.9.64.0/18", "37.140.128.0/18",
+        "77.88.0.0/21", "83.149.0.0/17", "87.250.224.0/19",
+        "93.158.128.0/17", "95.108.0.0/14", "141.8.128.0/17",
+        "178.154.128.0/17", "213.180.192.0/19",
+        # Rostelecom / major RU ISPs
+        "5.8.0.0/16", "5.16.0.0/15", "5.18.0.0/15",
+        "5.61.0.0/16", "31.13.0.0/16", "31.148.0.0/16",
+        "45.8.0.0/16", "45.84.0.0/14", "46.0.0.0/16",
+        "77.37.0.0/16", "77.75.0.0/16", "79.133.0.0/16",
+        "84.252.128.0/17", "85.113.0.0/16", "87.239.0.0/16",
+        "89.108.0.0/16", "90.156.0.0/14", "91.218.0.0/16",
+        "185.32.0.0/14", "193.201.0.0/16", "195.201.0.0/16",
+        "176.16.0.0/12",
+        # Sber / Tinkoff / major banks
+        "185.100.64.0/18", "212.193.0.0/16",
+        # Gosuslugi / state
+        "185.110.96.0/22",
+    ]
+
+    # Russian domains that don't have .ru TLD but should go direct
+    RU_EXTRA_DOMAINS = [
+        "vk.com", "vk.me", "userapi.com", "vkuseraudio.net", "vkuservideo.net",
+        "ok.ru", "odnoklassniki.ru",
+        "mail.ru", "bk.ru", "inbox.ru", "list.ru", "mymy.ch",
+        "rambler.ru", "lenta.ru", "championat.com", "gazeta.ru",
+        "tinkoff.ru", "acdn.tinkoff.ru",
+        "sberbank.ru", "sber.ru", "sbbol.ru",
+        "gosuslugi.ru", "mos.ru", "nalog.gov.ru", "pfr.gov.ru",
+        "yandex.net", "yandex.com", "yastatic.net", "avatars.mds.yandex.net",
+        "avito.ru", "hh.ru", "ozon.ru", "wildberries.ru",
+        "mvideo.ru", "eldorado.ru", "dns-shop.ru", "citilink.ru",
+        "rbc.ru", "ria.ru", "interfax.ru", "tass.ru",
+        "rutube.ru", "rt.com",
+        "cdnvideo.ru", "gcdn.co",
+    ]
+
+    # 3. Construct full self-contained config — compatible with sing-box 1.13.0+
     config = {
         "log": {"level": "info", "timestamp": True},
         "dns": {
             "servers": [
-                {"tag": "dns-remote", "address": "https://1.1.1.1/dns-query", "detour": "FreeNet-Direct"},
-                {"tag": "dns-direct", "address": "8.8.8.8", "detour": "direct"},
-                {"tag": "dns-block", "address": "rcode://success"}
+                {
+                    "tag": "dns-remote",
+                    "address": "https://1.1.1.1/dns-query",
+                    "detour": "FreeNet-Direct"
+                },
+                {
+                    "tag": "dns-direct",
+                    "address": "8.8.8.8",
+                    "detour": "direct"
+                }
             ],
             "rules": [
-                {"outbound": "dns-direct", "disable_cache": True, "domain_suffix": [".ru", ".рф"]},
-                {"outbound": "dns-direct", "geosite": ["ru"]}
-            ]
+                {
+                    "server": "dns-direct",
+                    "domain_suffix": [".ru", ".рф"] + RU_EXTRA_DOMAINS
+                }
+            ],
+            "final": "dns-remote",
+            "independent_cache": True
         },
-        "inbounds": [{"type": "tun", "tag": "tun-in", "interface_name": "tun0", "inet4_address": "172.19.0.1/30", "auto_route": True, "strict_route": True, "stack": "system", "sniff": True}],
+        "inbounds": [
+            {
+                "type": "tun",
+                "tag": "tun-in",
+                "address": ["172.19.0.1/30"],
+                "auto_route": True,
+                "strict_route": True,
+                "stack": "system"
+            }
+        ],
         "outbounds": outbounds,
         "route": {
             "rules": [
-                {"protocol": "dns", "outbound": "dns-out"},
-                {"geoip": ["private", "ru"], "outbound": "direct"},
-                {"geosite": ["ru"], "outbound": "direct"},
-                {"domain_suffix": [".ru", ".рф"], "outbound": "direct"}
+                {"action": "sniff"},
+                {"protocol": "dns", "action": "hijack-dns"},
+                {
+                    "ip_cidr": RU_IP_CIDRS,
+                    "outbound": "direct"
+                },
+                {
+                    "domain_suffix": [".ru", ".рф"] + RU_EXTRA_DOMAINS,
+                    "outbound": "direct"
+                }
             ],
             "final": "FreeNet-Direct",
             "auto_detect_interface": True
@@ -753,7 +823,7 @@ class Handler(BaseHTTPRequestHandler):
 
                     result = update_marzban_premium(username, is_active=True, days=total_days, note=new_note, ip_limit=ip_limit)
                     
-                    # --- Send Email with Sub URL ---
+                    # --- Send Email with Sub URL + Sing-box token URL ---
                     try:
                         mapped_user = map_user_links(result)
                         sub_url = mapped_user.get('sub_url', '')
@@ -763,8 +833,12 @@ class Handler(BaseHTTPRequestHandler):
                             plan_name = "Monster Solo"
                             if days == 90: plan_name = "Monster Duo"
                             elif days == 365: plan_name = "Monster Family"
+
+                            # Extract Marzban subscription token for the secure Sing-box URL
+                            marzban_sub_token = mapped_user.get('subscription_url', '').split('/sub/')[-1].split(',')[0]
+                            singbox_url = f"https://freenet.monster/api/config/singbox/{marzban_sub_token}" if marzban_sub_token else ''
                             
-                            threading.Thread(target=send_subscription_email, args=(email, sub_url, plan_name, exp_date)).start()
+                            threading.Thread(target=send_subscription_email, args=(email, sub_url, plan_name, exp_date, singbox_url)).start()
                     except Exception as e:
                         logger.error(f"Error scheduling sub email: {e}")
                     result_msg = f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Marzban result for {username}: {result.get('status', result.get('error', 'ok'))}"
@@ -1264,17 +1338,30 @@ class Handler(BaseHTTPRequestHandler):
                 self.wfile.write(json.dumps(user).encode())
         
         elif parsed.path.startswith('/api/config/singbox/'):
-            username = parsed.path.split('/')[-1]
-            # Verify if user exists 
-            user = create_marzban_trial(username) # Fetches existing
-            if "error" in user:
+            token = parsed.path.split('/')[-1]
+            user = None
+
+            # Secure token-based lookup via Marzban /sub/{token}/info
+            try:
+                resp = session.get(
+                    f"{MARZBAN_URL}/sub/{token}/info",
+                    timeout=5
+                )
+                if resp.status_code == 200:
+                    user = map_user_links(resp.json())
+                    logger.info(f"Singbox config served for user: {user.get('username')}")
+            except Exception as e:
+                logger.debug(f"Token lookup failed: {e}")
+
+            if user is None or "error" in user:
                 self.send_response(404)
                 self.send_cors()
                 self.end_headers()
-                self.wfile.write(b'{"error": "User not found"}')
+                self.wfile.write(b'{"error": "Invalid or expired token"}')
             else:
                 config = generate_singbox_config(user)
                 body = json.dumps(config, indent=2).encode()
+                username = user.get('username', 'freenet')
                 self.send_response(200)
                 self.send_header('Content-type', 'application/json')
                 self.send_header('Content-Disposition', f'attachment; filename="freenet_{username}.json"')
