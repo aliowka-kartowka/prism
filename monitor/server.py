@@ -626,7 +626,6 @@ def generate_singbox_config(user):
 
     # 2. Add system outbounds
     outbounds.append({"type": "direct", "tag": "direct"})
-    outbounds.append({"type": "block", "tag": "block"})
 
     # Russian IP ranges (major allocations to RU ISPs/orgs)
     RU_IP_CIDRS = [
@@ -676,23 +675,16 @@ def generate_singbox_config(user):
         "dns": {
             "servers": [
                 {
-                    "tag": "dns-remote",
-                    "address": "https://1.1.1.1/dns-query",
-                    "detour": "FreeNet-Direct"
+                    "tag": "dns-main",
+                    "address": "8.8.8.8"
                 },
                 {
-                    "tag": "dns-direct",
-                    "address": "8.8.8.8",
-                    "detour": "direct"
+                    "tag": "dns-local",
+                    "address": "local"
                 }
             ],
-            "rules": [
-                {
-                    "server": "dns-direct",
-                    "domain_suffix": [".ru", ".рф"] + RU_EXTRA_DOMAINS
-                }
-            ],
-            "final": "dns-remote",
+            "rules": [],
+            "final": "dns-main",
             "independent_cache": True
         },
         "inbounds": [
@@ -783,13 +775,11 @@ class Handler(BaseHTTPRequestHandler):
                     # Determine duration and IP limit based on amount (in cents)
                     # $6.99 -> 30 days, $14.99 -> 90 days, $44.99 -> 365 days
                     days = 30
-                    ip_limit = 2
+                    ip_limit = 10
                     if amount >= 4400: 
                         days = 365
-                        ip_limit = 10
                     elif amount >= 1400: 
                         days = 90
-                        ip_limit = 4
 
                     # Check if user already exists and has received the gift
                     has_received_gift = False
